@@ -1,5 +1,10 @@
 package com.comp2042;
 
+/**
+ * Main game controller that handles game logic and user input.
+ * Acts as a bridge between the GUI controller and the game board,
+ * processing game events and updating the view accordingly.
+ */
 public class GameController implements InputEventListener {
 
     private Board board = new SimpleBoard(25, 10);
