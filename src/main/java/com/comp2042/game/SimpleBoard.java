@@ -1,12 +1,12 @@
 package com.comp2042.game;
 
-import com.comp2042.logic.BrickRotator;
-import com.comp2042.logic.MatrixOperations;
 import com.comp2042.logic.bricks.BrickGenerator;
 import com.comp2042.logic.bricks.RandomBrickGenerator;
 import com.comp2042.logic.bricks.Brick;
 import com.comp2042.model.ClearRow;
+import com.comp2042.model.Score;
 import com.comp2042.model.ViewData;
+import com.comp2042.util.MatrixOperations;
 
 import java.awt.*;
 

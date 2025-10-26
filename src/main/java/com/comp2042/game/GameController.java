@@ -1,4 +1,12 @@
-package com.comp2042;
+package com.comp2042.game;
+
+import com.comp2042.event.EventSource;
+import com.comp2042.event.InputEventListener;
+import com.comp2042.event.MoveEvent;
+import com.comp2042.model.ClearRow;
+import com.comp2042.model.DownData;
+import com.comp2042.model.ViewData;
+import com.comp2042.ui.GuiController;
 
 /**
  * Main game controller that handles game logic and user input.
@@ -7,16 +15,20 @@ package com.comp2042;
  */
 public class GameController implements InputEventListener {
 
-    private Board board = new SimpleBoard(25, 10);
-
+    private final Board board;
     private final GuiController viewGuiController;
 
     public GameController(GuiController c) {
-        viewGuiController = c;
-        board.createNewBrick();
-        viewGuiController.setEventListener(this);
+        this.viewGuiController = c;
+        this.board = new SimpleBoard(25, 10);
+        this.board.createNewBrick();
+        setupView();
+    }
+
+    private void setupView() {
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
+        viewGuiController.setEventListener(this);
     }
 
     @Override

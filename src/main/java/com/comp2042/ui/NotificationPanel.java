@@ -1,11 +1,9 @@
-package com.comp2042;
+package com.comp2042.ui;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.effect.Effect;
@@ -35,12 +33,7 @@ public class NotificationPanel extends BorderPane {
         ft.setFromValue(1);
         ft.setToValue(0);
         ParallelTransition transition = new ParallelTransition(tt, ft);
-        transition.setOnFinished(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                list.remove(NotificationPanel.this);
-            }
-        });
+        transition.setOnFinished(_ -> list.remove(NotificationPanel.this));
         transition.play();
     }
 }

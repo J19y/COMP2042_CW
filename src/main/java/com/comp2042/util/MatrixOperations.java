@@ -1,17 +1,20 @@
-package com.comp2042;
+package com.comp2042.util;
 
+/**
+ * Utility class providing matrix operations for the Tetris game.
+ * Handles operations like matrix intersection checking, copying, merging and row clearing.
+ */
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.comp2042.model.ClearRow;
+
 public class MatrixOperations {
-
-
     //We don't want to instantiate this utility class
     private MatrixOperations(){
-
     }
 
     public static boolean intersect(final int[][] matrix, final int[][] brick, int x, int y) {
@@ -95,5 +98,4 @@ public class MatrixOperations {
     public static List<int[][]> deepCopyList(List<int[][]> list){
         return list.stream().map(MatrixOperations::copy).collect(Collectors.toList());
     }
-
 }

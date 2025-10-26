@@ -1,9 +1,12 @@
-package com.comp2042;
+package com.comp2042.game;
 
 import com.comp2042.logic.bricks.Brick;
+import com.comp2042.model.NextShapeInfo;
 
+/**
+ * Handles brick rotation logic and maintains the current brick state.
+ */
 public class BrickRotator {
-
     private Brick brick;
     private int currentShape = 0;
 
@@ -25,6 +28,4 @@ public class BrickRotator {
         this.brick = brick;
         currentShape = 0;
     }
-
-
 }
