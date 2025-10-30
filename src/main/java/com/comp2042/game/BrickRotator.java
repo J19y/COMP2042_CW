@@ -1,7 +1,7 @@
 package com.comp2042.game;
 
 import com.comp2042.logic.bricks.Brick;
-import com.comp2042.model.NextShapeInfo;
+import com.comp2042.model.RotationInfo;
 
 /**
  * Handles brick rotation logic and maintains the current brick state.
@@ -10,14 +10,19 @@ public class BrickRotator {
     private Brick brick;
     private int currentShape = 0;
 
-    public NextShapeInfo getNextShape() {
+    /**
+     * Returns information about the next rotation for the current brick.
+     * Renamed from 'getShapeMatrix' -> 'getRotationMatrix' for clarity that this
+     * method returns all rotation matrices for a brick.
+     */
+    public RotationInfo getNextShape() {
         int nextShape = currentShape;
-        nextShape = (++nextShape) % brick.getShapeMatrix().size();
-        return new NextShapeInfo(brick.getShapeMatrix().get(nextShape), nextShape);
+        nextShape = (++nextShape) % brick.getRotationMatrix().size();
+        return new RotationInfo(brick.getRotationMatrix().get(nextShape), nextShape);
     }
 
     public int[][] getCurrentShape() {
-        return brick.getShapeMatrix().get(currentShape);
+        return brick.getRotationMatrix().get(currentShape);
     }
 
     public void setCurrentShape(int currentShape) {

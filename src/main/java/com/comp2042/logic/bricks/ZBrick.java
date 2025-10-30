@@ -25,7 +25,7 @@ final class ZBrick implements Brick {
     }
 
     @Override
-    public List<int[][]> getShapeMatrix() {
+    public List<int[][]> getRotationMatrix() {
         return MatrixOperations.deepCopyList(brickMatrix);
     }
 }

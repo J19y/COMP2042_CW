@@ -3,8 +3,8 @@ package com.comp2042.game;
 import com.comp2042.event.EventSource;
 import com.comp2042.event.InputEventListener;
 import com.comp2042.event.MoveEvent;
-import com.comp2042.model.ClearRow;
-import com.comp2042.model.DownData;
+import com.comp2042.model.RowClearResult;
+import com.comp2042.model.ShowResult;
 import com.comp2042.model.ViewData;
 import com.comp2042.ui.GuiController;
 
@@ -20,8 +20,8 @@ public class GameController implements InputEventListener {
 
     public GameController(GuiController c) {
         this.viewGuiController = c;
-        this.board = new SimpleBoard(25, 10);
-        this.board.createNewBrick();
+    this.board = new SimpleBoard(25, 10);
+    this.board.spawnBrick();
         setupView();
     }
 
@@ -32,16 +32,16 @@ public class GameController implements InputEventListener {
     }
 
     @Override
-    public DownData onDownEvent(MoveEvent event) {
+    public ShowResult onDownEvent(MoveEvent event) {
         boolean canMove = board.moveBrickDown();
-        ClearRow clearRow = null;
+        RowClearResult result = null;
         if (!canMove) {
             board.mergeBrickToBackground();
-            clearRow = board.clearRows();
-            if (clearRow.getLinesRemoved() > 0) {
-                board.getScore().add(clearRow.getScoreBonus());
+            result = board.clearRows();
+            if (result.getLinesRemoved() > 0) {
+                board.getScore().add(result.getScoreBonus());
             }
-            if (board.createNewBrick()) {
+            if (board.spawnBrick()) {
                 viewGuiController.gameOver();
             }
 
@@ -52,7 +52,7 @@ public class GameController implements InputEventListener {
                 board.getScore().add(1);
             }
         }
-        return new DownData(clearRow, board.getViewData());
+        return new ShowResult(result, board.getViewData());
     }
 
     @Override

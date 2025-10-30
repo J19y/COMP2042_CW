@@ -1,9 +1,9 @@
 package com.comp2042.logic.bricks;
 
-import com.comp2042.util.MatrixOperations;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.comp2042.util.MatrixOperations;
 
 final class TBrick implements Brick {
 
@@ -37,7 +37,7 @@ final class TBrick implements Brick {
     }
 
     @Override
-    public List<int[][]> getShapeMatrix() {
-        return MatrixOperations.deepCopyList(brickMatrix);
-    }
+        public List<int[][]> getRotationMatrix() {
+                return MatrixOperations.deepCopyList(brickMatrix);
+        }
 }

@@ -1,19 +1,6 @@
-package com.comp2042.model;
+// Deprecated placeholder: DownData was renamed to ShowResult.
+// The original class was moved/renamed to ShowResult.java to better reflect
+// that this object is returned to the UI to show the result of a down move.
+// This file intentionally contains no types to avoid accidental compilation
+// clashes while keeping history in the repo.
 
-public final class DownData {
-    private final ClearRow clearRow;
-    private final ViewData viewData;
-
-    public DownData(ClearRow clearRow, ViewData viewData) {
-        this.clearRow = clearRow;
-        this.viewData = viewData;
-    }
-
-    public ClearRow getClearRow() {
-        return clearRow;
-    }
-
-    public ViewData getViewData() {
-        return viewData;
-    }
-}

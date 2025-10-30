@@ -34,7 +34,7 @@ public class RandomBrickGenerator implements BrickGenerator {
     }
 
     @Override
-    public Brick getNextBrick() {
+    public Brick peekNextBrick() {
         return nextBricks.peek();
     }
 }

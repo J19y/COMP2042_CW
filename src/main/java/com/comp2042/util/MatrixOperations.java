@@ -10,14 +10,19 @@ import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.comp2042.model.ClearRow;
+import com.comp2042.model.RowClearResult;
 
 public class MatrixOperations {
     //We don't want to instantiate this utility class
     private MatrixOperations(){
     }
 
-    public static boolean intersect(final int[][] matrix, final int[][] brick, int x, int y) {
+    /**
+     * Checks if a brick collides with the board matrix or goes out of bounds.
+     * Renamed from 'intersect' to 'isCollision' to make it more understandable:
+     * (returns true when there IS a collision).
+     */
+    public static boolean isCollision(final int[][] matrix, final int[][] brick, int x, int y) {
         for (int i = 0; i < brick.length; i++) {
             for (int j = 0; j < brick[i].length; j++) {
                 int targetX = x + i;
@@ -63,7 +68,12 @@ public class MatrixOperations {
         return copy;
     }
 
-    public static ClearRow checkRemoving(final int[][] matrix) {
+    /**
+     * Clears completed rows from the board and calculates score bonus.
+     * Renamed from 'checkRemoving' to 'clearRows' to make it clearer that
+     * it both identifies full rows AND returns a new matrix with rows cleared.
+     */
+    public static RowClearResult clearRows(final int[][] matrix) {
         int[][] tmp = new int[matrix.length][matrix[0].length];
         Deque<int[]> newRows = new ArrayDeque<>();
         List<Integer> clearedRows = new ArrayList<>();
@@ -92,7 +102,7 @@ public class MatrixOperations {
             }
         }
         int scoreBonus = 50 * clearedRows.size() * clearedRows.size();
-        return new ClearRow(clearedRows.size(), tmp, scoreBonus);
+        return new RowClearResult(clearedRows.size(), tmp, scoreBonus);
     }
 
     public static List<int[][]> deepCopyList(List<int[][]> list){

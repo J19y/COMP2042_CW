@@ -7,6 +7,10 @@ package com.comp2042.logic.bricks;
 public interface BrickGenerator {
 
     Brick getBrick();
-
-    Brick getNextBrick();
+    /**
+     * Previously named getNextBrick(). Renamed to peekNextBrick() to make the
+     * intent clearer: this method peeks at the next brick in the queue without
+     * removing it from the generator's buffer.
+     */
+    Brick peekNextBrick();
 }

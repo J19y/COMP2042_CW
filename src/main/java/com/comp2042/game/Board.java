@@ -1,6 +1,6 @@
 package com.comp2042.game;
 
-import com.comp2042.model.ClearRow;
+import com.comp2042.model.RowClearResult;
 import com.comp2042.model.Score;
 import com.comp2042.model.ViewData;
 
@@ -19,7 +19,11 @@ public interface Board {
 
     boolean rotateLeftBrick();
 
-    boolean createNewBrick();
+    /**
+     * Previously named createNewBrick(). Renamed to spawnBrick() to clarify
+     * that the method spawns a new active brick on the board not just create it.
+     */
+    boolean spawnBrick();
 
     int[][] getBoardMatrix();
 
@@ -27,7 +31,7 @@ public interface Board {
 
     void mergeBrickToBackground();
 
-    ClearRow clearRows();
+    RowClearResult clearRows();
 
     Score getScore();
 
