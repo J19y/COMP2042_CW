@@ -13,17 +13,32 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 public class NotificationPanel extends BorderPane {
+    // Added private static final constants for magic numbers
+    private static final double MIN_HEIGHT = 200;
+    private static final double MIN_WIDTH = 220;
+    private static final double GLOW_INTENSITY = 0.6;
+    
+    private final Label scoreLabel;
 
+    // Now the constructor does only the main setup
     public NotificationPanel(String text) {
-        setMinHeight(200);
-        setMinWidth(220);
-        final Label score = new Label(text);
-        score.getStyleClass().add("bonusStyle");
-        final Effect glow = new Glow(0.6);
-        score.setEffect(glow);
-        score.setTextFill(Color.WHITE);
-        setCenter(score);
-
+        setMinHeight(MIN_HEIGHT);
+        setMinWidth(MIN_WIDTH);
+        
+        scoreLabel = createScoreLabel(text);
+        setCenter(scoreLabel);
+    }
+    
+    // Created another method to create and configure the score label
+    private Label createScoreLabel(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().add("bonusStyle");
+        
+        Effect glow = new Glow(GLOW_INTENSITY);
+        label.setEffect(glow);
+        label.setTextFill(Color.WHITE);
+        
+        return label;
     }
 
     public void showScore(ObservableList<Node> list) {

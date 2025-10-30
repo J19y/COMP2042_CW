@@ -9,6 +9,11 @@ import com.comp2042.model.RotationInfo;
 public class BrickRotator {
     private Brick brick;
     private int currentShape = 0;
+    
+    // Returns the index of the current rotation shape
+    public int getCurrentShapeIndex() {
+        return currentShape;
+    }
 
     /**
      * Returns information about the next rotation for the current brick.

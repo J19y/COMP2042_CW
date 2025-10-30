@@ -10,14 +10,29 @@ import javafx.beans.property.SimpleIntegerProperty;
 public final class Score {
     private final IntegerProperty score = new SimpleIntegerProperty(0);
 
+     // Gets the observable score property for binding The score property
     public IntegerProperty scoreProperty() {
         return score;
     }
 
-    public void add(int i){
-        score.setValue(score.getValue() + i);
+    
+     // This method returns the current score
+    public int getValue() {
+        return score.get();
     }
 
+    
+     // Adds points to the current score
+    public void add(int points) {
+        if (points < 0) {
+            // Prevent adding negative points
+            throw new IllegalArgumentException("Cannot add negative points");
+        }
+        score.setValue(score.getValue() + points);
+    }
+
+    
+     // Resets the score to zero
     public void reset() {
         score.setValue(0);
     }
