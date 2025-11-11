@@ -1,7 +1,6 @@
 package com.comp2042.game;
 
 import com.comp2042.model.RowClearResult;
-import com.comp2042.model.Score;
 import com.comp2042.model.ViewData;
 
 /**
@@ -32,8 +31,6 @@ public interface Board {
     void mergeBrickToBackground();
 
     RowClearResult clearRows();
-
-    Score getScore();
 
     void newGame();
 }

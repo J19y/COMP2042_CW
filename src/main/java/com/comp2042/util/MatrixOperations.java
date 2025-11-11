@@ -17,31 +17,7 @@ public class MatrixOperations {
     private MatrixOperations(){
     }
 
-    /**
-     * Checks if a brick collides with the board matrix or goes out of bounds.
-     * Renamed from 'intersect' to 'isCollision' to make it more understandable:
-     * (returns true when there IS a collision).
-     */
-    public static boolean isCollision(final int[][] matrix, final int[][] brick, int x, int y) {
-        for (int i = 0; i < brick.length; i++) {
-            for (int j = 0; j < brick[i].length; j++) {
-                int targetX = x + i;
-                int targetY = y + j;
-                if (brick[j][i] != 0 && (checkOutOfBound(matrix, targetX, targetY) || matrix[targetY][targetX] != 0)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private static boolean checkOutOfBound(int[][] matrix, int targetX, int targetY) {
-        boolean returnValue = true;
-        if (targetX >= 0 && targetY < matrix.length && targetX < matrix[targetY].length) {
-            returnValue = false;
-        }
-        return returnValue;
-    }
+    // Collision logic moved to CollisionDetector to achieve SRP.
 
     public static int[][] copy(int[][] original) {
         int[][] myInt = new int[original.length][];

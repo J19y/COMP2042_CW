@@ -6,8 +6,8 @@ import com.comp2042.logic.bricks.Brick;
 import com.comp2042.logic.bricks.BrickGenerator;
 import com.comp2042.logic.bricks.RandomBrickGenerator;
 import com.comp2042.model.RowClearResult;
-import com.comp2042.model.Score;
 import com.comp2042.model.ViewData;
+import com.comp2042.util.CollisionDetector;
 import com.comp2042.util.MatrixOperations;
 
 /**
@@ -27,7 +27,6 @@ public class SimpleBoard implements Board {
     // Renamed from `currentOffset` -> `activePiece` to show that
     // this Point stores the current active piece's position (x=col, y=row).
     private Point activePiece;
-    private final Score score;
 
     public SimpleBoard(int rows, int cols) {
         this.rows = rows;
@@ -37,7 +36,6 @@ public class SimpleBoard implements Board {
         boardMatrix = new int[rows][cols];
         brickGenerator = new RandomBrickGenerator();
         brickRotator = new BrickRotator();
-        score = new Score();
     }
 
     @Override
@@ -45,7 +43,7 @@ public class SimpleBoard implements Board {
     int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
     Point p = new Point(activePiece);
         p.translate(0, 1);
-        boolean conflict = MatrixOperations.isCollision(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
+        boolean conflict = CollisionDetector.isCollision(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
         if (conflict) {
             return false;
         } else {
@@ -60,7 +58,7 @@ public class SimpleBoard implements Board {
     int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
     Point p = new Point(activePiece);
         p.translate(-1, 0);
-        boolean conflict = MatrixOperations.isCollision(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
+        boolean conflict = CollisionDetector.isCollision(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
         if (conflict) {
             return false;
         } else {
@@ -74,7 +72,7 @@ public class SimpleBoard implements Board {
     int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
     Point p = new Point(activePiece);
         p.translate(1, 0);
-        boolean conflict = MatrixOperations.isCollision(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
+        boolean conflict = CollisionDetector.isCollision(currentMatrix, brickRotator.getCurrentShape(), (int) p.getX(), (int) p.getY());
         if (conflict) {
             return false;
         } else {
@@ -87,7 +85,7 @@ public class SimpleBoard implements Board {
     public boolean rotateLeftBrick() {
     int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
     com.comp2042.model.RotationInfo nextShape = brickRotator.getNextShape();
-    boolean conflict = MatrixOperations.isCollision(currentMatrix, nextShape.getShape(), (int) activePiece.getX(), (int) activePiece.getY());
+    boolean conflict = CollisionDetector.isCollision(currentMatrix, nextShape.getShape(), (int) activePiece.getX(), (int) activePiece.getY());
         if (conflict) {
             return false;
         } else {
@@ -106,7 +104,7 @@ public class SimpleBoard implements Board {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
     activePiece = new Point(4, 10);
-    return MatrixOperations.isCollision(boardMatrix, brickRotator.getCurrentShape(), (int) activePiece.getX(), (int) activePiece.getY());
+    return CollisionDetector.isCollision(boardMatrix, brickRotator.getCurrentShape(), (int) activePiece.getX(), (int) activePiece.getY());
     }
 
     @Override
@@ -130,17 +128,11 @@ public class SimpleBoard implements Board {
     boardMatrix = result.getNewMatrix();
         return result;
     }
-
-    @Override
-    public Score getScore() {
-        return score;
-    }
-
+    // Assigned to ScoreService for score management.
 
     @Override
     public void newGame() {
     boardMatrix = new int[rows][cols];
-        score.reset();
         spawnBrick();
     }
 }

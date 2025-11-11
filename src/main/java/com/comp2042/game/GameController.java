@@ -6,6 +6,7 @@ import com.comp2042.event.MoveEvent;
 import com.comp2042.model.RowClearResult;
 import com.comp2042.model.ShowResult;
 import com.comp2042.model.ViewData;
+import com.comp2042.service.ScoreService;
 import com.comp2042.ui.GuiController;
 
 /**
@@ -17,17 +18,21 @@ public class GameController implements InputEventListener {
 
     private final Board board;
     private final GuiController viewGuiController;
+    private final SpawnManager spawnManager;
+    private final ScoreService scoreService;
 
     public GameController(GuiController c) {
         this.viewGuiController = c;
-    this.board = new SimpleBoard(25, 10);
-    this.board.spawnBrick();
+        this.board = new SimpleBoard(25, 10);
+        this.spawnManager = new SpawnManager(board);
+        this.scoreService = new ScoreService();
+        spawnManager.spawn(() -> viewGuiController.gameOver());
         setupView();
     }
 
     private void setupView() {
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
-        viewGuiController.bindScore(board.getScore().scoreProperty());
+        viewGuiController.bindScore(scoreService.scoreProperty());
         viewGuiController.setEventListener(this);
     }
 
@@ -39,17 +44,15 @@ public class GameController implements InputEventListener {
             board.mergeBrickToBackground();
             result = board.clearRows();
             if (result.getLinesRemoved() > 0) {
-                board.getScore().add(result.getScoreBonus());
+                scoreService.add(result.getScoreBonus());
             }
-            if (board.spawnBrick()) {
-                viewGuiController.gameOver();
-            }
+            spawnManager.spawn(() -> viewGuiController.gameOver());
 
             viewGuiController.refreshGameBackground(board.getBoardMatrix());
 
         } else {
             if (event.getEventSource() == EventSource.USER) {
-                board.getScore().add(1);
+                scoreService.add(1);
             }
         }
         return new ShowResult(result, board.getViewData());
@@ -77,6 +80,7 @@ public class GameController implements InputEventListener {
     @Override
     public void createNewGame() {
         board.newGame();
+        scoreService.reset();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
     }
 }
