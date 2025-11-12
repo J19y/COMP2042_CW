@@ -1,12 +1,10 @@
 package com.comp2042.game;
 
-import com.comp2042.event.EventSource;
 import com.comp2042.event.InputEventListener;
 import com.comp2042.event.MoveEvent;
-import com.comp2042.model.RowClearResult;
 import com.comp2042.model.ShowResult;
 import com.comp2042.model.ViewData;
-import com.comp2042.service.ScoreService;
+import com.comp2042.service.ScoreManager;
 import com.comp2042.ui.GuiController;
 
 /**
@@ -19,13 +17,17 @@ public class GameController implements InputEventListener {
     private final Board board;
     private final GuiController viewGuiController;
     private final SpawnManager spawnManager;
-    private final ScoreService scoreService;
+    private final ScoreManager scoreService;
+    private final BrickMove moveHandler;
+    private final BrickDrop dropHandler;
 
     public GameController(GuiController c) {
         this.viewGuiController = c;
         this.board = new SimpleBoard(25, 10);
         this.spawnManager = new SpawnManager(board);
-        this.scoreService = new ScoreService();
+        this.scoreService = new ScoreManager();
+        this.moveHandler = new BrickMove(board);
+        this.dropHandler = new BrickDrop(board, scoreService, spawnManager);
         spawnManager.spawn(() -> viewGuiController.gameOver());
         setupView();
     }
@@ -38,42 +40,30 @@ public class GameController implements InputEventListener {
 
     @Override
     public ShowResult onDownEvent(MoveEvent event) {
-        boolean canMove = board.moveBrickDown();
-        RowClearResult result = null;
-        if (!canMove) {
-            board.mergeBrickToBackground();
-            result = board.clearRows();
-            if (result.getLinesRemoved() > 0) {
-                scoreService.add(result.getScoreBonus());
-            }
-            spawnManager.spawn(() -> viewGuiController.gameOver());
-
+        ShowResult result = dropHandler.handleDrop(event.getEventSource(), 
+            () -> viewGuiController.gameOver());
+        
+        // Refresh background if brick landed (rows were cleared indicates landing)
+        if (result.getClearRow() != null) {
             viewGuiController.refreshGameBackground(board.getBoardMatrix());
-
-        } else {
-            if (event.getEventSource() == EventSource.USER) {
-                scoreService.add(1);
-            }
         }
-        return new ShowResult(result, board.getViewData());
+        
+        return result;
     }
 
     @Override
     public ViewData onLeftEvent(MoveEvent event) {
-        board.moveBrickLeft();
-        return board.getViewData();
+        return moveHandler.handleLeftMove();
     }
 
     @Override
     public ViewData onRightEvent(MoveEvent event) {
-        board.moveBrickRight();
-        return board.getViewData();
+        return moveHandler.handleRightMove();
     }
 
     @Override
     public ViewData onRotateEvent(MoveEvent event) {
-        board.rotateLeftBrick();
-        return board.getViewData();
+        return moveHandler.handleRotation();
     }
 
 

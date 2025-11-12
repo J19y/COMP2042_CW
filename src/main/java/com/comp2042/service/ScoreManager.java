@@ -9,7 +9,7 @@ import javafx.beans.property.IntegerProperty;
  * This service provides methods to add points, reset the score,
  * and retrieve the current score value.
  */
-public final class ScoreService {
+public final class ScoreManager {
     private final Score score = new Score();
 
     public IntegerProperty scoreProperty() {

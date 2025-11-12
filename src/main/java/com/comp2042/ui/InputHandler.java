@@ -12,9 +12,8 @@ import com.comp2042.model.ViewData;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 
-/**
- * Handles key input mapping and dispatches events to the game controller.
- */
+// Handles key input mapping and dispatches events to the game controller.
+
 public final class InputHandler {
 
     public interface InputCallbacks {

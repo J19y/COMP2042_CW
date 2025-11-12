@@ -77,8 +77,8 @@ public class MatrixOperations {
                 break;
             }
         }
-        int scoreBonus = 50 * clearedRows.size() * clearedRows.size();
-        return new RowClearResult(clearedRows.size(), tmp, scoreBonus);
+        // Scoring logic moved to ScoreService - MatrixOperations should only handle matrix operations
+        return new RowClearResult(clearedRows.size(), tmp, 0);
     }
 
     public static List<int[][]> deepCopyList(List<int[][]> list){
