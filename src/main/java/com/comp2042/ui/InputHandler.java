@@ -34,6 +34,14 @@ public final class InputHandler {
         KEYMAP.put(KeyCode.W, EventType.ROTATE);
         KEYMAP.put(KeyCode.DOWN, EventType.DOWN);
         KEYMAP.put(KeyCode.S, EventType.DOWN);
+        KEYMAP.put(KeyCode.SPACE, EventType.HARD_DROP);
+    }
+
+    // Allow external modules to register additional key bindings (OCP-friendly)
+    public static void registerKeyBinding(KeyCode key, EventType type) {
+        if (key != null && type != null) {
+            KEYMAP.put(key, type);
+        }
     }
 
     public void attach(Node focusNode,

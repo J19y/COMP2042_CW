@@ -8,9 +8,9 @@ import com.comp2042.event.EventType;
 import com.comp2042.event.InputEventListener;
 import com.comp2042.event.MoveEvent;
 import com.comp2042.game.state.GameStateManager;
+import com.comp2042.manager.NotificationManager;
 import com.comp2042.model.ShowResult;
 import com.comp2042.model.ViewData;
-import com.comp2042.service.NotificationManager;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.event.ActionEvent;
@@ -65,7 +65,7 @@ public class GuiController implements Initializable {
         activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel, gamePanel);
         activeBrickRenderer.initialize(brick);
 
-        // Initialize NotificationService
+        // Initialize NotificationManager
         notificationService = new NotificationManager(groupNotification);
 
         gameLoopController = new GameLoopController(Duration.millis(400), 

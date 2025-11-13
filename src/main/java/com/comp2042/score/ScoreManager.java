@@ -1,4 +1,4 @@
-package com.comp2042.service;
+package com.comp2042.score;
 
 import com.comp2042.model.Score;
 

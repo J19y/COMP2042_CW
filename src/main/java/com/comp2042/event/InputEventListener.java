@@ -11,7 +11,7 @@ import com.comp2042.model.ViewData;
 public interface InputEventListener {
 
     ShowResult onDownEvent(MoveEvent event);
-    
+
     ViewData onLeftEvent(MoveEvent event);
     ViewData onRightEvent(MoveEvent event);
     ViewData onRotateEvent(MoveEvent event);
@@ -20,8 +20,9 @@ public interface InputEventListener {
 
     /**
      * Main event handler. Returns ShowResult for DOWN moves,
-     * and ViewData for all other moves. 
-     * By default, it calls the specific handler methods.
+     * and ViewData for all other moves.
+     * By default, it calls the specific handler methods. New events fall back
+     * to DOWN handling unless overridden by the listener implementation.
      */
     default Object onEvent(MoveEvent event) {
         EventType type = event.getEventType();
@@ -30,6 +31,7 @@ public interface InputEventListener {
             case LEFT -> onLeftEvent(event);
             case RIGHT -> onRightEvent(event);
             case ROTATE -> onRotateEvent(event);
+            default -> onDownEvent(event);
         };
     }
 }
