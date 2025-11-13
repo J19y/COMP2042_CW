@@ -1,5 +1,7 @@
 package com.comp2042.ui;
 
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 import com.comp2042.event.EventSource;
@@ -12,13 +14,26 @@ import com.comp2042.model.ViewData;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 
-// Handles key input mapping and dispatches events to the game controller.
+// Handles key input mapping and dispatches events via a generic listener method.
 
 public final class InputHandler {
 
     public interface InputCallbacks {
         void onViewUpdate(ViewData data);
         void onDownResult(ShowResult result);
+    }
+
+    // Key mapping to EventType to avoid if/else chains.
+    private static final Map<KeyCode, EventType> KEYMAP = new EnumMap<>(KeyCode.class);
+    static {
+        KEYMAP.put(KeyCode.LEFT, EventType.LEFT);
+        KEYMAP.put(KeyCode.A, EventType.LEFT);
+        KEYMAP.put(KeyCode.RIGHT, EventType.RIGHT);
+        KEYMAP.put(KeyCode.D, EventType.RIGHT);
+        KEYMAP.put(KeyCode.UP, EventType.ROTATE);
+        KEYMAP.put(KeyCode.W, EventType.ROTATE);
+        KEYMAP.put(KeyCode.DOWN, EventType.DOWN);
+        KEYMAP.put(KeyCode.S, EventType.DOWN);
     }
 
     public void attach(Node focusNode,
@@ -28,22 +43,14 @@ public final class InputHandler {
         if (focusNode == null) return;
         focusNode.setOnKeyPressed(keyEvent -> {
             if (canAcceptInput == null || canAcceptInput.getAsBoolean()) {
-                KeyCode code = keyEvent.getCode();
-                boolean handled = false;
-                if (code == KeyCode.LEFT || code == KeyCode.A) {
-                    callbacks.onViewUpdate(listener.onLeftEvent(new MoveEvent(EventType.LEFT, EventSource.USER)));
-                    handled = true;
-                } else if (code == KeyCode.RIGHT || code == KeyCode.D) {
-                    callbacks.onViewUpdate(listener.onRightEvent(new MoveEvent(EventType.RIGHT, EventSource.USER)));
-                    handled = true;
-                } else if (code == KeyCode.UP || code == KeyCode.W) {
-                    callbacks.onViewUpdate(listener.onRotateEvent(new MoveEvent(EventType.ROTATE, EventSource.USER)));
-                    handled = true;
-                } else if (code == KeyCode.DOWN || code == KeyCode.S) {
-                    callbacks.onDownResult(listener.onDownEvent(new MoveEvent(EventType.DOWN, EventSource.USER)));
-                    handled = true;
-                }
-                if (handled) {
+                EventType type = KEYMAP.get(keyEvent.getCode());
+                if (type != null) {
+                    Object result = listener.onEvent(new MoveEvent(type, EventSource.USER));
+                    if (result instanceof ViewData vd) {
+                        callbacks.onViewUpdate(vd);
+                    } else if (result instanceof ShowResult sr) {
+                        callbacks.onDownResult(sr);
+                    }
                     keyEvent.consume();
                 }
             }

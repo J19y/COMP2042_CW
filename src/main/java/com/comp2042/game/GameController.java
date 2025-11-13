@@ -1,10 +1,11 @@
 package com.comp2042.game;
 
+import com.comp2042.Manager.ScoreManager;
+import com.comp2042.event.EventType;
 import com.comp2042.event.InputEventListener;
 import com.comp2042.event.MoveEvent;
 import com.comp2042.model.ShowResult;
 import com.comp2042.model.ViewData;
-import com.comp2042.service.ScoreManager;
 import com.comp2042.ui.GuiController;
 
 /**
@@ -20,6 +21,9 @@ public class GameController implements InputEventListener {
     private final ScoreManager scoreService;
     private final BrickMove moveHandler;
     private final BrickDrop dropHandler;
+    // mapping for event handling.
+    private final java.util.Map<EventType, java.util.function.Function<MoveEvent, Object>> commands
+        = new java.util.EnumMap<>(EventType.class);
 
     public GameController(GuiController c) {
         this.viewGuiController = c;
@@ -29,7 +33,22 @@ public class GameController implements InputEventListener {
         this.moveHandler = new BrickMove(board);
         this.dropHandler = new BrickDrop(board, scoreService, spawnManager);
         spawnManager.spawn(() -> viewGuiController.gameOver());
+        registerDefaultCommands();
         setupView();
+    }
+
+    // Registers default command handlers for each event type.
+    private void registerDefaultCommands() {
+        commands.put(EventType.LEFT, e -> moveHandler.handleLeftMove());
+        commands.put(EventType.RIGHT, e -> moveHandler.handleRightMove());
+        commands.put(EventType.ROTATE, e -> moveHandler.handleRotation());
+        commands.put(EventType.DOWN, e -> {
+            ShowResult result = dropHandler.handleDrop(e.getEventSource(), () -> viewGuiController.gameOver());
+            if (result.getClearRow() != null) {
+                viewGuiController.refreshGameBackground(board.getBoardMatrix());
+            }
+            return result;
+        });
     }
 
     private void setupView() {
@@ -64,6 +83,16 @@ public class GameController implements InputEventListener {
     @Override
     public ViewData onRotateEvent(MoveEvent event) {
         return moveHandler.handleRotation();
+    }
+
+    @Override
+    public Object onEvent(MoveEvent event) {
+        java.util.function.Function<MoveEvent, Object> handler = commands.get(event.getEventType());
+        if (handler == null) {
+            // Fallback: return current view data
+            return board.getViewData();
+        }
+        return handler.apply(event);
     }
 
 

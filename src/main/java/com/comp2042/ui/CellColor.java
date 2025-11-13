@@ -4,8 +4,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
 /**
- * Maps board cell integer values to UI colors.
- * Extracted from GuiController to follow SRP.
+ * Maps board cell integer values to UI colors via a registry (ColorPalette).
+ * New mappings can be registered without modifying this class (OCP).
  */
 public final class CellColor {
 
@@ -13,19 +13,15 @@ public final class CellColor {
 
     /**
      * Returns the paint to use for a given cell value.
-     * 0 means empty (transparent); other values map to distinct colors.
+     * Defaults to transparent for 0 and white for unknown ids.
      */
     public static Paint fromValue(int value) {
-        return switch (value) {
-            case 0 -> Color.TRANSPARENT;
-            case 1 -> Color.AQUA;
-            case 2 -> Color.BLUEVIOLET;
-            case 3 -> Color.DARKGREEN;
-            case 4 -> Color.YELLOW;
-            case 5 -> Color.RED;
-            case 6 -> Color.BEIGE;
-            case 7 -> Color.BURLYWOOD;
-            default -> Color.WHITE;
-        };
+        Paint p = ColorPalette.get(value);
+        if (p != null) {
+            return p;
+        }
+        // Maintain prior behavior for empty cells and unknown ids
+        if (value == 0) return Color.TRANSPARENT;
+        return Color.WHITE;
     }
 }
