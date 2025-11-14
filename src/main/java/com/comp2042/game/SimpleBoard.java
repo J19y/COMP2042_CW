@@ -15,7 +15,7 @@ import com.comp2042.util.MatrixOperations;
  * Implementation of the Board interface that handles the core game mechanics.
  * This class manages the game matrix, brick movement, collision detection, and score tracking.
  */
-public class SimpleBoard implements Board {
+public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, BrickSpawn, BoardLifecycle {
 
     private final int rows;
     private final int cols;

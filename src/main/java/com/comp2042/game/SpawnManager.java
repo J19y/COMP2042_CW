@@ -4,14 +4,14 @@ package com.comp2042.game;
  * Handles spawning of new bricks and game-over detection logic.
  */
 public final class SpawnManager {
-    private final Board board;
+    private final BrickSpawn spawner;
 
     public interface GameOverCallback {
         void onGameOver();
     }
 
-    public SpawnManager(Board board) {
-        this.board = board;
+    public SpawnManager(BrickSpawn spawner) {
+        this.spawner = spawner;
     }
 
     /**
@@ -19,7 +19,7 @@ public final class SpawnManager {
      * Returns true if game over was triggered.
      */
     public boolean spawn(GameOverCallback callback) {
-        boolean gameOver = board.spawnBrick().isGameOver();
+        boolean gameOver = spawner.spawnBrick().isGameOver();
         if (gameOver && callback != null) {
             callback.onGameOver();
         }

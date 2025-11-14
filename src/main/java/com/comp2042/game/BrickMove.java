@@ -4,33 +4,33 @@ import com.comp2042.model.ViewData;
 
 /**
  * Handles brick movement operations (left, right, rotate).
- * Extracted from GameController to follow Single Responsibility Principle.
+ * Depends only on minimal movement and read-only board access.
  */
 public final class BrickMove {
-    
-    private final Board board;
 
-    public BrickMove(Board board) {
-        this.board = board;
+    private final BrickMovement movement;
+    private final BoardRead reader;
+
+    public BrickMove(BrickMovement movement, BoardRead reader) {
+        this.movement = movement;
+        this.reader = reader;
     }
 
-     // Handle moving the brick left.
+    // Handle moving the brick left.
     public ViewData handleLeftMove() {
-        board.moveBrickLeft();
-        return board.getViewData();
+        movement.moveBrickLeft();
+        return reader.getViewData();
     }
 
     // Handle moving the brick right.
-
     public ViewData handleRightMove() {
-        board.moveBrickRight();
-        return board.getViewData();
+        movement.moveBrickRight();
+        return reader.getViewData();
     }
 
     // Handle rotating the brick.
-
     public ViewData handleRotation() {
-        board.rotateLeftBrick();
-        return board.getViewData();
+        movement.rotateLeftBrick();
+        return reader.getViewData();
     }
 }

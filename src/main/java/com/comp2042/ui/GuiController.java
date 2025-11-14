@@ -5,8 +5,10 @@ import java.util.ResourceBundle;
 
 import com.comp2042.event.EventSource;
 import com.comp2042.event.EventType;
-import com.comp2042.event.InputEventListener;
+import com.comp2042.event.DropInput;
+import com.comp2042.event.InputActionHandler;
 import com.comp2042.event.MoveEvent;
+import com.comp2042.game.CreateNewGame;
 import com.comp2042.game.state.GameStateManager;
 import com.comp2042.manager.NotificationManager;
 import com.comp2042.model.ShowResult;
@@ -45,7 +47,9 @@ public class GuiController implements Initializable {
     private transient NotificationManager notificationService;
     private final transient GameStateManager stateManager = new GameStateManager();
 
-    private InputEventListener eventListener;
+    private InputActionHandler inputActionHandler;
+    private DropInput dropInput;
+    private CreateNewGame gameLifecycle;
 
     // Extracted to GameLoopController for SRP
     private transient GameLoopController gameLoopController;
@@ -87,8 +91,8 @@ public class GuiController implements Initializable {
     }
 
     private void moveDown(MoveEvent event) {
-        if (stateManager.canUpdateGame() && eventListener != null) {
-            ShowResult result = eventListener.onDownEvent(event);
+        if (stateManager.canUpdateGame() && dropInput != null) {
+            ShowResult result = dropInput.onDown(event);
             handleResult(result);
         }
         viewInitializer.requestFocus(gamePanel);
@@ -104,10 +108,12 @@ public class GuiController implements Initializable {
         refreshBrick(data.getViewData());
     }
 
-    public void setEventListener(InputEventListener eventListener) {
-        this.eventListener = eventListener;
-        if (gamePanel != null && inputHandler != null) {
-            inputHandler.attach(gamePanel, eventListener,
+    public void setInputHandlers(InputActionHandler inputActionHandler, DropInput dropInput, CreateNewGame gameLifecycle) {
+        this.inputActionHandler = inputActionHandler;
+        this.dropInput = dropInput;
+        this.gameLifecycle = gameLifecycle;
+        if (gamePanel != null && inputHandler != null && inputActionHandler != null) {
+            inputHandler.attach(gamePanel, this.inputActionHandler,
                 result -> handleResult(result), () -> stateManager.canAcceptInput());
         }
     }
@@ -134,8 +140,8 @@ public class GuiController implements Initializable {
         if (gameOverPanel != null) {
             gameOverPanel.setVisible(false);
         }
-        if (eventListener != null) {
-            eventListener.createNewGame();
+        if (gameLifecycle != null) {
+            gameLifecycle.createNewGame();
         }
         viewInitializer.requestFocus(gamePanel);
         if (gameLoopController != null && !gameLoopController.isRunning()) {

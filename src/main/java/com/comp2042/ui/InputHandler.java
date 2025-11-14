@@ -6,14 +6,14 @@ import java.util.function.BooleanSupplier;
 
 import com.comp2042.event.EventSource;
 import com.comp2042.event.EventType;
-import com.comp2042.event.InputEventListener;
+import com.comp2042.event.InputActionHandler;
 import com.comp2042.event.MoveEvent;
 import com.comp2042.model.ShowResult;
 
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 
-// Handles key input mapping and dispatches events via a generic listener method.
+// Handles key input mapping and dispatches events via a generic handler.
 
 public final class InputHandler {
 
@@ -43,7 +43,7 @@ public final class InputHandler {
     }
 
     public void attach(Node focusNode,
-                       InputEventListener listener,
+                       InputActionHandler handler,
                        InputCallbacks callbacks,
                        BooleanSupplier canAcceptInput) {
         if (focusNode == null) return;
@@ -51,7 +51,7 @@ public final class InputHandler {
             if (canAcceptInput == null || canAcceptInput.getAsBoolean()) {
                 EventType type = KEYMAP.get(keyEvent.getCode());
                 if (type != null) {
-                    ShowResult result = listener.onEvent(new MoveEvent(type, EventSource.USER));
+                    ShowResult result = handler.handle(new MoveEvent(type, EventSource.USER));
                     callbacks.onResult(result);
                     keyEvent.consume();
                 }
