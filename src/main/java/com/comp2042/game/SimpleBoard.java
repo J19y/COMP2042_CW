@@ -6,14 +6,14 @@ import com.comp2042.logic.bricks.Brick;
 import com.comp2042.logic.bricks.BrickGenerator;
 import com.comp2042.logic.bricks.RandomBrickGenerator;
 import com.comp2042.model.RowClearResult;
+import com.comp2042.model.SpawnResult;
 import com.comp2042.model.ViewData;
 import com.comp2042.util.CollisionDetector;
 import com.comp2042.util.MatrixOperations;
 
 /**
  * Implementation of the Board interface that handles the core game mechanics.
- * This class manages the game matrix, brick movement, collision detection,
- * and score tracking.
+ * This class manages the game matrix, brick movement, collision detection, and score tracking.
  */
 public class SimpleBoard implements Board {
 
@@ -95,11 +95,12 @@ public class SimpleBoard implements Board {
      * Renamed from createNewBrick() -> spawnBrick() to clarify this method
      * both creates and places the brick (it 'spawns' it into the game world).
      */
-    public boolean spawnBrick() {
+    public SpawnResult spawnBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
-    positionManager.reset(4, 10);
-    return CollisionDetector.isCollision(boardMatrix, brickRotator.getCurrentShape(), positionManager.getX(), positionManager.getY());
+        positionManager.reset(4, 10);
+        boolean gameOver = CollisionDetector.isCollision(boardMatrix, brickRotator.getCurrentShape(), positionManager.getX(), positionManager.getY());
+        return new SpawnResult(gameOver);
     }
 
     @Override
@@ -125,7 +126,8 @@ public class SimpleBoard implements Board {
 
     @Override
     public void newGame() {
-    boardMatrix = new int[rows][cols];
+        boardMatrix = new int[rows][cols];
+        // Ignore gameOver flag here; a fresh board should not be game over.
         spawnBrick();
     }
 }

@@ -19,7 +19,7 @@ public final class SpawnManager {
      * Returns true if game over was triggered.
      */
     public boolean spawn(GameOverCallback callback) {
-        boolean gameOver = board.spawnBrick();
+        boolean gameOver = board.spawnBrick().isGameOver();
         if (gameOver && callback != null) {
             callback.onGameOver();
         }

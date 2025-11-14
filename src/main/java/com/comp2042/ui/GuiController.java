@@ -87,38 +87,28 @@ public class GuiController implements Initializable {
     }
 
     private void moveDown(MoveEvent event) {
-        if (stateManager.canUpdateGame()) {
-            if (eventListener != null) {
-                ShowResult downData = eventListener.onDownEvent(event);
-                handleDownResult(downData);
-            }
+        if (stateManager.canUpdateGame() && eventListener != null) {
+            ShowResult result = eventListener.onDownEvent(event);
+            handleResult(result);
         }
         viewInitializer.requestFocus(gamePanel);
     }
 
-    private void handleDownResult(ShowResult downData) {
-        if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
+    private void handleResult(ShowResult data) {
+        if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0) {
             if (notificationService != null) {
-                notificationService.showScoreBonus(downData.getClearRow().getScoreBonus());
+                notificationService.showScoreBonus(data.getClearRow().getScoreBonus());
             }
+            refreshGameBackground(data.getClearRow().getNewMatrix());
         }
-        refreshBrick(downData.getViewData());
+        refreshBrick(data.getViewData());
     }
 
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
         if (gamePanel != null && inputHandler != null) {
             inputHandler.attach(gamePanel, eventListener,
-                    new InputHandler.InputCallbacks() {
-                        @Override
-                        public void onViewUpdate(ViewData data) {
-                            refreshBrick(data);
-                        }
-                        @Override
-                        public void onDownResult(ShowResult result) {
-                            handleDownResult(result);
-                        }
-                    }, () -> stateManager.canAcceptInput());
+                result -> handleResult(result), () -> stateManager.canAcceptInput());
         }
     }
 

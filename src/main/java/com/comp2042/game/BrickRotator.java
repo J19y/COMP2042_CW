@@ -3,9 +3,8 @@ package com.comp2042.game;
 import com.comp2042.logic.bricks.Brick;
 import com.comp2042.model.RotationInfo;
 
-/**
- * Handles brick rotation logic and maintains the current brick state.
- */
+
+// Handles brick rotation logic and maintains the current brick state.
 public class BrickRotator {
     private Brick brick;
     private int currentShape = 0;
@@ -35,6 +34,9 @@ public class BrickRotator {
     }
 
     public void setBrick(Brick brick) {
+        if (brick == null || brick.getRotationMatrix() == null || brick.getRotationMatrix().isEmpty()) {
+            throw new IllegalArgumentException("Brick must have at least one rotation matrix");
+        }
         this.brick = brick;
         currentShape = 0;
     }

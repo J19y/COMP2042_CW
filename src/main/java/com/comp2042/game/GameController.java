@@ -93,40 +93,45 @@ public class GameController implements InputEventListener {
 
     @Override
     public ShowResult onDownEvent(MoveEvent event) {
-        ShowResult result = dropHandler.handleDrop(event.getEventSource(), 
-            () -> viewGuiController.gameOver());
-        
-        // Refresh background if brick landed (rows were cleared indicates landing)
+        ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> viewGuiController.gameOver());
         if (result.getClearRow() != null) {
             viewGuiController.refreshGameBackground(board.getBoardMatrix());
         }
-        
         return result;
     }
 
     @Override
-    public ViewData onLeftEvent(MoveEvent event) {
-        return moveHandler.handleLeftMove();
+    public ShowResult onLeftEvent(MoveEvent event) {
+        ViewData vd = moveHandler.handleLeftMove();
+        return new ShowResult(null, vd);
     }
 
     @Override
-    public ViewData onRightEvent(MoveEvent event) {
-        return moveHandler.handleRightMove();
+    public ShowResult onRightEvent(MoveEvent event) {
+        ViewData vd = moveHandler.handleRightMove();
+        return new ShowResult(null, vd);
     }
 
     @Override
-    public ViewData onRotateEvent(MoveEvent event) {
-        return moveHandler.handleRotation();
+    public ShowResult onRotateEvent(MoveEvent event) {
+        ViewData vd = moveHandler.handleRotation();
+        return new ShowResult(null, vd);
     }
 
     @Override
-    public Object onEvent(MoveEvent event) {
+    public ShowResult onEvent(MoveEvent event) {
         java.util.function.Function<MoveEvent, Object> handler = commands.get(event.getEventType());
         if (handler == null) {
-            // Fallback: return current view data
-            return board.getViewData();
+            return new ShowResult(null, board.getViewData());
         }
-        return handler.apply(event);
+        Object result = handler.apply(event);
+        if (result instanceof ShowResult) {
+            return (ShowResult) result;
+        } else if (result instanceof ViewData) { // legacy handlers
+            return new ShowResult(null, (ViewData) result);
+        }
+        // Fallback should never happen, but ensures non-null postcondition
+        return new ShowResult(null, board.getViewData());
     }
 
     // Allow external registration of new commands without modifying this class

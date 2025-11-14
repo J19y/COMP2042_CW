@@ -9,7 +9,6 @@ import com.comp2042.event.EventType;
 import com.comp2042.event.InputEventListener;
 import com.comp2042.event.MoveEvent;
 import com.comp2042.model.ShowResult;
-import com.comp2042.model.ViewData;
 
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
@@ -19,8 +18,7 @@ import javafx.scene.input.KeyCode;
 public final class InputHandler {
 
     public interface InputCallbacks {
-        void onViewUpdate(ViewData data);
-        void onDownResult(ShowResult result);
+        void onResult(ShowResult result);
     }
 
     // Key mapping to EventType to avoid if/else chains.
@@ -53,12 +51,8 @@ public final class InputHandler {
             if (canAcceptInput == null || canAcceptInput.getAsBoolean()) {
                 EventType type = KEYMAP.get(keyEvent.getCode());
                 if (type != null) {
-                    Object result = listener.onEvent(new MoveEvent(type, EventSource.USER));
-                    if (result instanceof ViewData vd) {
-                        callbacks.onViewUpdate(vd);
-                    } else if (result instanceof ShowResult sr) {
-                        callbacks.onDownResult(sr);
-                    }
+                    ShowResult result = listener.onEvent(new MoveEvent(type, EventSource.USER));
+                    callbacks.onResult(result);
                     keyEvent.consume();
                 }
             }
