@@ -12,7 +12,7 @@ import com.comp2042.model.ViewData;
 import com.comp2042.score.ClassicScoringPolicy;
 import com.comp2042.score.ScoreManager;
 import com.comp2042.score.ScoringPolicy;
-import com.comp2042.ui.GuiController;
+import com.comp2042.game.GameView;
 
 /**
  * Main game controller that handles game logic and user input.
@@ -26,7 +26,7 @@ public class GameController implements InputActionHandler, MovementInput, DropIn
     private final BoardRead reader;
     private final BrickSpawn spawner;
     private final BoardLifecycle boardLifecycle;
-    private final GuiController viewGuiController;
+    private final GameView view; // Depends on abstraction, not concrete UI
     private final SpawnManager spawnManager;
     private final ScoreManager scoreService;
     private final BrickMove moveHandler;
@@ -36,13 +36,13 @@ public class GameController implements InputActionHandler, MovementInput, DropIn
     private final java.util.Map<EventType, java.util.function.Function<MoveEvent, Object>> commands
         = new java.util.EnumMap<>(EventType.class);
 
-    public GameController(GuiController c) {
-        this(c, new ClassicScoringPolicy(), new ScoreManager());
+    public GameController(GameView view) {
+        this(view, new ClassicScoringPolicy(), new ScoreManager());
     }
 
     // Overloaded constructor to inject policy and score service (OCP-friendly)
-    public GameController(GuiController c, ScoringPolicy policy, ScoreManager scoreManager) {
-        this.viewGuiController = c;
+    public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager) {
+        this.view = view;
         SimpleBoard board = new SimpleBoard(25, 10);
         this.movement = board;
         this.dropActions = board;
@@ -54,7 +54,7 @@ public class GameController implements InputActionHandler, MovementInput, DropIn
         this.moveHandler = new BrickMove(movement, reader);
         this.scoringPolicy = policy;
         this.dropHandler = new BrickDrop(dropActions, reader, scoreService, spawnManager, scoringPolicy);
-        spawnManager.spawn(() -> viewGuiController.gameOver());
+        spawnManager.spawn(() -> view.gameOver());
         registerDefaultCommands();
         setupView();
     }
@@ -65,9 +65,9 @@ public class GameController implements InputActionHandler, MovementInput, DropIn
         commands.put(EventType.RIGHT, e -> moveHandler.handleRightMove());
         commands.put(EventType.ROTATE, e -> moveHandler.handleRotation());
         commands.put(EventType.DOWN, e -> {
-            ShowResult result = dropHandler.handleDrop(e.getEventSource(), () -> viewGuiController.gameOver());
+            ShowResult result = dropHandler.handleDrop(e.getEventSource(), () -> view.gameOver());
             if (result.getClearRow() != null) {
-                viewGuiController.refreshGameBackground(reader.getBoardMatrix());
+                view.refreshGameBackground(reader.getBoardMatrix());
             }
             return result;
         });
@@ -90,23 +90,23 @@ public class GameController implements InputActionHandler, MovementInput, DropIn
                 clear = new RowClearResult(clear.getLinesRemoved(), clear.getNewMatrix(), bonus);
             }
             // Spawn next piece and refresh background
-            spawnManager.spawn(() -> viewGuiController.gameOver());
-            viewGuiController.refreshGameBackground(reader.getBoardMatrix());
+            spawnManager.spawn(() -> view.gameOver());
+            view.refreshGameBackground(reader.getBoardMatrix());
             return new ShowResult(clear, reader.getViewData());
         });
     }
 
     private void setupView() {
-        viewGuiController.initGameView(reader.getBoardMatrix(), reader.getViewData());
-        viewGuiController.bindScore(scoreService.scoreProperty());
-        viewGuiController.setInputHandlers(this, this, this);
+        view.initGameView(reader.getBoardMatrix(), reader.getViewData());
+        view.bindScore(scoreService.scoreProperty());
+        view.setInputHandlers(this, this, this);
     }
 
     @Override
     public ShowResult onDown(MoveEvent event) {
-        ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> viewGuiController.gameOver());
+        ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
         if (result.getClearRow() != null) {
-            viewGuiController.refreshGameBackground(reader.getBoardMatrix());
+            view.refreshGameBackground(reader.getBoardMatrix());
         }
         return result;
     }
@@ -156,6 +156,6 @@ public class GameController implements InputActionHandler, MovementInput, DropIn
     public void createNewGame() {
         boardLifecycle.newGame();
         scoreService.reset();
-        viewGuiController.refreshGameBackground(reader.getBoardMatrix());
+        view.refreshGameBackground(reader.getBoardMatrix());
     }
 }

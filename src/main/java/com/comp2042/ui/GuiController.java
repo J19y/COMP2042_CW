@@ -18,12 +18,13 @@ import javafx.beans.property.IntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import com.comp2042.game.GameView;
 import javafx.scene.Group;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
-public class GuiController implements Initializable {
+public class GuiController implements Initializable, GameView {
 
     private static final int BRICK_SIZE = 20;
 
@@ -62,6 +63,7 @@ public class GuiController implements Initializable {
     }
 
     @FXML
+    @Override
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         displayMatrix = boardRenderer.initBoard(gamePanel, boardMatrix);
 
@@ -86,6 +88,7 @@ public class GuiController implements Initializable {
     }
 
     @FXML
+    @Override
     public void refreshGameBackground(int[][] board) {
         boardRenderer.refreshBoard(board, displayMatrix);
     }
@@ -108,6 +111,7 @@ public class GuiController implements Initializable {
         refreshBrick(data.getViewData());
     }
 
+    @Override
     public void setInputHandlers(InputActionHandler inputActionHandler, DropInput dropInput, CreateNewGame gameLifecycle) {
         this.inputActionHandler = inputActionHandler;
         this.dropInput = dropInput;
@@ -118,10 +122,12 @@ public class GuiController implements Initializable {
         }
     }
 
+    @Override
     public void bindScore(IntegerProperty integerProperty) {
             // Score binding logic can be implemented here
     }
 
+    @Override
     public void gameOver() {
         if (gameLoopController != null) {
             gameLoopController.stop();
