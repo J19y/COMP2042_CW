@@ -1,0 +1,172 @@
+package com.comp2042.tetris.ui.view;
+
+import com.comp2042.tetris.app.CreateNewGame;
+import com.comp2042.tetris.app.GameLoopController;
+import com.comp2042.tetris.mechanics.state.GameStateManager;
+import com.comp2042.tetris.ui.input.InputHandler;
+import com.comp2042.tetris.ui.render.ActiveBrickRenderer;
+import com.comp2042.tetris.ui.render.BoardRenderer;
+
+import java.net.URL;
+import java.util.ResourceBundle;
+
+import com.comp2042.tetris.ui.input.EventSource;
+import com.comp2042.tetris.ui.input.EventType;
+import com.comp2042.tetris.ui.input.DropInput;
+import com.comp2042.tetris.ui.input.InputActionHandler;
+import com.comp2042.tetris.ui.input.MoveEvent;
+import com.comp2042.tetris.app.CreateNewGame;
+import com.comp2042.tetris.mechanics.state.GameStateManager;
+import com.comp2042.tetris.services.notify.NotificationManager;
+import com.comp2042.tetris.domain.model.ShowResult;
+import com.comp2042.tetris.domain.model.ViewData;
+
+import javafx.beans.property.IntegerProperty;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import com.comp2042.tetris.mechanics.board.GameView;
+import javafx.scene.Group;
+import javafx.scene.layout.GridPane;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
+
+public class GuiController implements Initializable, GameView {
+
+    private static final int BRICK_SIZE = 20;
+
+    @FXML
+    private GridPane gamePanel;
+
+    @FXML
+    private Group groupNotification;
+
+    @FXML
+    private GridPane brickPanel;
+
+    @FXML
+    private GameOverPanel gameOverPanel;
+
+    private transient Rectangle[][] displayMatrix;
+    private final transient BoardRenderer boardRenderer = new BoardRenderer(BRICK_SIZE);
+    private final transient InputHandler inputHandler = new InputHandler();
+    private final transient ViewInitializer viewInitializer = new ViewInitializer();
+    private transient ActiveBrickRenderer activeBrickRenderer;
+    private transient NotificationManager notificationService;
+    private final transient GameStateManager stateManager = new GameStateManager();
+
+    private InputActionHandler inputActionHandler;
+    private DropInput dropInput;
+    private CreateNewGame gameLifecycle;
+
+    // Extracted to GameLoopController for SRP
+    private transient GameLoopController gameLoopController;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        viewInitializer.loadFonts(getClass());
+        viewInitializer.setupGamePanel(gamePanel);
+        viewInitializer.setupGameOverPanel(gameOverPanel);
+    }
+
+    @FXML
+    @Override
+    public void initGameView(int[][] boardMatrix, ViewData brick) {
+        displayMatrix = boardRenderer.initBoard(gamePanel, boardMatrix);
+
+        // Initialize ActiveBrickRenderer
+        activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel, gamePanel);
+        activeBrickRenderer.initialize(brick);
+
+        // Initialize NotificationManager
+        notificationService = new NotificationManager(groupNotification);
+
+        gameLoopController = new GameLoopController(Duration.millis(400),
+            () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)));
+        gameLoopController.start();
+        stateManager.startGame();
+        viewInitializer.requestFocus(gamePanel);
+    }
+
+    private void refreshBrick(ViewData brick) {
+        if (stateManager.canUpdateGame()) {
+            if (activeBrickRenderer != null) {
+                activeBrickRenderer.refresh(brick);
+            }
+        }
+    }
+
+    @FXML
+    @Override
+    public void refreshGameBackground(int[][] board) {
+        boardRenderer.refreshBoard(board, displayMatrix);
+    }
+
+    private void moveDown(MoveEvent event) {
+        if (stateManager.canUpdateGame() && dropInput != null) {
+            ShowResult result = dropInput.onDown(event);
+            handleResult(result);
+        }
+        viewInitializer.requestFocus(gamePanel);
+    }
+
+    private void handleResult(ShowResult data) {
+        if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0) {
+            if (notificationService != null) {
+                notificationService.showScoreBonus(data.getClearRow().getScoreBonus());
+            }
+            refreshGameBackground(data.getClearRow().getNewMatrix());
+        }
+        refreshBrick(data.getViewData());
+    }
+
+    @Override
+    public void setInputHandlers(InputActionHandler inputActionHandler, DropInput dropInput, CreateNewGame gameLifecycle) {
+        this.inputActionHandler = inputActionHandler;
+        this.dropInput = dropInput;
+        this.gameLifecycle = gameLifecycle;
+        if (gamePanel != null && inputHandler != null && inputActionHandler != null) {
+            inputHandler.attach(gamePanel, this.inputActionHandler,
+                result -> handleResult(result), () -> stateManager.canAcceptInput());
+        }
+    }
+
+    @Override
+    public void bindScore(IntegerProperty integerProperty) {
+            // Score binding logic can be implemented here
+    }
+
+    @Override
+    public void gameOver() {
+        if (gameLoopController != null) {
+            gameLoopController.stop();
+        }
+        if (gameOverPanel != null) {
+            gameOverPanel.setVisible(true);
+        }
+        stateManager.gameOver();
+    }
+
+    @FXML
+    public void newGame(ActionEvent actionEvent) {
+        if (gameLoopController != null) {
+            gameLoopController.stop();
+        }
+        if (gameOverPanel != null) {
+            gameOverPanel.setVisible(false);
+        }
+        if (gameLifecycle != null) {
+            gameLifecycle.createNewGame();
+        }
+        viewInitializer.requestFocus(gamePanel);
+        if (gameLoopController != null && !gameLoopController.isRunning()) {
+            gameLoopController.start();
+        }
+        stateManager.startGame();
+    }
+
+        @FXML
+    public void pauseGame(ActionEvent actionEvent) {
+        viewInitializer.requestFocus(gamePanel);
+    }
+}

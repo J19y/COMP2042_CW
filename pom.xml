@@ -19,11 +19,14 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>21.0.6</version>
+            <!-- Add platform classifier so native JavaFX libraries are available at runtime on Windows -->
+            <classifier>win</classifier>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>21.0.6</version>
+            <classifier>win</classifier>
         </dependency>
 
         <dependency>
@@ -55,12 +58,16 @@
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
+                <!-- Provide configuration directly so mvn javafx:run picks it up -->
+                <configuration>
+                    <mainClass>com.comp2042.tetris.app.Main</mainClass>
+                </configuration>
                 <executions>
                     <execution>
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.comp2042.Main</mainClass>
+                            <mainClass>com.comp2042.tetris.app.Main</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>
