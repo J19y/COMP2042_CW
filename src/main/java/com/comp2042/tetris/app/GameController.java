@@ -2,10 +2,11 @@ package com.comp2042.tetris.app;
 
 import com.comp2042.tetris.mechanics.board.BoardFactory;
 import com.comp2042.tetris.mechanics.board.BoardLifecycle;
+import com.comp2042.tetris.mechanics.board.BoardPorts;
 import com.comp2042.tetris.mechanics.board.BoardRead;
 import com.comp2042.tetris.mechanics.board.GameView;
-import com.comp2042.tetris.mechanics.board.SimpleBoard;
 import com.comp2042.tetris.mechanics.board.SimpleBoardFactory;
+import com.comp2042.tetris.mechanics.board.SimpleBoardPorts;
 import com.comp2042.tetris.mechanics.movement.BrickDrop;
 import com.comp2042.tetris.mechanics.movement.BrickDropActions;
 import com.comp2042.tetris.mechanics.movement.BrickMove;
@@ -13,12 +14,10 @@ import com.comp2042.tetris.mechanics.movement.BrickMovement;
 import com.comp2042.tetris.mechanics.spawn.BrickSpawn;
 import com.comp2042.tetris.mechanics.spawn.SpawnManager;
 
-import com.comp2042.tetris.ui.input.DropInput;
+import javafx.beans.property.IntegerProperty;
 import com.comp2042.tetris.ui.input.EventSource;
 import com.comp2042.tetris.ui.input.EventType;
-import com.comp2042.tetris.ui.input.InputActionHandler;
 import com.comp2042.tetris.ui.input.MoveEvent;
-import com.comp2042.tetris.ui.input.MovementInput;
 import java.util.Objects;
 import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.domain.model.ShowResult;
@@ -32,8 +31,7 @@ import com.comp2042.tetris.domain.scoring.ScoringPolicy;
  * Acts as a bridge between the GUI controller and the game board,
  * processing game events and updating the view accordingly.
  */
-public class GameController implements InputActionHandler, MovementInput, DropInput, CreateNewGame {
-
+public class GameController implements GameplayFacade {
     private final BrickMovement movement;
     private final BrickDropActions dropActions;
     private final BoardRead reader;
@@ -59,13 +57,18 @@ public class GameController implements InputActionHandler, MovementInput, DropIn
     }
 
     public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager, BoardFactory boardFactory) {
+        this(view, policy, scoreManager,
+            new SimpleBoardPorts(Objects.requireNonNull(boardFactory, "boardFactory must not be null").create(25, 10)));
+    }
+
+    public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager, BoardPorts boardPorts) {
         this.view = view;
-        SimpleBoard board = Objects.requireNonNull(boardFactory, "boardFactory must not be null").create(25, 10);
-        this.movement = board;
-        this.dropActions = board;
-        this.reader = board;
-        this.spawner = board;
-        this.boardLifecycle = board;
+        BoardPorts ports = Objects.requireNonNull(boardPorts, "boardPorts must not be null");
+        this.movement = ports.movement();
+        this.dropActions = ports.dropActions();
+        this.reader = ports.reader();
+        this.spawner = ports.spawner();
+        this.boardLifecycle = ports.lifecycle();
         this.spawnManager = new SpawnManager(spawner);
         this.scoreService = scoreManager;
         this.moveHandler = new BrickMove(movement, reader);
@@ -174,5 +177,10 @@ public class GameController implements InputActionHandler, MovementInput, DropIn
         boardLifecycle.newGame();
         scoreService.reset();
         view.refreshGameBackground(reader.getBoardMatrix());
+    }
+    
+    @Override
+    public IntegerProperty scoreProperty() {
+        return scoreService.scoreProperty();
     }
 }

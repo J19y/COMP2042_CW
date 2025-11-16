@@ -1,6 +1,7 @@
 package com.comp2042.tetris.app;
 
-import com.comp2042.tetris.app.GameController;
+import com.comp2042.tetris.mechanics.board.GameView;
+import com.comp2042.tetris.ui.view.BufferedGameView;
 import com.comp2042.tetris.ui.view.GuiController;
 
 import javafx.application.Application;
@@ -12,8 +13,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-    private GameController gameController;
-
+    private GameplayFacade gameplayFacade;
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/ui/layout/game.fxml"));
@@ -28,7 +28,12 @@ public class Main extends Application {
         primaryStage.setOnCloseRequest(e -> Platform.exit());
         primaryStage.show();
 
-        gameController = new GameController(controller);
+        GameView decoratedView = new BufferedGameView(controller);
+        this.gameplayFacade = new GameController(decoratedView);
+    }
+
+    public GameplayFacade getGameplayFacade() {
+        return gameplayFacade;
     }
 
     public static void main(String[] args) {
