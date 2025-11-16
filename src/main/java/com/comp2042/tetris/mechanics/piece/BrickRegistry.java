@@ -12,32 +12,41 @@ import java.util.function.Supplier;
  */
 public final class BrickRegistry {
 
-    private BrickRegistry() {}
+    private static final BrickRegistry INSTANCE = new BrickRegistry();
 
-    private static final List<Supplier<Brick>> SUPPLIERS = new ArrayList<>();
+    private final List<Supplier<Brick>> suppliers = new ArrayList<>();
 
-    static {
-        // Default registrations for built-in bricks
-        register(IBrick::new);
-        register(JBrick::new);
-        register(LBrick::new);
-        register(OBrick::new);
-        register(SBrick::new);
-        register(TBrick::new);
-        register(ZBrick::new);
+    private BrickRegistry() {
+        registerInternal(IBrick::new);
+        registerInternal(JBrick::new);
+        registerInternal(LBrick::new);
+        registerInternal(OBrick::new);
+        registerInternal(SBrick::new);
+        registerInternal(TBrick::new);
+        registerInternal(ZBrick::new);
     }
 
+    public static BrickRegistry getInstance() {
+        return INSTANCE;
+    }
 
     // Register a new brick type.
     public static void register(Supplier<Brick> supplier) {
+        INSTANCE.registerInternal(supplier);
+    }
+
+    private void registerInternal(Supplier<Brick> supplier) {
         if (supplier != null) {
-            SUPPLIERS.add(supplier);
+            suppliers.add(supplier);
         }
     }
 
+    public List<Supplier<Brick>> suppliers() {
+        return Collections.unmodifiableList(suppliers);
+    }
 
     // Returns an unmodifiable view of the registered brick suppliers.
     public static List<Supplier<Brick>> getSuppliers() {
-        return Collections.unmodifiableList(SUPPLIERS);
+        return INSTANCE.suppliers();
     }
 }

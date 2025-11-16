@@ -1,9 +1,11 @@
 package com.comp2042.tetris.app;
 
+import com.comp2042.tetris.mechanics.board.BoardFactory;
 import com.comp2042.tetris.mechanics.board.BoardLifecycle;
 import com.comp2042.tetris.mechanics.board.BoardRead;
 import com.comp2042.tetris.mechanics.board.GameView;
 import com.comp2042.tetris.mechanics.board.SimpleBoard;
+import com.comp2042.tetris.mechanics.board.SimpleBoardFactory;
 import com.comp2042.tetris.mechanics.movement.BrickDrop;
 import com.comp2042.tetris.mechanics.movement.BrickDropActions;
 import com.comp2042.tetris.mechanics.movement.BrickMove;
@@ -17,6 +19,7 @@ import com.comp2042.tetris.ui.input.EventType;
 import com.comp2042.tetris.ui.input.InputActionHandler;
 import com.comp2042.tetris.ui.input.MoveEvent;
 import com.comp2042.tetris.ui.input.MovementInput;
+import java.util.Objects;
 import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.model.ViewData;
@@ -52,8 +55,12 @@ public class GameController implements InputActionHandler, MovementInput, DropIn
 
     // Overloaded constructor to inject policy and score service (OCP-friendly)
     public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager) {
+        this(view, policy, scoreManager, new SimpleBoardFactory());
+    }
+
+    public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager, BoardFactory boardFactory) {
         this.view = view;
-        SimpleBoard board = new SimpleBoard(25, 10);
+        SimpleBoard board = Objects.requireNonNull(boardFactory, "boardFactory must not be null").create(25, 10);
         this.movement = board;
         this.dropActions = board;
         this.reader = board;

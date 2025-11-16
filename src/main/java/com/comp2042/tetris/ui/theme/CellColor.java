@@ -16,7 +16,7 @@ public final class CellColor {
      * Defaults to transparent for 0 and white for unknown ids.
      */
     public static Paint fromValue(int value) {
-        Paint p = ColorPalette.get(value);
+    Paint p = ColorPalette.getInstance().getColor(value);
         if (p != null) {
             return p;
         }

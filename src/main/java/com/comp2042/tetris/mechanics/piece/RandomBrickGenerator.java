@@ -14,7 +14,7 @@ public class RandomBrickGenerator implements BrickGenerator {
 
     // Creates a new RandomBrickGenerator and initializes the brick queue
     public RandomBrickGenerator() {
-        this.brickSuppliers = BrickRegistry.getSuppliers();
+        this.brickSuppliers = BrickRegistry.getInstance().suppliers();
         if (brickSuppliers.isEmpty()) {
             throw new IllegalStateException("No bricks registered in BrickRegistry");
         }

@@ -12,32 +12,43 @@ import javafx.scene.paint.Paint;
  */
 public final class ColorPalette {
 
-    private ColorPalette() {}
+    private static final ColorPalette INSTANCE = new ColorPalette();
 
-    private static final Map<Integer, Paint> COLORS = new HashMap<>();
+    private final Map<Integer, Paint> colors = new HashMap<>();
 
-    static {
-        // Default mappings (align with previous CellColor switch)
-        COLORS.put(0, Color.TRANSPARENT);
-        COLORS.put(1, Color.AQUA);
-        COLORS.put(2, Color.BLUEVIOLET);
-        COLORS.put(3, Color.DARKGREEN);
-        COLORS.put(4, Color.YELLOW);
-        COLORS.put(5, Color.RED);
-        COLORS.put(6, Color.BEIGE);
-        COLORS.put(7, Color.BURLYWOOD);
+    private ColorPalette() {
+        registerInternal(0, Color.TRANSPARENT);
+        registerInternal(1, Color.AQUA);
+        registerInternal(2, Color.BLUEVIOLET);
+        registerInternal(3, Color.DARKGREEN);
+        registerInternal(4, Color.YELLOW);
+        registerInternal(5, Color.RED);
+        registerInternal(6, Color.BEIGE);
+        registerInternal(7, Color.BURLYWOOD);
+    }
+
+    public static ColorPalette getInstance() {
+        return INSTANCE;
     }
 
     
     // Register or override the color for a cell id.
     public static void register(int id, Paint paint) {
+        INSTANCE.registerInternal(id, paint);
+    }
+
+    private void registerInternal(int id, Paint paint) {
         if (paint != null) {
-            COLORS.put(id, paint);
+            colors.put(id, paint);
         }
+    }
+
+    public Paint getColor(int id) {
+        return colors.get(id);
     }
 
     // Retrieve the color for a cell id, or null if none is registered.
     public static Paint get(int id) {
-        return COLORS.get(id);
+        return INSTANCE.getColor(id);
     }
 }

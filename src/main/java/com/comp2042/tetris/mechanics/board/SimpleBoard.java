@@ -7,10 +7,12 @@ import com.comp2042.tetris.mechanics.rotation.BrickRotator;
 import com.comp2042.tetris.mechanics.movement.BrickPositionManager;
 
 import java.awt.Point;
+import java.util.Objects;
 
 import com.comp2042.tetris.mechanics.piece.Brick;
 import com.comp2042.tetris.mechanics.piece.BrickGenerator;
-import com.comp2042.tetris.mechanics.piece.RandomBrickGenerator;
+import com.comp2042.tetris.mechanics.piece.BrickGeneratorFactory;
+import com.comp2042.tetris.mechanics.piece.RandomBrickGeneratorFactory;
 import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.domain.model.SpawnResult;
 import com.comp2042.tetris.domain.model.ViewData;
@@ -32,14 +34,23 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
     private int[][] boardMatrix;
 
     public SimpleBoard(int rows, int cols) {
+        this(rows, cols, new RandomBrickGeneratorFactory());
+    }
+
+    public SimpleBoard(int rows, int cols, BrickGeneratorFactory generatorFactory) {
+        this(rows, cols, new DefaultBoardComponentsFactory(Objects.requireNonNull(generatorFactory, "generatorFactory must not be null")));
+    }
+
+    public SimpleBoard(int rows, int cols, BoardComponentsFactory componentsFactory) {
+        Objects.requireNonNull(componentsFactory, "componentsFactory must not be null");
         this.rows = rows;
         this.cols = cols;
         // Constructor parameters renamed to `rows`/`cols` to avoid confusion
         // about matrix orientation (matrix[row][col]). Initialize the board accordingly.
         boardMatrix = new int[rows][cols];
-        brickGenerator = new RandomBrickGenerator();
-        brickRotator = new BrickRotator();
-        positionManager = new BrickPositionManager(4, 10);
+        brickGenerator = componentsFactory.createGenerator();
+        brickRotator = componentsFactory.createRotator();
+        positionManager = componentsFactory.createPositionManager();
     }
 
     @Override
