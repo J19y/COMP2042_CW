@@ -33,7 +33,10 @@ public final class InputHandler {
         KEYMAP.put(KeyCode.DOWN, EventType.DOWN);
         KEYMAP.put(KeyCode.S, EventType.DOWN);
         KEYMAP.put(KeyCode.SPACE, EventType.HARD_DROP);
+        KEYMAP.put(KeyCode.P, EventType.PAUSE);
     }
+
+    private Runnable pauseAction;
 
     // Allow external modules to register additional key bindings (OCP-friendly)
     public static void registerKeyBinding(KeyCode key, EventType type) {
@@ -48,14 +51,23 @@ public final class InputHandler {
                        BooleanSupplier canAcceptInput) {
         if (focusNode == null) return;
         focusNode.setOnKeyPressed(keyEvent -> {
-            if (canAcceptInput == null || canAcceptInput.getAsBoolean()) {
-                EventType type = KEYMAP.get(keyEvent.getCode());
-                if (type != null) {
+            EventType type = KEYMAP.get(keyEvent.getCode());
+            if (type == EventType.PAUSE) {
+                if (pauseAction != null) {
+                    pauseAction.run();
+                }
+                keyEvent.consume();
+                return;
+            }
+            if (type != null && (canAcceptInput == null || canAcceptInput.getAsBoolean())) {
                     ShowResult result = handler.handle(new MoveEvent(type, EventSource.USER));
                     callbacks.onResult(result);
                     keyEvent.consume();
-                }
             }
         });
+    }
+
+    public void setPauseAction(Runnable pauseAction) {
+        this.pauseAction = pauseAction;
     }
 }

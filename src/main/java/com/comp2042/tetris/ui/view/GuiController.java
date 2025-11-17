@@ -125,6 +125,7 @@ public class GuiController implements Initializable, GameView {
         this.inputActionHandler = inputActionHandler;
         this.dropInput = dropInput;
         this.gameLifecycle = gameLifecycle;
+        inputHandler.setPauseAction(this::togglePause);
         if (gamePanel != null && inputHandler != null && inputActionHandler != null) {
             inputHandler.attach(gamePanel, this.inputActionHandler,
                 result -> handleResult(result), () -> stateManager.canAcceptInput());
@@ -165,8 +166,23 @@ public class GuiController implements Initializable, GameView {
         stateManager.startGame();
     }
 
-        @FXML
+    @FXML
     public void pauseGame(ActionEvent actionEvent) {
+        togglePause();
+    }
+
+    private void togglePause() {
+        if (stateManager.isPaused()) {
+            stateManager.resumeGame();
+            if (gameLoopController != null && !gameLoopController.isRunning()) {
+                gameLoopController.start();
+            }
+        } else if (stateManager.canUpdateGame()) {
+            stateManager.pauseGame();
+            if (gameLoopController != null && gameLoopController.isRunning()) {
+                gameLoopController.stop();
+            }
+        }
         viewInitializer.requestFocus(gamePanel);
     }
 }
