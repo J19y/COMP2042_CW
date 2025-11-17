@@ -15,8 +15,6 @@ import com.comp2042.tetris.ui.input.EventType;
 import com.comp2042.tetris.ui.input.DropInput;
 import com.comp2042.tetris.ui.input.InputActionHandler;
 import com.comp2042.tetris.ui.input.MoveEvent;
-import com.comp2042.tetris.app.CreateNewGame;
-import com.comp2042.tetris.mechanics.state.GameStateManager;
 import com.comp2042.tetris.services.notify.NotificationManager;
 import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.model.ViewData;
@@ -47,59 +45,49 @@ public class GuiController implements Initializable, GameView {
     @FXML
     private GameOverPanel gameOverPanel;
 
-    private transient Rectangle[][] displayMatrix;
     private final transient BoardRenderer boardRenderer = new BoardRenderer(BRICK_SIZE);
     private final transient InputHandler inputHandler = new InputHandler();
     private final transient ViewInitializer viewInitializer = new ViewInitializer();
-    private transient ActiveBrickRenderer activeBrickRenderer;
-    private transient NotificationManager notificationService;
     private final transient GameStateManager stateManager = new GameStateManager();
+    private transient GameMediator mediator;
 
     private InputActionHandler inputActionHandler;
     private DropInput dropInput;
     private CreateNewGame gameLifecycle;
-
-    // Extracted to GameLoopController for SRP
-    private transient GameLoopController gameLoopController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         viewInitializer.loadFonts(getClass());
         viewInitializer.setupGamePanel(gamePanel);
         viewInitializer.setupGameOverPanel(gameOverPanel);
+        mediator = new GameMediator(boardRenderer, viewInitializer, stateManager, gamePanel, gameOverPanel);
     }
 
     @FXML
     @Override
     public void initGameView(int[][] boardMatrix, ViewData brick) {
-        displayMatrix = boardRenderer.initBoard(gamePanel, boardMatrix);
+        Rectangle[][] displayMatrix = boardRenderer.initBoard(gamePanel, boardMatrix);
 
-        // Initialize ActiveBrickRenderer
-        activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel, gamePanel);
+        ActiveBrickRenderer activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel, gamePanel);
         activeBrickRenderer.initialize(brick);
 
-        // Initialize NotificationManager
-        notificationService = new NotificationManager(groupNotification);
+        NotificationManager notificationService = new NotificationManager(groupNotification);
 
-        gameLoopController = new GameLoopController(Duration.millis(400),
+        GameLoopController gameLoopController = new GameLoopController(Duration.millis(400),
             () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)));
         gameLoopController.start();
-        stateManager.startGame();
-        viewInitializer.requestFocus(gamePanel);
-    }
-
-    private void refreshBrick(ViewData brick) {
-        if (stateManager.canUpdateGame()) {
-            if (activeBrickRenderer != null) {
-                activeBrickRenderer.refresh(brick);
-            }
+        if (mediator != null) {
+            mediator.configureVisuals(displayMatrix, activeBrickRenderer, notificationService);
+            mediator.setGameLoop(gameLoopController);
         }
+        stateManager.startGame();
+        mediator.focusGamePanel();
     }
 
     @FXML
     @Override
     public void refreshGameBackground(int[][] board) {
-        boardRenderer.refreshBoard(board, displayMatrix);
+        mediator.refreshGameBackground(board);
     }
 
     private void moveDown(MoveEvent event) {
@@ -107,17 +95,11 @@ public class GuiController implements Initializable, GameView {
             ShowResult result = dropInput.onDown(event);
             handleResult(result);
         }
-        viewInitializer.requestFocus(gamePanel);
+        mediator.focusGamePanel();
     }
 
     private void handleResult(ShowResult data) {
-        if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0) {
-            if (notificationService != null) {
-                notificationService.showScoreBonus(data.getClearRow().getScoreBonus());
-            }
-            refreshGameBackground(data.getClearRow().getNewMatrix());
-        }
-        refreshBrick(data.getViewData());
+        mediator.handleResult(data);
     }
 
     @Override
@@ -125,7 +107,7 @@ public class GuiController implements Initializable, GameView {
         this.inputActionHandler = inputActionHandler;
         this.dropInput = dropInput;
         this.gameLifecycle = gameLifecycle;
-        inputHandler.setPauseAction(this::togglePause);
+        inputHandler.setPauseAction(() -> mediator.togglePause());
         if (gamePanel != null && inputHandler != null && inputActionHandler != null) {
             inputHandler.attach(gamePanel, this.inputActionHandler,
                 result -> handleResult(result), () -> stateManager.canAcceptInput());
@@ -139,30 +121,17 @@ public class GuiController implements Initializable, GameView {
 
     @Override
     public void gameOver() {
-        if (gameLoopController != null) {
-            gameLoopController.stop();
-        }
-        if (gameOverPanel != null) {
-            gameOverPanel.setVisible(true);
-        }
-        stateManager.gameOver();
+        mediator.handleGameOver();
     }
 
     @FXML
     public void newGame(ActionEvent actionEvent) {
-        if (gameLoopController != null) {
-            gameLoopController.stop();
-        }
-        if (gameOverPanel != null) {
-            gameOverPanel.setVisible(false);
-        }
+        mediator.prepareNewGame();
         if (gameLifecycle != null) {
             gameLifecycle.createNewGame();
         }
-        viewInitializer.requestFocus(gamePanel);
-        if (gameLoopController != null && !gameLoopController.isRunning()) {
-            gameLoopController.start();
-        }
+        mediator.focusGamePanel();
+        mediator.ensureLoopRunning();
         stateManager.startGame();
     }
 
@@ -172,17 +141,6 @@ public class GuiController implements Initializable, GameView {
     }
 
     private void togglePause() {
-        if (stateManager.isPaused()) {
-            stateManager.resumeGame();
-            if (gameLoopController != null && !gameLoopController.isRunning()) {
-                gameLoopController.start();
-            }
-        } else if (stateManager.canUpdateGame()) {
-            stateManager.pauseGame();
-            if (gameLoopController != null && gameLoopController.isRunning()) {
-                gameLoopController.stop();
-            }
-        }
-        viewInitializer.requestFocus(gamePanel);
+        mediator.togglePause();
     }
 }

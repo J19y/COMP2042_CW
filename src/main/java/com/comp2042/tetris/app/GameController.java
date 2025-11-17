@@ -74,7 +74,9 @@ public class GameController implements GameplayFacade {
         this.moveHandler = new BrickMove(movement, reader);
         this.scoringPolicy = policy;
         this.dropHandler = new BrickDrop(dropActions, reader, scoreService, spawnManager, scoringPolicy);
-        spawnManager.spawn(() -> view.gameOver());
+        // Register observer for game-over events (Observer pattern minimal integration)
+        spawnManager.addGameOverObserver(view::gameOver);
+        spawnManager.spawn();
         registerDefaultCommands();
         setupView();
     }
@@ -211,7 +213,7 @@ public class GameController implements GameplayFacade {
                 }
                 clear = new RowClearResult(clear.getLinesRemoved(), clear.getNewMatrix(), bonus);
             }
-            spawnManager.spawn(() -> view.gameOver());
+            spawnManager.spawn();
             view.refreshGameBackground(reader.getBoardMatrix());
             return new ShowResult(clear, reader.getViewData());
         }

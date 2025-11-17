@@ -48,7 +48,8 @@ public final class BrickDrop {
                 result = new RowClearResult(result.getLinesRemoved(), result.getNewMatrix(), scoreBonus);
             }
 
-            spawnManager.spawn(onGameOver::run);
+            // Notify via SpawnManager observers rather than direct callback
+            spawnManager.spawn();
         } else {
             int dropScore = scoringPolicy.scoreForDrop(source, true);
             if (dropScore > 0) {
