@@ -44,7 +44,7 @@ public class GameController implements GameplayFacade {
     private final BrickDrop dropHandler;
     private final ScoringPolicy scoringPolicy;
     // mapping for event handling.
-    private final java.util.Map<EventType, java.util.function.Function<MoveEvent, Object>> commands
+    private final java.util.Map<EventType, GameCommand> commands
         = new java.util.EnumMap<>(EventType.class);
 
     public GameController(GameView view) {
@@ -81,39 +81,12 @@ public class GameController implements GameplayFacade {
 
     // Registers default command handlers for each event type.
     private void registerDefaultCommands() {
-        commands.put(EventType.LEFT, e -> moveHandler.handleLeftMove());
-        commands.put(EventType.RIGHT, e -> moveHandler.handleRightMove());
-        commands.put(EventType.ROTATE, e -> moveHandler.handleRotation());
-        commands.put(EventType.DOWN, e -> {
-            ShowResult result = dropHandler.handleDrop(e.getEventSource(), () -> view.gameOver());
-            if (result.getClearRow() != null) {
-                view.refreshGameBackground(reader.getBoardMatrix());
-            }
-            return result;
-        });
-        commands.put(EventType.HARD_DROP, e -> {
-            // Hard drop: move down until collision; score per move; then land and clear/spawn
-            while (dropActions.moveBrickDown()) {
-                int softScore = scoringPolicy.scoreForDrop(EventSource.USER, true);
-                if (softScore > 0) {
-                    scoreService.add(softScore);
-                }
-            }
-            // Land and clear rows
-            dropActions.mergeBrickToBackground();
-            RowClearResult clear = dropActions.clearRows();
-            if (clear.getLinesRemoved() > 0) {
-                int bonus = scoringPolicy.scoreForLineClear(clear.getLinesRemoved());
-                if (bonus > 0) {
-                    scoreService.add(bonus);
-                }
-                clear = new RowClearResult(clear.getLinesRemoved(), clear.getNewMatrix(), bonus);
-            }
-            // Spawn next piece and refresh background
-            spawnManager.spawn(() -> view.gameOver());
-            view.refreshGameBackground(reader.getBoardMatrix());
-            return new ShowResult(clear, reader.getViewData());
-        });
+        commands.put(EventType.LEFT, new MoveCommand(moveHandler::handleLeftMove));
+        commands.put(EventType.RIGHT, new MoveCommand(moveHandler::handleRightMove));
+        commands.put(EventType.ROTATE, new MoveCommand(moveHandler::handleRotation));
+        commands.put(EventType.DOWN, new SoftDropCommand(dropHandler, view, reader));
+        commands.put(EventType.HARD_DROP,
+            new HardDropCommand(dropActions, scoringPolicy, scoreService, spawnManager, reader, view));
     }
 
     private void setupView() {
@@ -151,24 +124,96 @@ public class GameController implements GameplayFacade {
 
     @Override
     public ShowResult handle(MoveEvent event) {
-        java.util.function.Function<MoveEvent, Object> handler = commands.get(event.getEventType());
+        GameCommand handler = commands.get(event.getEventType());
         if (handler == null) {
             return new ShowResult(null, reader.getViewData());
         }
-        Object result = handler.apply(event);
-        if (result instanceof ShowResult sr) {
-            return sr;
-        } else if (result instanceof ViewData vd) { // legacy handlers
-            return new ShowResult(null, vd);
-        }
-        // Fallback should never happen, but ensures non-null postcondition
-        return new ShowResult(null, reader.getViewData());
+        return handler.execute(event);
     }
 
     // Allow external registration of new commands without modifying this class
-    public void registerCommand(EventType type, java.util.function.Function<MoveEvent, Object> handler) {
+    public void registerCommand(EventType type, GameCommand handler) {
         if (type != null && handler != null) {
             commands.put(type, handler);
+        }
+    }
+
+    private static final class MoveCommand implements GameCommand {
+        private final java.util.function.Supplier<ViewData> movement;
+
+        private MoveCommand(java.util.function.Supplier<ViewData> movement) {
+            this.movement = movement;
+        }
+
+        @Override
+        public ShowResult execute(MoveEvent event) {
+            return new ShowResult(null, movement.get());
+        }
+    }
+
+    private static final class SoftDropCommand implements GameCommand {
+        private final BrickDrop dropHandler;
+        private final GameView view;
+        private final BoardRead reader;
+
+        private SoftDropCommand(BrickDrop dropHandler, GameView view, BoardRead reader) {
+            this.dropHandler = dropHandler;
+            this.view = view;
+            this.reader = reader;
+        }
+
+        @Override
+        public ShowResult execute(MoveEvent event) {
+            ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
+            if (result.getClearRow() != null) {
+                view.refreshGameBackground(reader.getBoardMatrix());
+            }
+            return result;
+        }
+    }
+
+    private static final class HardDropCommand implements GameCommand {
+        private final BrickDropActions dropActions;
+        private final ScoringPolicy scoringPolicy;
+        private final ScoreManager scoreService;
+        private final SpawnManager spawnManager;
+        private final BoardRead reader;
+        private final GameView view;
+
+        private HardDropCommand(BrickDropActions dropActions,
+                                ScoringPolicy scoringPolicy,
+                                ScoreManager scoreService,
+                                SpawnManager spawnManager,
+                                BoardRead reader,
+                                GameView view) {
+            this.dropActions = dropActions;
+            this.scoringPolicy = scoringPolicy;
+            this.scoreService = scoreService;
+            this.spawnManager = spawnManager;
+            this.reader = reader;
+            this.view = view;
+        }
+
+        @Override
+        public ShowResult execute(MoveEvent event) {
+            while (dropActions.moveBrickDown()) {
+                int softScore = scoringPolicy.scoreForDrop(EventSource.USER, true);
+                if (softScore > 0) {
+                    scoreService.add(softScore);
+                }
+            }
+            dropActions.mergeBrickToBackground();
+            RowClearResult clear = dropActions.clearRows();
+            if (clear.getLinesRemoved() > 0) {
+                int bonus = scoringPolicy.scoreForLineClear(clear.getLinesRemoved());
+                if (bonus > 0) {
+                    scoreService.add(bonus);
+                }
+                clear = new RowClearResult(clear.getLinesRemoved(), clear.getNewMatrix(), bonus);
+            }
+            spawnManager.spawn(() -> view.gameOver());
+            view.refreshGameBackground(reader.getBoardMatrix());
+            return new ShowResult(clear, reader.getViewData());
         }
     }
 

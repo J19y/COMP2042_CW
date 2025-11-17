@@ -4,11 +4,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-/**
- * Manages the game state transitions using the State pattern.
- * Extracted from GuiController to follow Single Responsibility Principle.
- * Replaces boolean flags (isPause, isGameOver) with a clear state machine.
- */
+// Manages the game state transitions using the State pattern.
 public final class GameStateManager {
     
     private final ObjectProperty<GameState> currentState = 
@@ -18,28 +14,65 @@ public final class GameStateManager {
     // Enum representing possible game states.
      
     public enum GameState {
-        MENU,
-        PLAYING,
-        PAUSED,
-        GAME_OVER;
-        
+        MENU {
+            @Override
+            GameState startGame(GameStateManager manager) {
+                return PLAYING;
+            }
+        },
+        PLAYING {
+            @Override
+            GameState pauseGame(GameStateManager manager) {
+                return PAUSED;
+            }
+
+            @Override
+            GameState gameOver(GameStateManager manager) {
+                return GAME_OVER;
+            }
+        },
+        PAUSED {
+            @Override
+            GameState resumeGame(GameStateManager manager) {
+                return PLAYING;
+            }
+        },
+        GAME_OVER {
+            @Override
+            GameState startGame(GameStateManager manager) {
+                return PLAYING;
+            }
+        };
+
         // Check if input should be accepted in this state.
         public boolean canAcceptInput() {
             return this == PLAYING;
         }
-        
-        
+
         // Check if the game should update in this state.
-         
         public boolean canUpdateGame() {
             return this == PLAYING;
         }
-        
-        
+
         // Check if the game is in an active state (not over).
-        
         public boolean isActive() {
             return this == PLAYING || this == PAUSED;
+        }
+
+        GameState startGame(GameStateManager manager) {
+            return this;
+        }
+
+        GameState pauseGame(GameStateManager manager) {
+            return this;
+        }
+
+        GameState resumeGame(GameStateManager manager) {
+            return this;
+        }
+
+        GameState gameOver(GameStateManager manager) {
+            return this;
         }
     }
 
@@ -60,10 +93,7 @@ public final class GameStateManager {
      * Only allowed from MENU or GAME_OVER states.
      */
     public void startGame() {
-        if (currentState.get() == GameState.MENU || 
-            currentState.get() == GameState.GAME_OVER) {
-            currentState.set(GameState.PLAYING);
-        }
+        transitionTo(currentState.get().startGame(this));
     }
 
     /**
@@ -71,9 +101,7 @@ public final class GameStateManager {
      * Only allowed from PLAYING state.
      */
     public void pauseGame() {
-        if (currentState.get() == GameState.PLAYING) {
-            currentState.set(GameState.PAUSED);
-        }
+        transitionTo(currentState.get().pauseGame(this));
     }
 
     /**
@@ -81,17 +109,19 @@ public final class GameStateManager {
      * Only allowed from PAUSED state.
      */
     public void resumeGame() {
-        if (currentState.get() == GameState.PAUSED) {
-            currentState.set(GameState.PLAYING);
-        }
+        transitionTo(currentState.get().resumeGame(this));
     }
 
     
     // Transition to the GAME_OVER state.
     // Only allowed from PLAYING state.
     public void gameOver() {
-        if (currentState.get() == GameState.PLAYING) {
-            currentState.set(GameState.GAME_OVER);
+        transitionTo(currentState.get().gameOver(this));
+    }
+
+    private void transitionTo(GameState nextState) {
+        if (nextState != null && nextState != currentState.get()) {
+            currentState.set(nextState);
         }
     }
 
