@@ -27,6 +27,7 @@ import com.comp2042.tetris.mechanics.board.GameView;
 import javafx.scene.Group;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 public class GuiController implements Initializable, GameView {
@@ -41,6 +42,12 @@ public class GuiController implements Initializable, GameView {
 
     @FXML
     private GridPane brickPanel;
+
+    @FXML
+    private GridPane nextBrickPanel;
+
+    @FXML
+    private Text scoreText;
 
     @FXML
     private GameOverPanel gameOverPanel;
@@ -70,6 +77,7 @@ public class GuiController implements Initializable, GameView {
 
         ActiveBrickRenderer activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel, gamePanel);
         activeBrickRenderer.initialize(brick);
+        renderNextBrick(brick.getNextBrickData());
 
         NotificationManager notificationService = new NotificationManager(groupNotification);
 
@@ -100,6 +108,9 @@ public class GuiController implements Initializable, GameView {
 
     private void handleResult(ShowResult data) {
         mediator.handleResult(data);
+        if (data != null && data.getViewData() != null) {
+            renderNextBrick(data.getViewData().getNextBrickData());
+        }
     }
 
     @Override
@@ -116,7 +127,22 @@ public class GuiController implements Initializable, GameView {
 
     @Override
     public void bindScore(IntegerProperty integerProperty) {
-            // Score binding logic can be implemented here
+        scoreText.textProperty().bind(integerProperty.asString());
+    }
+
+    private void renderNextBrick(int[][] nextBrickData) {
+        nextBrickPanel.getChildren().clear();
+        for (int i = 0; i < nextBrickData.length; i++) {
+            for (int j = 0; j < nextBrickData[i].length; j++) {
+                if (nextBrickData[i][j] != 0) {
+                    Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                    rectangle.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(nextBrickData[i][j]));
+                    rectangle.setArcHeight(9);
+                    rectangle.setArcWidth(9);
+                    nextBrickPanel.add(rectangle, j, i);
+                }
+            }
+        }
     }
 
     @Override

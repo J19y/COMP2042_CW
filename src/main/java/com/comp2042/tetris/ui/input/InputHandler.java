@@ -3,11 +3,6 @@ package com.comp2042.tetris.ui.input;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
-
-import com.comp2042.tetris.ui.input.EventSource;
-import com.comp2042.tetris.ui.input.EventType;
-import com.comp2042.tetris.ui.input.InputActionHandler;
-import com.comp2042.tetris.ui.input.MoveEvent;
 import com.comp2042.tetris.domain.model.ShowResult;
 
 import javafx.scene.Node;

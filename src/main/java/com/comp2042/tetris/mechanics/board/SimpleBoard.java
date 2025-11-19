@@ -1,21 +1,20 @@
 package com.comp2042.tetris.mechanics.board;
 
-import com.comp2042.tetris.mechanics.movement.BrickMovement;
-import com.comp2042.tetris.mechanics.movement.BrickDropActions;
-import com.comp2042.tetris.mechanics.spawn.BrickSpawn;
-import com.comp2042.tetris.mechanics.rotation.BrickRotator;
-import com.comp2042.tetris.mechanics.movement.BrickPositionManager;
-
 import java.awt.Point;
 import java.util.Objects;
 
-import com.comp2042.tetris.mechanics.piece.Brick;
-import com.comp2042.tetris.mechanics.piece.BrickGenerator;
-import com.comp2042.tetris.mechanics.piece.BrickGeneratorFactory;
-import com.comp2042.tetris.mechanics.piece.RandomBrickGeneratorFactory;
 import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.domain.model.SpawnResult;
 import com.comp2042.tetris.domain.model.ViewData;
+import com.comp2042.tetris.mechanics.bricks.Brick;
+import com.comp2042.tetris.mechanics.bricks.BrickGenerator;
+import com.comp2042.tetris.mechanics.bricks.BrickGeneratorFactory;
+import com.comp2042.tetris.mechanics.bricks.RandomBrickGeneratorFactory;
+import com.comp2042.tetris.mechanics.movement.BrickDropActions;
+import com.comp2042.tetris.mechanics.movement.BrickMovement;
+import com.comp2042.tetris.mechanics.movement.BrickPositionManager;
+import com.comp2042.tetris.mechanics.rotation.BrickRotator;
+import com.comp2042.tetris.mechanics.spawn.BrickSpawn;
 import com.comp2042.tetris.util.CollisionDetector;
 import com.comp2042.tetris.util.MatrixOperations;
 
@@ -95,15 +94,33 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
 
     @Override
     public boolean rotateLeftBrick() {
-    int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
-    com.comp2042.tetris.domain.model.RotationInfo nextShape = brickRotator.getNextShape();
-    boolean conflict = CollisionDetector.isCollision(currentMatrix, nextShape.getShape(), positionManager.getX(), positionManager.getY());
-        if (conflict) {
-            return false;
-        } else {
+        int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
+        com.comp2042.tetris.domain.model.RotationInfo nextShape = brickRotator.getNextShape();
+        int[][] shape = nextShape.getShape();
+        int currentX = positionManager.getX();
+        int currentY = positionManager.getY();
+
+        // Try normal rotation
+        if (!CollisionDetector.isCollision(currentMatrix, shape, currentX, currentY)) {
             brickRotator.setCurrentShape(nextShape.getPosition());
             return true;
         }
+
+        // Wall Kick: Try moving right (if hitting left wall)
+        if (!CollisionDetector.isCollision(currentMatrix, shape, currentX + 1, currentY)) {
+            positionManager.updatePosition(new Point(currentX + 1, currentY));
+            brickRotator.setCurrentShape(nextShape.getPosition());
+            return true;
+        }
+
+        // Wall Kick: Try moving left (if hitting right wall)
+        if (!CollisionDetector.isCollision(currentMatrix, shape, currentX - 1, currentY)) {
+            positionManager.updatePosition(new Point(currentX - 1, currentY));
+            brickRotator.setCurrentShape(nextShape.getPosition());
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -113,9 +130,11 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
      * both creates and places the brick (it 'spawns' it into the game world).
      */
     public SpawnResult spawnBrick() {
-        Brick currentBrick = brickGenerator.getBrick();
-        brickRotator.setBrick(currentBrick);
-        positionManager.reset(4, 10);
+    Brick currentBrick = brickGenerator.getBrick();
+    brickRotator.setBrick(currentBrick);
+    int[][] shape = brickRotator.getCurrentShape();
+    int spawnX = Math.max(0, (cols - shape[0].length) / 2);
+    positionManager.reset(spawnX, 0);
         boolean gameOver = CollisionDetector.isCollision(boardMatrix, brickRotator.getCurrentShape(), positionManager.getX(), positionManager.getY());
         return new SpawnResult(gameOver);
     }
@@ -139,7 +158,6 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
     boardMatrix = result.getNewMatrix();
         return result;
     }
-    // Assigned to ScoreService for score management.
 
     @Override
     public void newGame() {
