@@ -1,7 +1,7 @@
 package com.comp2042.tetris.mechanics.rotation;
 
-import com.comp2042.tetris.mechanics.piece.Brick;
 import com.comp2042.tetris.domain.model.RotationInfo;
+import com.comp2042.tetris.mechanics.bricks.Brick;
 
 
 // Handles brick rotation logic and maintains the current brick state.

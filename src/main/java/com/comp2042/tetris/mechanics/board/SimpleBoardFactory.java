@@ -1,7 +1,8 @@
 package com.comp2042.tetris.mechanics.board;
 
-import com.comp2042.tetris.mechanics.piece.RandomBrickGeneratorFactory;
 import java.util.Objects;
+
+import com.comp2042.tetris.mechanics.bricks.RandomBrickGeneratorFactory;
 
 
 // Default factory that creates standard SimpleBoard instances.

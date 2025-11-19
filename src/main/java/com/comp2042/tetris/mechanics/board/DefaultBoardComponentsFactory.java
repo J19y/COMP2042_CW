@@ -1,10 +1,11 @@
 package com.comp2042.tetris.mechanics.board;
 
-import com.comp2042.tetris.mechanics.movement.BrickPositionManager;
-import com.comp2042.tetris.mechanics.piece.BrickGenerator;
-import com.comp2042.tetris.mechanics.piece.BrickGeneratorFactory;
-import com.comp2042.tetris.mechanics.rotation.BrickRotator;
 import java.util.Objects;
+
+import com.comp2042.tetris.mechanics.bricks.BrickGenerator;
+import com.comp2042.tetris.mechanics.bricks.BrickGeneratorFactory;
+import com.comp2042.tetris.mechanics.movement.BrickPositionManager;
+import com.comp2042.tetris.mechanics.rotation.BrickRotator;
 
 
 // Default implementation that wires existing board collaborators together.

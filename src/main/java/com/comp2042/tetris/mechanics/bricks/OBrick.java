@@ -1,25 +1,19 @@
-package com.comp2042.tetris.mechanics.piece;
+package com.comp2042.tetris.mechanics.bricks;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.comp2042.tetris.util.MatrixOperations;
 
-final class ZBrick implements Brick {
+final class OBrick implements Brick {
 
     private final List<int[][]> brickMatrix = new ArrayList<>();
 
-    public ZBrick() {
+    public OBrick() {
         brickMatrix.add(new int[][]{
                 {0, 0, 0, 0},
-                {7, 7, 0, 0},
-                {0, 7, 7, 0},
-                {0, 0, 0, 0}
-        });
-        brickMatrix.add(new int[][]{
-                {0, 7, 0, 0},
-                {7, 7, 0, 0},
-                {7, 0, 0, 0},
+                {0, 4, 4, 0},
+                {0, 4, 4, 0},
                 {0, 0, 0, 0}
         });
     }
@@ -28,4 +22,5 @@ final class ZBrick implements Brick {
     public List<int[][]> getRotationMatrix() {
         return MatrixOperations.deepCopyList(brickMatrix);
     }
+
 }

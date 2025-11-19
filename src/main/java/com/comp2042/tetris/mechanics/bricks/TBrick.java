@@ -1,37 +1,37 @@
-package com.comp2042.tetris.mechanics.piece;
+package com.comp2042.tetris.mechanics.bricks;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.comp2042.tetris.util.MatrixOperations;
 
-final class JBrick implements Brick {
+final class TBrick implements Brick {
 
     private final List<int[][]> brickMatrix = new ArrayList<>();
 
-    public JBrick() {
+    public TBrick() {
         brickMatrix.add(new int[][]{
                 {0, 0, 0, 0},
-                {2, 2, 2, 0},
-                {0, 0, 2, 0},
+                {6, 6, 6, 0},
+                {0, 6, 0, 0},
                 {0, 0, 0, 0}
         });
         brickMatrix.add(new int[][]{
-                {0, 0, 0, 0},
-                {0, 2, 2, 0},
-                {0, 2, 0, 0},
-                {0, 2, 0, 0}
-        });
-        brickMatrix.add(new int[][]{
-                {0, 0, 0, 0},
-                {0, 2, 0, 0},
-                {0, 2, 2, 2},
+                {0, 6, 0, 0},
+                {0, 6, 6, 0},
+                {0, 6, 0, 0},
                 {0, 0, 0, 0}
         });
         brickMatrix.add(new int[][]{
-                {0, 0, 2, 0},
-                {0, 0, 2, 0},
-                {0, 2, 2, 0},
+                {0, 6, 0, 0},
+                {6, 6, 6, 0},
+                {0, 0, 0, 0},
+                {0, 0, 0, 0}
+        });
+        brickMatrix.add(new int[][]{
+                {0, 6, 0, 0},
+                {6, 6, 0, 0},
+                {0, 6, 0, 0},
                 {0, 0, 0, 0}
         });
     }
