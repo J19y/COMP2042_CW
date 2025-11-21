@@ -16,6 +16,7 @@ public final class ActiveBrickRenderer {
     private final GridPane brickPanel;
     private final GridPane gamePanel;
     private Rectangle[][] rectangles;
+    private Rectangle[][] ghostRectangles;
 
 
     // Constructor for ActiveBrickRenderer.
@@ -27,9 +28,27 @@ public final class ActiveBrickRenderer {
 
     // Initialize the brick panel with rectangles based on the brick data.
     public void initialize(ViewData brick) {
+        brickPanel.getChildren().clear();
         int[][] brickData = brick.getBrickData();
         rectangles = new Rectangle[brickData.length][brickData[0].length];
+        ghostRectangles = new Rectangle[brickData.length][brickData[0].length];
         
+        // Create ghost pieces first (so they are behind)
+        for (int i = 0; i < brickData.length; i++) {
+            for (int j = 0; j < brickData[i].length; j++) {
+                Rectangle ghost = new Rectangle(brickSize, brickSize);
+                ghost.setFill(javafx.scene.paint.Color.WHITE);
+                ghost.setOpacity(0.2);
+                ghost.setArcHeight(9);
+                ghost.setArcWidth(9);
+                ghostRectangles[i][j] = ghost;
+                if (brickPanel != null) {
+                    brickPanel.add(ghost, j, i);
+                }
+            }
+        }
+
+        // Create active pieces
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
                 Rectangle rectangle = new Rectangle(brickSize, brickSize);
@@ -62,15 +81,24 @@ public final class ActiveBrickRenderer {
             return;
         }
         
-        double layoutX = gamePanel.getLayoutX() + 
-            brick.getxPosition() * brickPanel.getVgap() + 
-            brick.getxPosition() * brickSize;
-        double layoutY = -42 + gamePanel.getLayoutY() + 
-            brick.getyPosition() * brickPanel.getHgap() + 
-            brick.getyPosition() * brickSize;
+        double x = brick.getxPosition() * (brickSize + brickPanel.getHgap());
+        // Offset by 2 hidden rows so the active brick lines up with the visible board
+        double y = (brick.getyPosition() - 2) * (brickSize + brickPanel.getVgap());
         
-        brickPanel.setLayoutX(layoutX);
-        brickPanel.setLayoutY(layoutY);
+        brickPanel.setTranslateX(x);
+        brickPanel.setTranslateY(y);
+        
+        // Update ghost piece position
+        double ghostOffset = (brick.getGhostY() - brick.getyPosition()) * (brickSize + brickPanel.getVgap());
+        
+        for (Rectangle[] ghostRow : ghostRectangles) {
+            for (Rectangle ghost : ghostRow) {
+                if (ghost != null) {
+                    ghost.setTranslateY(ghostOffset);
+                    ghost.setVisible(ghostOffset > 0);
+                }
+            }
+        }
     }
 
     
@@ -79,10 +107,20 @@ public final class ActiveBrickRenderer {
         for (int i = 0; i < brickData.length && i < rectangles.length; i++) {
             for (int j = 0; j < brickData[i].length && j < rectangles[i].length; j++) {
                 Rectangle rect = rectangles[i][j];
+                Rectangle ghost = ghostRectangles[i][j];
+                
                 if (rect != null) {
-                    rect.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(brickData[i][j]));
+                    javafx.scene.paint.Paint color = com.comp2042.tetris.ui.theme.CellColor.fromValue(brickData[i][j]);
+                    rect.setFill(color);
                     rect.setArcHeight(9);
                     rect.setArcWidth(9);
+                    
+                    // Update ghost visibility based on brick shape
+                    if (ghost != null) {
+                        boolean isVisible = brickData[i][j] != 0;
+                        ghost.setVisible(isVisible);
+                        rect.setVisible(isVisible);
+                    }
                 }
             }
         }

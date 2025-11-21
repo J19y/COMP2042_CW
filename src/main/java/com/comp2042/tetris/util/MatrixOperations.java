@@ -34,10 +34,10 @@ public class MatrixOperations {
         int[][] copy = copy(filledFields);
         for (int i = 0; i < brick.length; i++) {
             for (int j = 0; j < brick[i].length; j++) {
-                int targetX = x + i;
-                int targetY = y + j;
-                if (brick[j][i] != 0) {
-                    copy[targetY][targetX] = brick[j][i];
+                int targetX = x + j;
+                int targetY = y + i;
+                if (brick[i][j] != 0) {
+                    copy[targetY][targetX] = brick[i][j];
                 }
             }
         }

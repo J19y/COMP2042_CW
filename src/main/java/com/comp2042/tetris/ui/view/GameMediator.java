@@ -82,7 +82,7 @@ final class GameMediator {
             gameLoopController.stop();
         }
         if (gameOverPanel != null) {
-            gameOverPanel.setVisible(true);
+            gameOverPanel.show();
         }
         stateManager.gameOver();
     }
@@ -92,7 +92,7 @@ final class GameMediator {
             gameLoopController.stop();
         }
         if (gameOverPanel != null) {
-            gameOverPanel.setVisible(false);
+            gameOverPanel.hide();
         }
     }
 

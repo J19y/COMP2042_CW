@@ -1,33 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <?import com.comp2042.tetris.ui.view.GameOverPanel?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import java.net.URL?>
-<Pane fx:controller="com.comp2042.tetris.ui.view.GuiController"
-      xmlns:fx="http://javafx.com/fxml">
-    <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
-    
-    <GridPane fx:id="nextBrickPanel" vgap="1" hgap="1" layoutX="320" layoutY="50"/>
-    <Text text="Next Brick" layoutX="320" layoutY="40" style="-fx-fill: white;"/>
-    
-    <Text text="Score" layoutX="320" layoutY="200" style="-fx-fill: white;"/>
-    <Text fx:id="scoreText" text="0" layoutX="320" layoutY="230" style="-fx-fill: white; -fx-font-size: 20px;"/>
 
-    <BorderPane styleClass="gameBoard" fx:id="gameBoard">
-        <center>
-            <GridPane fx:id="gamePanel" hgap="1" vgap="1" layoutY="30" layoutX="40"/>
-        </center>
-    </BorderPane>
+<StackPane fx:controller="com.comp2042.tetris.ui.view.GuiController"
+           xmlns:fx="http://javafx.com/fxml"
+           prefWidth="700" prefHeight="600"
+           styleClass="root">
+    
+    <!-- Background Animation Layer -->
+    <Pane fx:id="backgroundPane" />
 
-    <Group fx:id="groupNotification" layoutX="14" layoutY="203">
-        <VBox alignment="CENTER">
-            <GameOverPanel fx:id="gameOverPanel"/>
+    <HBox alignment="CENTER" spacing="20">
+        <!-- Left Column: Stats -->
+        <VBox alignment="TOP_CENTER" spacing="20" style="-fx-padding: 50 0 0 0;">
+            <!-- Info Panel (Timer & Score) -->
+            <VBox spacing="15" styleClass="info-panel" minWidth="120" maxWidth="120" alignment="CENTER_LEFT">
+                <VBox spacing="2">
+                    <Text text="TIMER:" styleClass="info-label"/>
+                    <Text fx:id="timerText" text="00:00" styleClass="info-value-timer"/>
+                </VBox>
+                <VBox spacing="2">
+                    <Text text="SCORE:" styleClass="info-label"/>
+                    <Text fx:id="scoreText" text="0" styleClass="info-value-score"/>
+                </VBox>
+            </VBox>
+            
+            <!-- Settings Button -->
+            <Button text="⚙" styleClass="menu-button" onAction="#openSettings" 
+                    style="-fx-font-size: 20px; -fx-min-width: 50px; -fx-min-height: 50px;"/>
         </VBox>
+
+        <!-- Center Column: Game Board -->
+        <BorderPane fx:id="gameBoard" styleClass="gameBoard"
+                   prefWidth="240" prefHeight="420"
+                   minWidth="240" minHeight="420"
+                   maxWidth="240" maxHeight="420">
+            <center>
+                <StackPane>
+                    <Group>
+                        <GridPane fx:id="gamePanel" hgap="1" vgap="1"
+                                  prefWidth="220" prefHeight="400"
+                                  minWidth="220" minHeight="400"
+                                  maxWidth="220" maxHeight="400"/>
+                        <GridPane fx:id="brickPanel" hgap="1" vgap="1" mouseTransparent="true" managed="false"
+                                  prefWidth="220" prefHeight="400"
+                                  minWidth="220" minHeight="400"
+                                  maxWidth="220" maxHeight="400"/>
+                    </Group>
+                    
+                    <!-- Countdown Overlay -->
+                    <StackPane fx:id="countdownOverlay" visible="false">
+                        <Text fx:id="countdownText" text="3" styleClass="gameOverStyle" style="-fx-font-size: 80px; -fx-fill: cyan;"/>
+                    </StackPane>
+                </StackPane>
+            </center>
+        </BorderPane>
+
+        <!-- Right Column: NEXT -->
+        <VBox alignment="TOP_CENTER" spacing="20" style="-fx-padding: 50 0 0 0;">
+            <VBox spacing="5" alignment="CENTER_LEFT">
+                <Text text="NEXT" styleClass="panel-label"/>
+                <StackPane styleClass="next-panel" minWidth="100" minHeight="300" maxWidth="100" maxHeight="300" alignment="TOP_CENTER">
+                    <VBox fx:id="nextBrickPanel" spacing="20" alignment="CENTER" style="-fx-padding: 20 0 0 0;"/>
+                </StackPane>
+            </VBox>
+        </VBox>
+    </HBox>
+
+    <!-- Notification Overlay -->
+    <Group fx:id="groupNotification">
+        <StackPane alignment="CENTER">
+            <GameOverPanel fx:id="gameOverPanel"/>
+        </StackPane>
     </Group>
+    
+    <!-- Settings Overlay -->
+    <StackPane fx:id="settingsOverlay" visible="false" style="-fx-background-color: rgba(0,0,0,0.8);">
+        <VBox spacing="20" alignment="CENTER" styleClass="info-panel" maxWidth="300" maxHeight="300">
+            <Text text="PAUSED" styleClass="panel-label" style="-fx-font-size: 24px;"/>
+            <Button text="RESUME" styleClass="menu-button" onAction="#resumeGame" prefWidth="200"/>
+            <Button text="MAIN MENU" styleClass="menu-button" onAction="#returnToMenu" prefWidth="200"/>
+            <HBox spacing="10" alignment="CENTER">
+                <Text text="VOL:" styleClass="info-label"/>
+                <Button text="-" styleClass="menu-button" onAction="#decreaseVolume"/>
+                <Text fx:id="volumeText" text="100%" styleClass="info-label"/>
+                <Button text="+" styleClass="menu-button" onAction="#increaseVolume"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
     <stylesheets>
         <URL value="@../styles/window.css"/>
     </stylesheets>
-</Pane>
+</StackPane>
+

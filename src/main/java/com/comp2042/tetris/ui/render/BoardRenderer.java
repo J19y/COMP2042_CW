@@ -21,15 +21,14 @@ public final class BoardRenderer {
      * Returns the display matrix of Rectangles for later refresh operations.
      */
     public Rectangle[][] initBoard(GridPane gamePanel, int[][] boardMatrix) {
+        gamePanel.getChildren().clear(); // Clear existing children to prevent duplicates/overflow
         Rectangle[][] displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
         for (int i = 2; i < boardMatrix.length; i++) {
             for (int j = 0; j < boardMatrix[i].length; j++) {
                 Rectangle rectangle = new Rectangle(brickSize, brickSize);
                 rectangle.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(0));
                 displayMatrix[i][j] = rectangle;
-                if (gamePanel != null) {
-                    gamePanel.add(rectangle, j, i - 2);
-                }
+                gamePanel.add(rectangle, j, i - 2);
             }
         }
         return displayMatrix;

@@ -146,7 +146,22 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
 
     @Override
     public ViewData getViewData() {
-    return new ViewData(brickRotator.getCurrentShape(), positionManager.getX(), positionManager.getY(), brickGenerator.peekNextBrick().getRotationMatrix().get(0));
+        java.util.List<Brick> nextBricks = brickGenerator.peekNextBricks(3);
+        java.util.List<int[][]> nextBrickMatrices = new java.util.ArrayList<>();
+        for (Brick b : nextBricks) {
+            nextBrickMatrices.add(b.getRotationMatrix().get(0));
+        }
+        
+        // Calculate ghost piece position
+        int ghostY = positionManager.getY();
+        int[][] currentShape = brickRotator.getCurrentShape();
+        int currentX = positionManager.getX();
+        
+        while (!CollisionDetector.isCollision(boardMatrix, currentShape, currentX, ghostY + 1)) {
+            ghostY++;
+        }
+        
+        return new ViewData(currentShape, currentX, positionManager.getY(), nextBrickMatrices, ghostY);
     }
 
     @Override

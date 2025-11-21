@@ -58,7 +58,7 @@ public class GameController implements GameplayFacade {
 
     public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager, BoardFactory boardFactory) {
         this(view, policy, scoreManager,
-            new SimpleBoardPorts(Objects.requireNonNull(boardFactory, "boardFactory must not be null").create(25, 10)));
+            new SimpleBoardPorts(Objects.requireNonNull(boardFactory, "boardFactory must not be null").create(22, 10)));
     }
 
     public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager, BoardPorts boardPorts) {
