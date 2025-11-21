@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.effect.Glow?>
+<?import java.net.URL?>
+
+<StackPane fx:id="rootPane" prefWidth="700" prefHeight="600" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.comp2042.tetris.app.MenuController">
+    
+    <!-- Background Animation Layer -->
+    <Pane fx:id="backgroundPane" />
+    
+    <!-- Main UI Layer -->
+    <BorderPane fx:id="mainMenuUI">
+        <top>
+            <VBox alignment="CENTER" spacing="5" style="-fx-padding: 110 0 0 0;">
+                <HBox fx:id="titleContainer" alignment="CENTER" spacing="5">
+                    <!-- Letters will be added dynamically or statically here -->
+                </HBox>
+                <Text fx:id="yearText" text="2042" styleClass="year-text"/>
+            </VBox>
+        </top>
+        
+        <center>
+            <VBox alignment="CENTER" spacing="20">
+                <Button text="PLAY" styleClass="menu-button, play-button" onAction="#onPlay" fx:id="playButton"/>
+                <Button text="QUIT" styleClass="menu-button, quit-button" onAction="#onQuit" fx:id="quitButton"/>
+            </VBox>
+        </center>
+        
+        <bottom>
+            <BorderPane style="-fx-padding: 20;">
+                <right>
+                    <HBox alignment="CENTER_RIGHT" spacing="10">
+                        <!-- Settings Icon (Gear) -->
+                        <javafx.scene.shape.SVGPath content="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" fill="#88ccff" scaleX="1.5" scaleY="1.5">
+                            <effect>
+                                <Glow level="0.8"/>
+                            </effect>
+                        </javafx.scene.shape.SVGPath>
+                    </HBox>
+                </right>
+            </BorderPane>
+        </bottom>
+    </BorderPane>
+
+    <!-- Exit Confirmation Overlay -->
+    <StackPane fx:id="exitConfirmationOverlay" visible="false" style="-fx-background-color: rgba(0, 0, 0, 0.8);">
+        <VBox alignment="CENTER" spacing="20" styleClass="confirmation-box">
+            <Text text="ARE YOU SURE?" styleClass="confirmation-title"/>
+            <Text text="Do you really want to quit?" styleClass="confirmation-text"/>
+            <HBox alignment="CENTER" spacing="20">
+                <Button text="YES" styleClass="menu-button, confirm-yes-button" onAction="#onConfirmQuit"/>
+                <Button text="NO" styleClass="menu-button, confirm-no-button" onAction="#onCancelQuit"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+    <stylesheets>
+        <URL value="@../styles/menu.css"/>
+    </stylesheets>
+</StackPane>

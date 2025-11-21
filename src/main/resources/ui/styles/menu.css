@@ -1,0 +1,119 @@
+.root {
+    -fx-background-color: radial-gradient(focus-distance 0% , center 50% 50% , radius 60% , #1a1a2e, #050510);
+}
+
+.menu-button {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-font-weight: bold;
+    -fx-background-radius: 30px;
+    -fx-border-radius: 30px;
+    -fx-border-width: 2px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5, 0, 0, 0);
+    -fx-transition: all 0.3s ease;
+}
+
+.menu-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.play-button {
+    -fx-font-size: 22px;
+    -fx-padding: 10 40 10 40;
+    -fx-min-width: 200px;
+    -fx-border-color: #00ff00;
+    -fx-text-fill: #00ff00;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 0, 0.4), 10, 0.5, 0, 0);
+}
+
+.play-button:hover {
+    -fx-background-color: rgba(0, 255, 0, 0.1);
+    -fx-effect: dropshadow(gaussian, #00ff00, -5, -0.2, 0, 0);
+}
+
+.quit-button {
+    -fx-font-size: 16px;
+    -fx-padding: 8 30 8 30;
+    -fx-min-width: 150px;
+    -fx-border-color: #ff000083;
+    -fx-text-fill: #ff000083;
+    -fx-effect: dropshadow(gaussian, rgba(255, 0, 0, 0.4), 5, 0.5, 0, 0);
+}
+
+.quit-button:hover {
+    -fx-background-color: rgba(255, 0, 0, 0.1);
+    -fx-effect: dropshadow(gaussian, #ff0000, -4, -0.2, 0, 0);
+}
+
+/* Confirmation Overlay Styles */
+.confirmation-box {
+    -fx-background-color: rgba(20, 20, 30, 0.95);
+    -fx-border-color: #00ffff;
+    -fx-border-width: 2px;
+    -fx-border-radius: 15px;
+    -fx-background-radius: 15px;
+    -fx-padding: 20;
+    -fx-max-width: 300px;
+    -fx-max-height: 200px;
+    -fx-effect: dropshadow(gaussian, #00ffff00, 20, 0.3, 0, 0);
+}
+
+.confirmation-title {
+    -fx-fill: white;
+    -fx-font-family: "Arial Black";
+    -fx-font-size: 18px;
+}
+
+.confirmation-text {
+    -fx-fill: #cccccc;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+}
+
+.confirm-yes-button {
+    -fx-border-color: #ff0000;
+    -fx-text-fill: #ff0000;
+    -fx-min-width: 80px;
+    -fx-font-size: 14px;
+}
+
+.confirm-yes-button:hover {
+    -fx-background-color: rgba(255, 0, 0, 0.1);
+    -fx-effect: dropshadow(gaussian, #ff0000, -4, -0.2, 0, 0);
+}
+
+.confirm-no-button {
+    -fx-border-color: #00ff00;
+    -fx-text-fill: #00ff00;
+    -fx-min-width: 80px;
+    -fx-font-size: 14px;
+}
+
+.confirm-no-button:hover {
+    -fx-background-color: rgba(0, 255, 0, 0.1);
+    -fx-effect: dropshadow(gaussian, #00ff00, -4, -0.2, 0, 0);
+}
+
+.title-text {
+    /* Font family set in code to allow custom font loading */
+    -fx-font-weight: bold;
+    -fx-font-size: 60px; /* Fallback size */
+}
+
+.subtitle-text {
+    -fx-fill: #aaaaaa;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-letter-spacing: 2px;
+}
+
+.bottom-text {
+    -fx-fill: #88ccff; /* Desaturated Neon Blue */
+    -fx-font-family: "Arial";
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
