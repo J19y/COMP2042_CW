@@ -38,21 +38,18 @@
 
         <!-- Center Column: Game Board -->
         <BorderPane fx:id="gameBoard" styleClass="gameBoard"
-                   prefWidth="240" prefHeight="420"
-                   minWidth="240" minHeight="420"
-                   maxWidth="240" maxHeight="420">
+                   prefWidth="215" prefHeight="425"
+                   minWidth="215" minHeight="425"
+                   maxWidth="215" maxHeight="425">
             <center>
                 <StackPane>
-                    <Group>
+                    <Pane fx:id="boardClipContainer" maxWidth="209" maxHeight="419" minWidth="209" minHeight="419" prefWidth="209" prefHeight="419">
                         <GridPane fx:id="gamePanel" hgap="1" vgap="1"
-                                  prefWidth="220" prefHeight="400"
-                                  minWidth="220" minHeight="400"
-                                  maxWidth="220" maxHeight="400"/>
-                        <GridPane fx:id="brickPanel" hgap="1" vgap="1" mouseTransparent="true" managed="false"
-                                  prefWidth="220" prefHeight="400"
-                                  minWidth="220" minHeight="400"
-                                  maxWidth="220" maxHeight="400"/>
-                    </Group>
+                                  prefWidth="209" prefHeight="419"
+                                  minWidth="209" minHeight="419"
+                                  maxWidth="209" maxHeight="419"/>
+                        <GridPane fx:id="brickPanel" hgap="1" vgap="1" mouseTransparent="true" managed="false"/>
+                    </Pane>
                     
                     <!-- Countdown Overlay -->
                     <StackPane fx:id="countdownOverlay" visible="false">

@@ -1,12 +1,12 @@
 package com.comp2042.tetris.ui.view;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
+import javafx.animation.KeyFrame;
 import javafx.animation.ScaleTransition;
+import javafx.animation.SequentialTransition;
+import javafx.animation.Timeline;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Duration;
-
 
 public class GameOverPanel extends BorderPane {
 
@@ -14,17 +14,17 @@ public class GameOverPanel extends BorderPane {
 
     public GameOverPanel() {
         gameOverLabel = new Label("GAME OVER");
-        gameOverLabel.getStyleClass().add("gameOverStyle");
+        gameOverLabel.getStyleClass().add("glitch-text");
         setCenter(gameOverLabel);
         
         // Initial state
         gameOverLabel.setScaleX(0);
         gameOverLabel.setScaleY(0);
+        gameOverLabel.setOpacity(0);
     }
     
     public void show() {
         super.setVisible(true);
-        gameOverLabel.setOpacity(0);
         playAnimation();
     }
     
@@ -36,18 +36,45 @@ public class GameOverPanel extends BorderPane {
     }
     
     private void playAnimation() {
-        ScaleTransition st = new ScaleTransition(Duration.millis(500), gameOverLabel);
-        st.setFromX(0);
-        st.setFromY(0);
-        st.setToX(1);
-        st.setToY(1);
-        st.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+        gameOverLabel.setOpacity(1);
+        
+        // 1. Slam Effect
+        ScaleTransition slam = new ScaleTransition(Duration.millis(150), gameOverLabel);
+        slam.setFromX(5.0);
+        slam.setFromY(5.0);
+        slam.setToX(1.0);
+        slam.setToY(1.0);
+        slam.setInterpolator(javafx.animation.Interpolator.EASE_IN);
 
-        FadeTransition ft = new FadeTransition(Duration.millis(500), gameOverLabel);
-        ft.setFromValue(0.0);
-        ft.setToValue(1.0);
+        // 2. Glitch Effect
+        Timeline glitch = new Timeline(
+            new KeyFrame(Duration.millis(60), e -> {
+                // Random jitter
+                gameOverLabel.setTranslateX((Math.random() - 0.5) * 15);
+                gameOverLabel.setTranslateY((Math.random() - 0.5) * 8);
+                
+                // Random opacity flicker
+                gameOverLabel.setOpacity(0.6 + Math.random() * 0.4);
+                
+                // Text corruption
+                if (Math.random() > 0.7) {
+                    gameOverLabel.setText("G@ME 0VER");
+                } else if (Math.random() > 0.8) {
+                    gameOverLabel.setText("GAME_OVER");
+                } else {
+                    gameOverLabel.setText("GAME OVER");
+                }
+            })
+        );
+        glitch.setCycleCount(30); // ~1.8 seconds of glitching
+        glitch.setOnFinished(e -> {
+            gameOverLabel.setTranslateX(0);
+            gameOverLabel.setTranslateY(0);
+            gameOverLabel.setOpacity(1);
+            gameOverLabel.setText("GAME OVER");
+        });
 
-        new ParallelTransition(st, ft).play();
+        new SequentialTransition(slam, glitch).play();
     }
 
 }

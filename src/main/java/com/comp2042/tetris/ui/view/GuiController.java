@@ -54,6 +54,9 @@ public class GuiController implements Initializable, GameView {
     private Pane backgroundPane;
 
     @FXML
+    private Pane boardClipContainer;
+
+    @FXML
     private GridPane gamePanel;
 
     @FXML
@@ -97,24 +100,18 @@ public class GuiController implements Initializable, GameView {
     private CreateNewGame gameLifecycle;
 
     // Background Animation Fields
-    private final List<FallingShape> fallingShapes = new ArrayList<>();
-    private final List<Particle> particles = new ArrayList<>();
-    private final Random random = new Random();
-    private AnimationTimer animationTimer;
+    private BackgroundAnimator backgroundAnimator;
     private long startTime;
     private long accumulatedNanos;
     private int volume = 100;
     private boolean timerRunning;
     
-    private static final Color[] NEON_COLORS = {
-            Color.CYAN, Color.YELLOW, Color.LIME, Color.RED, Color.MAGENTA, Color.ORANGE, Color.DODGERBLUE
-    };
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         viewInitializer.loadFonts(getClass());
         viewInitializer.setupGamePanel(gamePanel);
         viewInitializer.setupGameOverPanel(gameOverPanel);
+        applyBoardClip();
         mediator = new GameMediator(boardRenderer, viewInitializer, stateManager, gamePanel, gameOverPanel);
 
         startAnimation();
@@ -238,14 +235,8 @@ public class GuiController implements Initializable, GameView {
     
     private void startAnimation() {
         resetTimerTracking();
-        animationTimer = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                updateBackground();
-                updateTimer(now);
-            }
-        };
-        animationTimer.start();
+        backgroundAnimator = new BackgroundAnimator(backgroundPane, () -> updateTimer(System.nanoTime()));
+        backgroundAnimator.start();
     }
     
     private void updateTimer(long now) {
@@ -286,149 +277,7 @@ public class GuiController implements Initializable, GameView {
         startTime = System.nanoTime();
         timerRunning = true;
     }
-
-    private void updateBackground() {
-        if (backgroundPane == null) return;
-
-        // Spawn new shapes
-        if (random.nextDouble() < 0.01) { // Softer frequency
-            spawnFallingShape();
-        }
-
-        // Spawn particles
-        if (random.nextDouble() < 0.05) {
-            spawnParticle();
-        }
-
-        // Update shapes
-        Iterator<FallingShape> shapeIt = fallingShapes.iterator();
-        while (shapeIt.hasNext()) {
-            FallingShape shape = shapeIt.next();
-            shape.update();
-            if (shape.isOffScreen()) {
-                backgroundPane.getChildren().remove(shape.node);
-                shapeIt.remove();
-            }
-        }
-
-        // Update particles
-        Iterator<Particle> particleIt = particles.iterator();
-        while (particleIt.hasNext()) {
-            Particle p = particleIt.next();
-            p.update();
-            if (p.isDead()) {
-                backgroundPane.getChildren().remove(p.node);
-                particleIt.remove();
-            }
-        }
-    }
-
-    private void spawnFallingShape() {
-        double x = random.nextDouble() * backgroundPane.getWidth();
-        double size = 8 + random.nextDouble() * 10;
-        Color color = NEON_COLORS[random.nextInt(NEON_COLORS.length)];
-        
-        Node shape = createRandomTetromino(size, color);
-        
-        shape.setTranslateX(x);
-        shape.setTranslateY(-100);
-        
-        shape.setOpacity(0.18);
-        shape.setEffect(new GaussianBlur(2 + random.nextDouble() * 3));
-
-        backgroundPane.getChildren().add(shape);
-        fallingShapes.add(new FallingShape(shape, 0.3 + random.nextDouble() * 0.8));
-    }
-
-    private Node createRandomTetromino(double size, Color color) {
-        javafx.scene.Group group = new javafx.scene.Group();
-        // 0: I, 1: J, 2: L, 3: O, 4: S, 5: T, 6: Z
-        int type = random.nextInt(7);
-        
-        int[][] coords = getTetrominoCoords(type);
-        
-        for (int[] coord : coords) {
-            Rectangle rect = new Rectangle(size, size, Color.TRANSPARENT);
-            rect.setStroke(color);
-            rect.setStrokeWidth(2);
-            rect.setEffect(new Glow(0.5));
-            rect.setX(coord[0] * size);
-            rect.setY(coord[1] * size);
-            group.getChildren().add(rect);
-        }
-        
-        return group;
-    }
-
-    private int[][] getTetrominoCoords(int type) {
-        return switch (type) {
-            case 0 -> new int[][]{{0, 0}, {1, 0}, {2, 0}, {3, 0}}; // I
-            case 1 -> new int[][]{{0, 0}, {0, 1}, {1, 1}, {2, 1}}; // J
-            case 2 -> new int[][]{{2, 0}, {0, 1}, {1, 1}, {2, 1}}; // L
-            case 3 -> new int[][]{{0, 0}, {1, 0}, {0, 1}, {1, 1}}; // O
-            case 4 -> new int[][]{{1, 0}, {2, 0}, {0, 1}, {1, 1}}; // S
-            case 5 -> new int[][]{{1, 0}, {0, 1}, {1, 1}, {2, 1}}; // T
-            case 6 -> new int[][]{{0, 0}, {1, 0}, {1, 1}, {2, 1}}; // Z
-            default -> new int[][]{{0, 0}};
-        };
-    }
-
-    private void spawnParticle() {
-        double x = random.nextDouble() * backgroundPane.getWidth();
-        double y = random.nextDouble() * backgroundPane.getHeight();
-        
-        Rectangle p = new Rectangle(1.5, 1.5, Color.WHITE);
-        p.setOpacity(random.nextDouble() * 0.35);
-        p.setTranslateX(x);
-        p.setTranslateY(y);
-        
-        backgroundPane.getChildren().add(p);
-        particles.add(new Particle(p));
-    }
-
-    // Inner classes for animation
-    private static class FallingShape {
-        Node node;
-        double speed;
-        double rotationSpeed;
-
-        FallingShape(Node node, double speed) {
-            this.node = node;
-            this.speed = speed;
-            this.rotationSpeed = Math.random() * 2 - 1;
-        }
-
-        void update() {
-            node.setTranslateY(node.getTranslateY() + speed);
-            node.setRotate(node.getRotate() + rotationSpeed);
-        }
-
-        boolean isOffScreen() {
-            return node.getTranslateY() > 800; // Assuming height is 600
-        }
-    }
-
-    private static class Particle {
-        Node node;
-        double life = 1.0;
-        double decay;
-
-        Particle(Node node) {
-            this.node = node;
-            this.decay = 0.005 + Math.random() * 0.01;
-        }
-
-        void update() {
-            life -= decay;
-            node.setOpacity(life);
-            node.setTranslateY(node.getTranslateY() + 0.5);
-        }
-
-        boolean isDead() {
-            return life <= 0;
-        }
-    }
-
+    
     @FXML
     @Override
     public void initGameView(int[][] boardMatrix, ViewData brick) {
@@ -550,6 +399,15 @@ public class GuiController implements Initializable, GameView {
             pauseTimerTracking();
         } else if (!countdownOverlay.isVisible()) {
             resumeTimerTracking();
+        }
+    }
+    
+    private void applyBoardClip() {
+        if (boardClipContainer != null) {
+            Rectangle clip = new Rectangle();
+            clip.widthProperty().bind(boardClipContainer.widthProperty());
+            clip.heightProperty().bind(boardClipContainer.heightProperty());
+            boardClipContainer.setClip(clip);
         }
     }
 }

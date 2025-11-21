@@ -98,3 +98,40 @@
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
 }
+
+/* Reward Text Styles */
+.reward-single {
+    -fx-font-family: "Press Start 2P";
+    -fx-font-size: 24px;
+    -fx-fill: white;
+    -fx-effect: dropshadow(gaussian, white, 5, 0.5, 0, 0);
+}
+
+.reward-double {
+    -fx-font-family: "Press Start 2P";
+    -fx-font-size: 32px;
+    -fx-fill: cyan;
+    -fx-effect: dropshadow(gaussian, cyan, 8, 0.6, 0, 0);
+}
+
+.reward-triple {
+    -fx-font-family: "Press Start 2P";
+    -fx-font-size: 40px;
+    -fx-fill: orange;
+    -fx-effect: dropshadow(gaussian, orange, 10, 0.7, 0, 0);
+}
+
+.reward-tetris {
+    -fx-font-family: "Press Start 2P";
+    -fx-font-size: 52px;
+    -fx-fill: red;
+    -fx-effect: dropshadow(gaussian, red, 15, 0.8, 0, 0);
+}
+
+.glitch-text {
+    -fx-font-family: "Courier New", monospace;
+    -fx-font-weight: bold;
+    -fx-font-size: 60px;
+    -fx-fill: #ff0033; 
+    -fx-effect: dropshadow(gaussian, #ff0033, 20, 0.8, 0, 0);
+}
