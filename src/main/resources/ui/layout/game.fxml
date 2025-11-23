@@ -8,7 +8,7 @@
 <?import javafx.scene.text.Text?>
 <?import java.net.URL?>
 
-<StackPane fx:controller="com.comp2042.tetris.ui.view.GuiController"
+<StackPane fx:id="rootPane" fx:controller="com.comp2042.tetris.ui.view.GuiController"
            xmlns:fx="http://javafx.com/fxml"
            prefWidth="700" prefHeight="600"
            styleClass="root">
@@ -53,7 +53,7 @@
                     
                     <!-- Countdown Overlay -->
                     <StackPane fx:id="countdownOverlay" visible="false">
-                        <Text fx:id="countdownText" text="3" styleClass="gameOverStyle" style="-fx-font-size: 80px; -fx-fill: cyan;"/>
+                        <Text fx:id="countdownText" text="3" styleClass="countdown-text"/>
                     </StackPane>
                 </StackPane>
             </center>
@@ -69,6 +69,8 @@
             </VBox>
         </VBox>
     </HBox>
+
+    <Pane fx:id="pauseDim" styleClass="pause-dim" visible="false" mouseTransparent="true" />
 
     <!-- Notification Overlay -->
     <Group fx:id="groupNotification">

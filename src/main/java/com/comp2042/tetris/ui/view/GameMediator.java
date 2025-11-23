@@ -113,7 +113,7 @@ final class GameMediator {
         }
     }
 
-    void handleGameOver() {
+    void handleGameOver(int finalScore) {
         if (gameLoopController != null) {
             gameLoopController.stop();
         }
@@ -121,7 +121,7 @@ final class GameMediator {
         
         // Trigger the "Digital Fragmentation" sequence
         if (gameOverAnimator != null) {
-            gameOverAnimator.playDigitalFragmentationSequence(displayMatrix);
+            gameOverAnimator.playDigitalFragmentationSequence(displayMatrix, finalScore);
         }
     }
 
@@ -131,6 +131,9 @@ final class GameMediator {
         }
         if (gameOverPanel != null) {
             gameOverPanel.hide();
+        }
+        if (gameOverAnimator != null) {
+            gameOverAnimator.resetBackdropEffects();
         }
         // Reset board visibility
         if (displayMatrix != null) {

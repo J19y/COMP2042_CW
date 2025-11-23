@@ -1,13 +1,16 @@
 package com.comp2042.tetris.ui.view;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Bounds;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.effect.Glow;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
@@ -17,13 +20,17 @@ public class GameOverAnimator {
 
     private final GridPane gamePanel;
     private final GameOverPanel gameOverPanel;
+    private final GaussianBlur backdropBlur = new GaussianBlur(0);
+    private final ColorAdjust backdropDarken = new ColorAdjust();
+    private Timeline backdropTimeline;
 
     public GameOverAnimator(GridPane gamePanel, GameOverPanel gameOverPanel) {
         this.gamePanel = gamePanel;
         this.gameOverPanel = gameOverPanel;
+        backdropBlur.setInput(backdropDarken);
     }
 
-    public void playDigitalFragmentationSequence(Rectangle[][] displayMatrix) {
+    public void playDigitalFragmentationSequence(Rectangle[][] displayMatrix, int finalScore) {
         // 1. The Glitch (Digital Crunch)
         // TODO: Play digital crunch sound
         
@@ -49,11 +56,11 @@ public class GameOverAnimator {
         glitch.setCycleCount(2);
         
         // 2. Data Dissolve starts after glitch
-        glitch.setOnFinished(e -> startDissolveCascade(displayMatrix));
+        glitch.setOnFinished(e -> startDissolveCascade(displayMatrix, finalScore));
         glitch.play();
     }
 
-    private void startDissolveCascade(Rectangle[][] displayMatrix) {
+    private void startDissolveCascade(Rectangle[][] displayMatrix, int finalScore) {
         if (displayMatrix == null) return;
 
         // Process row by row from top to bottom
@@ -66,10 +73,10 @@ public class GameOverAnimator {
             cascade.getKeyFrames().add(kf);
         }
         
-        cascade.setOnFinished(e -> {
-             // 3. Final Text
-             if (gameOverPanel != null) gameOverPanel.show();
-        });
+           cascade.setOnFinished(e -> {
+               playBackdropTransition();
+               if (gameOverPanel != null) gameOverPanel.show(finalScore);
+           });
         cascade.play();
     }
 
@@ -124,5 +131,42 @@ public class GameOverAnimator {
         ParallelTransition pt = new ParallelTransition(fall, fade);
         pt.setOnFinished(e -> gamePanel.getChildren().remove(pixel));
         pt.play();
+    }
+
+    private void playBackdropTransition() {
+        if (gamePanel == null) return;
+        if (backdropTimeline != null) {
+            backdropTimeline.stop();
+        }
+        backdropBlur.setRadius(0);
+        backdropDarken.setBrightness(0);
+        backdropDarken.setSaturation(0);
+        gamePanel.setEffect(backdropBlur);
+
+        backdropTimeline = new Timeline(
+            new KeyFrame(Duration.ZERO,
+                new KeyValue(backdropBlur.radiusProperty(), 0, Interpolator.EASE_BOTH),
+                new KeyValue(backdropDarken.brightnessProperty(), 0, Interpolator.EASE_BOTH),
+                new KeyValue(backdropDarken.saturationProperty(), 0, Interpolator.EASE_BOTH)
+            ),
+            new KeyFrame(Duration.seconds(1.3),
+                new KeyValue(backdropBlur.radiusProperty(), 18, Interpolator.EASE_BOTH),
+                new KeyValue(backdropDarken.brightnessProperty(), -0.45, Interpolator.EASE_BOTH),
+                new KeyValue(backdropDarken.saturationProperty(), -0.3, Interpolator.EASE_BOTH)
+            )
+        );
+        backdropTimeline.play();
+    }
+
+    void resetBackdropEffects() {
+        if (backdropTimeline != null) {
+            backdropTimeline.stop();
+        }
+        backdropBlur.setRadius(0);
+        backdropDarken.setBrightness(0);
+        backdropDarken.setSaturation(0);
+        if (gamePanel != null) {
+            gamePanel.setEffect(null);
+        }
     }
 }

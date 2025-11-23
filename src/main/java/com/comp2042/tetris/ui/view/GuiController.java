@@ -20,16 +20,13 @@ import com.comp2042.tetris.ui.input.MoveEvent;
 import com.comp2042.tetris.ui.render.ActiveBrickRenderer;
 import com.comp2042.tetris.ui.render.BoardRenderer;
 
-import javafx.animation.AnimationTimer;
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.effect.GaussianBlur;
-import javafx.scene.effect.Glow;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -37,10 +34,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,6 +49,12 @@ public class GuiController implements Initializable, GameView {
 
     @FXML
     private Pane boardClipContainer;
+    
+    @FXML
+    private StackPane rootPane;
+    
+    @FXML
+    private Pane pauseDim;
 
     @FXML
     private GridPane gamePanel;
@@ -73,6 +73,8 @@ public class GuiController implements Initializable, GameView {
     
     @FXML
     private Text timerText;
+    
+    private IntegerProperty scoreProperty;
 
     @FXML
     private GameOverPanel gameOverPanel;
@@ -105,13 +107,21 @@ public class GuiController implements Initializable, GameView {
     private long accumulatedNanos;
     private int volume = 100;
     private boolean timerRunning;
+    private boolean manualPauseActive;
+    private FadeTransition pauseDimTransition;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         viewInitializer.loadFonts(getClass());
         viewInitializer.setupGamePanel(gamePanel);
         viewInitializer.setupGameOverPanel(gameOverPanel);
+        if (gameOverPanel != null) {
+            gameOverPanel.setOnRetry(() -> newGame(new ActionEvent()));
+            gameOverPanel.setOnReturnToMenu(this::returnToMenu);
+        }
         applyBoardClip();
+        bindPauseDim();
+        updatePauseDimVisibility();
         mediator = new GameMediator(boardRenderer, viewInitializer, stateManager, gamePanel, gameOverPanel);
 
         startAnimation();
@@ -131,6 +141,8 @@ public class GuiController implements Initializable, GameView {
     
     private void startCountdown() {
         if (countdownOverlay == null) return;
+        manualPauseActive = false;
+        updatePauseDimVisibility();
         pauseTimerTracking();
         resetTimerTracking();
         countdownOverlay.setVisible(true);
@@ -160,9 +172,11 @@ public class GuiController implements Initializable, GameView {
         }
         settingsOverlay.setVisible(true);
         if (!stateManager.isPaused()) {
-            mediator.togglePause();
+            togglePause();
+        } else {
+            manualPauseActive = true;
+            updatePauseDimVisibility();
         }
-        pauseTimerTracking();
     }
     
     @FXML
@@ -172,10 +186,7 @@ public class GuiController implements Initializable, GameView {
         }
         settingsOverlay.setVisible(false);
         if (stateManager.isPaused()) {
-            mediator.togglePause();
-        }
-        if (!countdownOverlay.isVisible()) {
-            resumeTimerTracking();
+            togglePause();
         }
         mediator.ensureLoopRunning();
         mediator.focusGamePanel();
@@ -330,7 +341,7 @@ public class GuiController implements Initializable, GameView {
         this.inputActionHandler = inputActionHandler;
         this.dropInput = dropInput;
         this.gameLifecycle = gameLifecycle;
-        inputHandler.setPauseAction(() -> mediator.togglePause());
+        inputHandler.setPauseAction(this::togglePause);
         if (gamePanel != null && inputHandler != null && inputActionHandler != null) {
             inputHandler.attach(gamePanel, this.inputActionHandler,
                 result -> handleResult(result), () -> stateManager.canAcceptInput());
@@ -339,7 +350,10 @@ public class GuiController implements Initializable, GameView {
 
     @Override
     public void bindScore(IntegerProperty integerProperty) {
-        scoreText.textProperty().bind(integerProperty.asString());
+        this.scoreProperty = integerProperty;
+        if (scoreText != null) {
+            scoreText.textProperty().bind(integerProperty.asString());
+        }
     }
 
     private void renderNextBrick(List<int[][]> nextBricks) {
@@ -372,8 +386,11 @@ public class GuiController implements Initializable, GameView {
 
     @Override
     public void gameOver() {
+        int finalScore = getCurrentScore();
+        manualPauseActive = false;
+        updatePauseDimVisibility();
         pauseTimerTracking();
-        mediator.handleGameOver();
+        mediator.handleGameOver(finalScore);
     }
 
     @FXML
@@ -395,11 +412,17 @@ public class GuiController implements Initializable, GameView {
 
     private void togglePause() {
         mediator.togglePause();
-        if (stateManager.isPaused()) {
+        manualPauseActive = stateManager.isPaused();
+        updatePauseDimVisibility();
+        if (manualPauseActive) {
             pauseTimerTracking();
-        } else if (!countdownOverlay.isVisible()) {
+        } else if (countdownOverlay == null || !countdownOverlay.isVisible()) {
             resumeTimerTracking();
         }
+    }
+    
+    private int getCurrentScore() {
+        return scoreProperty == null ? 0 : scoreProperty.get();
     }
     
     private void applyBoardClip() {
@@ -409,5 +432,38 @@ public class GuiController implements Initializable, GameView {
             clip.heightProperty().bind(boardClipContainer.heightProperty());
             boardClipContainer.setClip(clip);
         }
+    }
+
+    private void bindPauseDim() {
+        if (pauseDim == null || rootPane == null) {
+            return;
+        }
+        pauseDim.prefWidthProperty().bind(rootPane.widthProperty());
+        pauseDim.prefHeightProperty().bind(rootPane.heightProperty());
+        pauseDim.setOpacity(0);
+        pauseDim.setVisible(false);
+    }
+
+    private void updatePauseDimVisibility() {
+        if (pauseDim == null) {
+            return;
+        }
+        if (pauseDimTransition != null) {
+            pauseDimTransition.stop();
+        }
+        pauseDimTransition = new FadeTransition(Duration.millis(220), pauseDim);
+        pauseDimTransition.setFromValue(pauseDim.getOpacity());
+        if (manualPauseActive) {
+            pauseDim.setVisible(true);
+            pauseDimTransition.setToValue(0.55);
+            pauseDimTransition.setOnFinished(null);
+        } else {
+            if (!pauseDim.isVisible()) {
+                pauseDim.setVisible(true);
+            }
+            pauseDimTransition.setToValue(0);
+            pauseDimTransition.setOnFinished(e -> pauseDim.setVisible(false));
+        }
+        pauseDimTransition.play();
     }
 }
