@@ -3,124 +3,130 @@ package com.comp2042.tetris.ui.render;
 import com.comp2042.tetris.domain.model.ViewData;
 
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 /**
- * Handles rendering of the active falling brick.
- * Extracted from GuiController to follow Single Responsibility Principle.
- * This class is only responsible for displaying and updating the active brick's position and appearance.
+ * Renders the currently falling Tetromino and its ghost aligned with the landing row.
  */
 public final class ActiveBrickRenderer {
-    
     private final int brickSize;
     private final GridPane brickPanel;
-    private final GridPane gamePanel;
+    private final GridPane ghostPanel;
     private Rectangle[][] rectangles;
     private Rectangle[][] ghostRectangles;
 
-
-    // Constructor for ActiveBrickRenderer.
-    public ActiveBrickRenderer(int brickSize, GridPane brickPanel, GridPane gamePanel) {
+    public ActiveBrickRenderer(int brickSize, GridPane brickPanel, GridPane ghostPanel) {
         this.brickSize = brickSize;
         this.brickPanel = brickPanel;
-        this.gamePanel = gamePanel;
+        this.ghostPanel = ghostPanel;
     }
 
-    // Initialize the brick panel with rectangles based on the brick data.
     public void initialize(ViewData brick) {
+        if (brickPanel == null) {
+            return;
+        }
         brickPanel.getChildren().clear();
+        if (ghostPanel != null) {
+            ghostPanel.getChildren().clear();
+        }
+
         int[][] brickData = brick.getBrickData();
         rectangles = new Rectangle[brickData.length][brickData[0].length];
         ghostRectangles = new Rectangle[brickData.length][brickData[0].length];
-        
-        // Create ghost pieces first (so they are behind)
+
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
-                Rectangle ghost = new Rectangle(brickSize, brickSize);
-                ghost.setFill(javafx.scene.paint.Color.WHITE);
-                ghost.setOpacity(0.2);
-                ghost.setArcHeight(9);
-                ghost.setArcWidth(9);
+                Rectangle ghost = createGhost();
                 ghostRectangles[i][j] = ghost;
-                if (brickPanel != null) {
-                    brickPanel.add(ghost, j, i);
+                if (ghostPanel != null) {
+                    ghostPanel.add(ghost, j, i);
                 }
             }
         }
 
-        // Create active pieces
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
                 Rectangle rectangle = new Rectangle(brickSize, brickSize);
-                rectangle.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(brickData[i][j]));
                 rectangles[i][j] = rectangle;
-                if (brickPanel != null) {
-                    brickPanel.add(rectangle, j, i);
-                }
+                brickPanel.add(rectangle, j, i);
             }
         }
+
+        updateColors(brickData);
         updatePosition(brick);
     }
 
-
-    // Refresh the brick panel with new brick data and position.
     public void refresh(ViewData brick) {
         if (rectangles == null) {
             initialize(brick);
             return;
         }
-        
-        updatePosition(brick);
         updateColors(brick.getBrickData());
+        updatePosition(brick);
     }
 
-    
-    // Update the position of the brick panel based on the brick's coordinates.
     private void updatePosition(ViewData brick) {
-        if (brickPanel == null || gamePanel == null) {
+        if (brickPanel == null) {
             return;
         }
-        
-        double x = brick.getxPosition() * (brickSize + brickPanel.getHgap());
-        // Offset by 2 hidden rows so the active brick lines up with the visible board
-        double y = (brick.getyPosition() - 2) * (brickSize + brickPanel.getVgap());
-        
+        double cellWidth = brickSize + brickPanel.getHgap();
+        double cellHeight = brickSize + brickPanel.getVgap();
+        double x = brick.getxPosition() * cellWidth;
         brickPanel.setTranslateX(x);
-        brickPanel.setTranslateY(y);
-        
-        // Update ghost piece position
-        double ghostOffset = (brick.getGhostY() - brick.getyPosition()) * (brickSize + brickPanel.getVgap());
-        
-        for (Rectangle[] ghostRow : ghostRectangles) {
-            for (Rectangle ghost : ghostRow) {
-                if (ghost != null) {
-                    ghost.setTranslateY(ghostOffset);
-                    ghost.setVisible(ghostOffset > 0);
+        if (ghostPanel != null) {
+            ghostPanel.setTranslateX(x);
+        }
+
+        double lockTranslateY = (brick.getGhostY() - 2) * cellHeight;
+        double freeTranslateY = (brick.getyPosition() - 2) * cellHeight;
+        int rowsToGhost = brick.getGhostY() - brick.getyPosition();
+        brickPanel.setTranslateY(rowsToGhost <= 1 ? lockTranslateY : freeTranslateY);
+
+        if (ghostPanel != null) {
+            double ghostY = (brick.getGhostY() - 2) * cellHeight;
+            ghostPanel.setTranslateY(ghostY);
+            boolean ghostActive = brick.getGhostY() > brick.getyPosition();
+            updateGhostVisibility(ghostActive);
+            ghostPanel.setVisible(ghostActive);
+        }
+    }
+
+    private void updateColors(int[][] brickData) {
+        for (int i = 0; i < brickData.length && i < rectangles.length; i++) {
+            for (int j = 0; j < brickData[i].length && j < rectangles[i].length; j++) {
+                Rectangle rect = rectangles[i][j];
+                if (rect != null) {
+                    rect.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(brickData[i][j]));
+                    rect.setArcHeight(9);
+                    rect.setArcWidth(9);
+                    boolean isVisible = brickData[i][j] != 0;
+                    rect.setVisible(isVisible);
                 }
             }
         }
     }
 
-    
-    // Update the colors of the rectangles based on the brick data.
-    private void updateColors(int[][] brickData) {
-        for (int i = 0; i < brickData.length && i < rectangles.length; i++) {
-            for (int j = 0; j < brickData[i].length && j < rectangles[i].length; j++) {
-                Rectangle rect = rectangles[i][j];
+    private Rectangle createGhost() {
+        Rectangle ghost = new Rectangle(brickSize, brickSize);
+        ghost.setFill(Color.WHITE);
+        ghost.setOpacity(0.2);
+        ghost.setArcHeight(9);
+        ghost.setArcWidth(9);
+        ghost.setVisible(false);
+        return ghost;
+    }
+
+    private void updateGhostVisibility(boolean ghostActive) {
+        if (ghostRectangles == null || rectangles == null) {
+            return;
+        }
+        for (int i = 0; i < ghostRectangles.length; i++) {
+            for (int j = 0; j < ghostRectangles[i].length; j++) {
                 Rectangle ghost = ghostRectangles[i][j];
-                
-                if (rect != null) {
-                    javafx.scene.paint.Paint color = com.comp2042.tetris.ui.theme.CellColor.fromValue(brickData[i][j]);
-                    rect.setFill(color);
-                    rect.setArcHeight(9);
-                    rect.setArcWidth(9);
-                    
-                    // Update ghost visibility based on brick shape
-                    if (ghost != null) {
-                        boolean isVisible = brickData[i][j] != 0;
-                        ghost.setVisible(isVisible);
-                        rect.setVisible(isVisible);
-                    }
+                Rectangle rect = rectangles[i][j];
+                if (ghost != null) {
+                    ghost.setVisible(ghostActive && rect != null && rect.isVisible());
                 }
             }
         }

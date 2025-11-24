@@ -48,6 +48,11 @@
                                   prefWidth="209" prefHeight="419"
                                   minWidth="209" minHeight="419"
                                   maxWidth="209" maxHeight="419"/>
+                        <GridPane fx:id="ghostPanel" hgap="1" vgap="1"
+                                  prefWidth="209" prefHeight="419"
+                                  minWidth="209" minHeight="419"
+                                  maxWidth="209" maxHeight="419"
+                                  mouseTransparent="true" managed="false"/>
                         <GridPane fx:id="brickPanel" hgap="1" vgap="1" mouseTransparent="true" managed="false"/>
                     </Pane>
                     

@@ -64,6 +64,9 @@ public class GuiController implements Initializable, GameView {
 
     @FXML
     private GridPane brickPanel;
+    
+    @FXML
+    private GridPane ghostPanel;
 
     @FXML
     private javafx.scene.layout.VBox nextBrickPanel;
@@ -294,7 +297,7 @@ public class GuiController implements Initializable, GameView {
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         Rectangle[][] displayMatrix = boardRenderer.initBoard(gamePanel, boardMatrix);
 
-        ActiveBrickRenderer activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel, gamePanel);
+        ActiveBrickRenderer activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel, ghostPanel);
         activeBrickRenderer.initialize(brick);
         renderNextBrick(brick.getNextBrickData());
 

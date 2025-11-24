@@ -16,12 +16,24 @@ public final class ViewData {
         this(brickData, xPosition, yPosition, nextBrickData, yPosition);
     }
 
+    public ViewData(int[][] brickData, int xPosition, int yPosition, int[][] nextBrickData) {
+        this(brickData, xPosition, yPosition, convertToList(nextBrickData), yPosition);
+    }
+
     public ViewData(int[][] brickData, int xPosition, int yPosition, List<int[][]> nextBrickData, int ghostY) {
         this.brickData = brickData;
         this.xPosition = xPosition;
         this.yPosition = yPosition;
         this.nextBrickData = nextBrickData;
         this.ghostY = ghostY;
+    }
+
+    private static List<int[][]> convertToList(int[][] matrix) {
+        java.util.List<int[][]> list = new ArrayList<>();
+        if (matrix != null) {
+            list.add(MatrixOperations.copy(matrix));
+        }
+        return list;
     }
 
     public int[][] getBrickData() {

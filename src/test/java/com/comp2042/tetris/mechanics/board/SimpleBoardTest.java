@@ -1,6 +1,7 @@
 package com.comp2042.tetris.mechanics.board;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -282,6 +283,14 @@ class SimpleBoardTest {
         @Override
         public Brick peekNextBrick() {
             return brick;
+        }
+
+        @Override
+        public java.util.List<Brick> peekNextBricks(int count) {
+            if (count <= 0) {
+                return Collections.emptyList();
+            }
+            return Collections.nCopies(count, brick);
         }
     }
 
