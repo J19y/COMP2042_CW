@@ -4,6 +4,7 @@ import javafx.animation.FadeTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.text.Text;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -25,12 +26,15 @@ public class GameOverPanel extends BorderPane {
         scoreLabel = new Label("Final Score: 0");
         scoreLabel.getStyleClass().add("game-over-score");
 
-        retryButton = new Button("↺");
-        menuButton = new Button("⌂");
-        retryButton.getStyleClass().add("menu-button");
-        menuButton.getStyleClass().add("menu-button");
-        retryButton.getStyleClass().add("icon-button");
-        menuButton.getStyleClass().add("icon-button");
+        // Use full-labeled menu-style buttons for consistency with settings/menu UI
+            retryButton = new Button("↺ RETRY");
+            menuButton = new Button("⏏ MAIN MENU");
+            // Apply base menu-button style and a specific modifier class for per-button colors
+            retryButton.getStyleClass().addAll("menu-button", "retry-button");
+            menuButton.getStyleClass().addAll("menu-button", "mainmenu-button");
+        // Set a sensible preferred width so they match other menu buttons
+        retryButton.setPrefWidth(180);
+        menuButton.setPrefWidth(180);
         retryButton.setDisable(true);
         menuButton.setDisable(true);
 

@@ -93,6 +93,14 @@ public class GuiController implements Initializable, GameView {
     
     @FXML
     private Text volumeText;
+    
+    @FXML
+    private javafx.scene.control.Slider volumeSlider;
+    
+    @FXML
+    private javafx.scene.control.Button musicToggleButton;
+
+    private boolean musicOn = true;
 
     private final transient BoardRenderer boardRenderer = new BoardRenderer(BRICK_SIZE);
     private final transient InputHandler inputHandler = new InputHandler();
@@ -128,6 +136,26 @@ public class GuiController implements Initializable, GameView {
         mediator = new GameMediator(boardRenderer, viewInitializer, stateManager, gamePanel, gameOverPanel);
 
         startAnimation();
+
+        // Initialize volume slider (if present in FXML)
+        if (volumeSlider != null) {
+            volumeSlider.setMin(0);
+            volumeSlider.setMax(100);
+            volumeSlider.setValue(volume);
+            volumeSlider.setBlockIncrement(1);
+            volumeSlider.valueProperty().addListener((obs, oldV, newV) -> {
+                volume = newV.intValue();
+                updateVolumeText();
+            });
+        }
+
+        // Initialize music toggle (if present)
+        if (musicToggleButton != null) {
+            musicToggleButton.setText(musicOn ? "ON" : "OFF");
+            if (volumeSlider != null) {
+                volumeSlider.setDisable(!musicOn);
+            }
+        }
 
         // Fade-in will be triggered once the scene is ready
         Platform.runLater(() -> {
@@ -271,6 +299,22 @@ public class GuiController implements Initializable, GameView {
         timerText.setText(String.format("%02d:%02d", minutes, seconds));
     }
 
+    @FXML
+    public void toggleMusic(ActionEvent event) {
+        musicOn = !musicOn;
+        if (musicToggleButton != null) {
+            musicToggleButton.setText(musicOn ? "ON" : "OFF");
+        }
+        if (volumeSlider != null) {
+            volumeSlider.setDisable(!musicOn);
+        }
+        if (!musicOn && volumeText != null) {
+            volumeText.setText("OFF");
+        } else {
+            updateVolumeText();
+        }
+    }
+
     private void resetTimerTracking() {
         accumulatedNanos = 0L;
         startTime = System.nanoTime();
@@ -344,7 +388,8 @@ public class GuiController implements Initializable, GameView {
         this.inputActionHandler = inputActionHandler;
         this.dropInput = dropInput;
         this.gameLifecycle = gameLifecycle;
-        inputHandler.setPauseAction(this::togglePause);
+        // Bind the Pause key to opening settings (so pressing P shows the settings overlay)
+        inputHandler.setPauseAction(this::openSettings);
         if (gamePanel != null && inputHandler != null && inputActionHandler != null) {
             inputHandler.attach(gamePanel, this.inputActionHandler,
                 result -> handleResult(result), () -> stateManager.canAcceptInput());

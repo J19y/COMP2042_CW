@@ -3,6 +3,8 @@
 <?import com.comp2042.tetris.ui.view.GameOverPanel?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
@@ -21,19 +23,23 @@
         <VBox alignment="TOP_CENTER" spacing="20" style="-fx-padding: 50 0 0 0;">
             <!-- Info Panel (Timer & Score) -->
             <VBox spacing="15" styleClass="info-panel" minWidth="120" maxWidth="120" alignment="CENTER_LEFT">
-                <VBox spacing="2">
-                    <Text text="TIMER:" styleClass="info-label"/>
-                    <Text fx:id="timerText" text="00:00" styleClass="info-value-timer"/>
-                </VBox>
-                <VBox spacing="2">
-                    <Text text="SCORE:" styleClass="info-label"/>
-                    <Text fx:id="scoreText" text="0" styleClass="info-value-score"/>
-                </VBox>
+                    <VBox spacing="8" alignment="CENTER_LEFT">
+                        <Text text="TIMER:" styleClass="info-label"/>
+                        <Text fx:id="timerText" text="00:00" styleClass="info-value-timer"/>
+                    </VBox>
+                    <VBox spacing="8" alignment="CENTER_LEFT" style="-fx-padding: 12 0 0 0;">
+                        <Text text="SCORE:" styleClass="info-label"/>
+                        <Text fx:id="scoreText" text="0" styleClass="info-value-score"/>
+                    </VBox>
             </VBox>
             
-            <!-- Settings Button -->
-            <Button text="⚙" styleClass="menu-button" onAction="#openSettings" 
-                    style="-fx-font-size: 20px; -fx-min-width: 50px; -fx-min-height: 50px;"/>
+            <!-- Pause Button (on-screen) -->
+            <Button fx:id="pauseButton" text="⏸" styleClass="menu-button" onAction="#pauseGame"
+                    style="-fx-font-size: 20px; -fx-min-width: 50px; -fx-min-height: 50px;">
+                <tooltip>
+                    <Tooltip text="Pause (P)" />
+                </tooltip>
+            </Button>
         </VBox>
 
         <!-- Center Column: Game Board -->
@@ -86,16 +92,36 @@
     
     <!-- Settings Overlay -->
     <StackPane fx:id="settingsOverlay" visible="false" style="-fx-background-color: rgba(0,0,0,0.8);">
-        <VBox spacing="20" alignment="CENTER" styleClass="info-panel" maxWidth="300" maxHeight="300">
-            <Text text="PAUSED" styleClass="panel-label" style="-fx-font-size: 24px;"/>
-            <Button text="RESUME" styleClass="menu-button" onAction="#resumeGame" prefWidth="200"/>
-            <Button text="MAIN MENU" styleClass="menu-button" onAction="#returnToMenu" prefWidth="200"/>
-            <HBox spacing="10" alignment="CENTER">
-                <Text text="VOL:" styleClass="info-label"/>
-                <Button text="-" styleClass="menu-button" onAction="#decreaseVolume"/>
+        <VBox spacing="18" alignment="CENTER" styleClass="info-panel" maxWidth="320" maxHeight="320">
+            <Text text="PAUSED" styleClass="panel-label" style="-fx-font-size: 26px;"/>
+
+            <Button fx:id="resumeButton" text="RESUME" styleClass="menu-button" onAction="#resumeGame" prefWidth="200">
+                <graphic>
+                    <Text text="▶" fill="#ffffff" />
+                </graphic>
+            </Button>
+
+            <HBox spacing="10" alignment="CENTER" styleClass="music-controls">
+                <Slider fx:id="volumeSlider" min="0" max="100" value="100" prefWidth="140" />
+                <Button fx:id="musicToggleButton" text="ON" styleClass="menu-button small-button" onAction="#toggleMusic" prefWidth="64"
+                        style="-fx-background-color: transparent; -fx-border-color: rgba(0,255,220,0.12); -fx-border-width: 1px; -fx-background-radius: 10px; -fx-border-radius: 10px; -fx-text-fill: #eaf6ff;">
+                    <graphic>
+                        <Text text="🔊" fill="#ffffff" />
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="Toggle music (P)" />
+                    </tooltip>
+                </Button>
                 <Text fx:id="volumeText" text="100%" styleClass="info-label"/>
-                <Button text="+" styleClass="menu-button" onAction="#increaseVolume"/>
             </HBox>
+
+            <Pane prefHeight="1" prefWidth="200" styleClass="settings-separator" />
+
+            <Button text="MAIN MENU" styleClass="menu-button" onAction="#returnToMenu" prefWidth="200">
+                <graphic>
+                    <Text text="⏏" fill="#ffffff" />
+                </graphic>
+            </Button>
         </VBox>
     </StackPane>
 
