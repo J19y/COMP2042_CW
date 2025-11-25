@@ -1,6 +1,8 @@
 package com.comp2042.tetris.ui.render;
 
 import com.comp2042.tetris.domain.model.ViewData;
+import com.comp2042.tetris.ui.theme.ColorPalette;
+import com.comp2042.tetris.ui.theme.NeonGlowStyle;
 
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -8,6 +10,8 @@ import javafx.scene.shape.Rectangle;
 
 /**
  * Renders the currently falling Tetromino and its ghost aligned with the landing row.
+ * Applies neon-glow effects to all active bricks for a cohesive visual style.
+ * Ghost bricks match the neon style but with reduced opacity for clear distinction.
  */
 public final class ActiveBrickRenderer {
     private final int brickSize;
@@ -96,12 +100,40 @@ public final class ActiveBrickRenderer {
         for (int i = 0; i < brickData.length && i < rectangles.length; i++) {
             for (int j = 0; j < brickData[i].length && j < rectangles[i].length; j++) {
                 Rectangle rect = rectangles[i][j];
+                Rectangle ghost = ghostRectangles != null && i < ghostRectangles.length && j < ghostRectangles[i].length 
+                        ? ghostRectangles[i][j] 
+                        : null;
+                
                 if (rect != null) {
-                    rect.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(brickData[i][j]));
-                    rect.setArcHeight(9);
-                    rect.setArcWidth(9);
-                    boolean isVisible = brickData[i][j] != 0;
-                    rect.setVisible(isVisible);
+                    if (brickData[i][j] != 0) {
+                        // Apply neon glow to active brick
+                        Color baseColor = ColorPalette.getInstance().getColor(brickData[i][j]) instanceof Color
+                                ? (Color) ColorPalette.getInstance().getColor(brickData[i][j])
+                                : Color.WHITE;
+                        Color neonColor = ColorPalette.getNeon(brickData[i][j]);
+                        if (neonColor == null) {
+                            neonColor = baseColor;
+                        }
+                        NeonGlowStyle.applyNeonGlow(rect, baseColor, neonColor);
+                        rect.setVisible(true);
+                        
+                        // Apply matching ghost style with same appearance but reduced opacity
+                        if (ghost != null) {
+                            applyGhostStyle(ghost, neonColor);
+                        }
+                    } else {
+                        rect.setFill(Color.TRANSPARENT);
+                        rect.setStroke(null);
+                        rect.setEffect(null);
+                        rect.setVisible(false);
+                        
+                        if (ghost != null) {
+                            ghost.setFill(Color.TRANSPARENT);
+                            ghost.setStroke(null);
+                            ghost.setEffect(null);
+                            ghost.setVisible(false);
+                        }
+                    }
                 }
             }
         }
@@ -109,12 +141,43 @@ public final class ActiveBrickRenderer {
 
     private Rectangle createGhost() {
         Rectangle ghost = new Rectangle(brickSize, brickSize);
-        ghost.setFill(Color.WHITE);
-        ghost.setOpacity(0.2);
-        ghost.setArcHeight(9);
-        ghost.setArcWidth(9);
+        ghost.setArcHeight(2);
+        ghost.setArcWidth(2);
         ghost.setVisible(false);
         return ghost;
+    }
+    
+    private void applyGhostStyle(Rectangle ghost, Color neonColor) {
+        // Apply ghost styling matching the brick style exactly but with reduced opacity
+        // Inner fill: same dark semi-transparent as brick
+        ghost.setFill(Color.web("#000000", 0.3));
+        
+        // Stroke: same neon color as brick but at reduced opacity
+        ghost.setStroke(neonColor);
+        ghost.setStrokeWidth(2); // Same stroke width as brick
+        ghost.setArcHeight(2);
+        ghost.setArcWidth(2);
+        
+        // Apply same glow effect but with reduced opacity
+        javafx.scene.effect.DropShadow primaryGlow = new javafx.scene.effect.DropShadow();
+        primaryGlow.setColor(neonColor.deriveColor(0, 0.85, 0.80, 0.35)); // Reduced from 0.55 to 0.35
+        primaryGlow.setRadius(6);
+        primaryGlow.setSpread(0.2);
+        primaryGlow.setOffsetX(0);
+        primaryGlow.setOffsetY(0);
+        
+        javafx.scene.effect.DropShadow secondaryGlow = new javafx.scene.effect.DropShadow();
+        secondaryGlow.setColor(neonColor.deriveColor(0, 0.80, 0.90, 0.15)); // Reduced from 0.30 to 0.15
+        secondaryGlow.setRadius(3);
+        secondaryGlow.setSpread(0.3);
+        secondaryGlow.setOffsetX(0);
+        secondaryGlow.setOffsetY(0);
+        secondaryGlow.setInput(primaryGlow);
+        
+        ghost.setEffect(secondaryGlow);
+        
+        // Overall reduced opacity to make it clearly distinguishable from active brick
+        ghost.setOpacity(0.6);
     }
 
     private void updateGhostVisibility(boolean ghostActive) {

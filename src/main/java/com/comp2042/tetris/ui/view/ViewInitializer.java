@@ -9,10 +9,24 @@ import javafx.scene.text.Font;
  */
 public final class ViewInitializer {
 
+    private String digitalFontFamily;
 
     public void loadFonts(Class<?> loaderClass) {
-        Font.loadFont(loaderClass.getClassLoader()
-            .getResource("digital.ttf").toExternalForm(), 38);
+        try {
+            java.net.URL res = loaderClass.getClassLoader().getResource("digital.ttf");
+            if (res != null) {
+                javafx.scene.text.Font f = javafx.scene.text.Font.loadFont(res.toExternalForm(), 38);
+                if (f != null) {
+                    digitalFontFamily = f.getFamily();
+                }
+            }
+        } catch (Exception ignored) {
+            // ignore font loading failures; fallbacks will be used
+        }
+    }
+
+    public String getDigitalFontFamily() {
+        return digitalFontFamily;
     }
 
 

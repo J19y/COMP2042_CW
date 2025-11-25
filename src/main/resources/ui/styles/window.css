@@ -15,11 +15,16 @@
 
 /* Game Board - Central Focus */
 .gameBoard {
-    -fx-border-color: #cc00ff; /* Purple Neon */
-    -fx-border-width: 2px;
-    -fx-border-radius: 0px;
-    -fx-effect: dropshadow(gaussian, rgba(204, 0, 255, 0.4), 10, 0.3, 0, 0);
-    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-border-color: #f6f6f4; /* Off-white border for main bricks container */
+    /* remove only the top border so the board appears open at the top */
+    -fx-border-width: 0 2px 2px 2px; /* top right bottom left */
+    /* soft rounded corners to match the theme */
+        -fx-border-radius: 8px;
+        -fx-background-radius: 8px;
+        /* reduce inner neon so bricks contrast — keep a faint outer glow only */
+        -fx-effect: dropshadow(gaussian, rgba(160, 40, 220, 0.22), 12, 0.28, 0, 0);
+        /* much darker interior so the bricks stand out, but partially translucent so background shows through */
+        -fx-background-color: linear-gradient(to bottom, rgba(6,2,12,0.55), rgba(2,0,6,0.55));
 }
 
 /* Panels */
@@ -33,23 +38,29 @@
 }
 
 .info-panel {
-    -fx-border-color: #00ffff; /* Cyan */
+    -fx-border-color: #00f0e0; /* Cyan-turquoise */
     -fx-border-width: 2px;
     -fx-border-radius: 10px;
     -fx-background-radius: 10px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.3), 5, 0.2, 0, 0);
-    -fx-background-color: rgba(0, 20, 40, 0.3);
-    -fx-padding: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0, 210, 200, 0.18), 8, 0.18, 0, 0), innershadow(gaussian, rgba(0,10,14,0.22), 6, 0.12, 0, 0);
+    -fx-background-color: linear-gradient(to bottom, rgba(0,12,14,0.55), rgba(0,4,6,0.45));
+    -fx-padding: 14;
 }
 
 .next-panel {
-    -fx-border-color: #ff00ff; /* Pink/Purple */
+    /* more natural, less purple: teal/charcoal panel that blends with the board */
+    -fx-border-color: #2ec1a8; /* soft teal */
     -fx-border-width: 2px;
-    -fx-border-radius: 10px;
-    -fx-background-radius: 10px;
-    -fx-effect: dropshadow(gaussian, rgba(255, 0, 255, 0.3), 5, 0.2, 0, 0);
-    -fx-background-color: rgba(40, 0, 40, 0.3);
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-background-color: linear-gradient(to bottom right, rgba(12,24,28,0.55), rgba(6,12,14,0.45));
+    -fx-effect: dropshadow(gaussian, rgba(46,193,168,0.06), 10, 0.18, 0, 0), innershadow(gaussian, rgba(0,0,0,0.2), 6, 0.12, 0, 0);
+    -fx-translate-y: -8px; /* small tuck */
+    -fx-padding: 10px;
 }
+
+/* Wrapper around board + next to create a continuous neon outline */
+/* (wrapper and inner-separator removed) */
 
 /* Text Styles */
 .panel-label {
@@ -68,11 +79,11 @@
 }
 
 .info-value-timer {
-    -fx-font-family: 'DigitalFont', "Arial";
-    -fx-font-weight: bold;
-    -fx-font-size: 40px;
-    -fx-fill: #00ffff; /* Cyan */
-    -fx-effect: dropshadow(gaussian, #00ffff, 6, 0.3, 0, 0);
+    /* Use digital font and smaller size for timer */
+    -fx-font-family: 'DigitalFont';
+    -fx-font-weight: normal;
+    -fx-font-size: 28px;
+    -fx-fill: white;
 }
 
 .info-value-score {
@@ -80,7 +91,6 @@
     -fx-font-weight: bold;
     -fx-font-size: 28px;
     -fx-fill: #ffaa00; /* Orange */
-    -fx-effect: dropshadow(gaussian, #ffaa00, 6, 0.35, 0, 0);
 }
 
 .game-over-text {

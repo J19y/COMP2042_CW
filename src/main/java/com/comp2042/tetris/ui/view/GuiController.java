@@ -30,7 +30,6 @@ import javafx.scene.Group;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -78,6 +77,8 @@ public class GuiController implements Initializable, GameView {
     private Text timerText;
     
     private IntegerProperty scoreProperty;
+    private int lastScoreHundred = 0;
+    private javafx.animation.Timeline scoreGlowTimeline;
 
     @FXML
     private GameOverPanel gameOverPanel;
@@ -124,6 +125,11 @@ public class GuiController implements Initializable, GameView {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         viewInitializer.loadFonts(getClass());
+        // If the ViewInitializer loaded the digital font, apply it directly to timerText to ensure usage
+        String digitalFamily = viewInitializer.getDigitalFontFamily();
+        if (digitalFamily != null && timerText != null) {
+            timerText.setFont(javafx.scene.text.Font.font(digitalFamily, 28));
+        }
         viewInitializer.setupGamePanel(gamePanel);
         viewInitializer.setupGameOverPanel(gameOverPanel);
         if (gameOverPanel != null) {
@@ -401,12 +407,63 @@ public class GuiController implements Initializable, GameView {
         this.scoreProperty = integerProperty;
         if (scoreText != null) {
             scoreText.textProperty().bind(integerProperty.asString());
+            // initialize last hundred bucket
+            lastScoreHundred = integerProperty.get() / 100;
+
+            // listen for score changes and trigger glow every time we cross a 100-point boundary
+            integerProperty.addListener((obs, oldV, newV) -> {
+                if (newV == null) return;
+                int oldHundred = (oldV == null) ? 0 : oldV.intValue() / 100;
+                int newHundred = newV.intValue() / 100;
+                if (newHundred > oldHundred) {
+                    playScoreGlow();
+                }
+            });
         }
+    }
+
+    private void playScoreGlow() {
+        if (scoreText == null) return;
+
+        // stop previous animation if still running
+        if (scoreGlowTimeline != null) {
+            scoreGlowTimeline.stop();
+        }
+
+        javafx.scene.effect.DropShadow ds = new javafx.scene.effect.DropShadow();
+        ds.setColor(javafx.scene.paint.Color.CYAN);
+        ds.setRadius(0);
+        ds.setSpread(0.6);
+        scoreText.setEffect(ds);
+
+        scoreGlowTimeline = new javafx.animation.Timeline(
+            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
+                new javafx.animation.KeyValue(ds.radiusProperty(), 0),
+                new javafx.animation.KeyValue(scoreText.scaleXProperty(), 1.0),
+                new javafx.animation.KeyValue(scoreText.scaleYProperty(), 1.0)
+            ),
+            new javafx.animation.KeyFrame(javafx.util.Duration.millis(120),
+                new javafx.animation.KeyValue(ds.radiusProperty(), 18),
+                new javafx.animation.KeyValue(scoreText.scaleXProperty(), 1.12),
+                new javafx.animation.KeyValue(scoreText.scaleYProperty(), 1.12)
+            ),
+            new javafx.animation.KeyFrame(javafx.util.Duration.millis(360),
+                new javafx.animation.KeyValue(ds.radiusProperty(), 0),
+                new javafx.animation.KeyValue(scoreText.scaleXProperty(), 1.0),
+                new javafx.animation.KeyValue(scoreText.scaleYProperty(), 1.0)
+            )
+        );
+
+        scoreGlowTimeline.setOnFinished(e -> scoreText.setEffect(null));
+        scoreGlowTimeline.play();
     }
 
     private void renderNextBrick(List<int[][]> nextBricks) {
         nextBrickPanel.getChildren().clear();
-        for (int[][] nextBrickData : nextBricks) {
+        if (nextBricks == null || nextBricks.isEmpty()) return;
+        int limit = Math.min(2, nextBricks.size());
+        for (int idx = 0; idx < limit; idx++) {
+            int[][] nextBrickData = nextBricks.get(idx);
             GridPane brickGrid = new GridPane();
             brickGrid.setHgap(1);
             brickGrid.setVgap(1);
@@ -420,10 +477,7 @@ public class GuiController implements Initializable, GameView {
                         rectangle.setFill(paint);
                         rectangle.setArcHeight(9);
                         rectangle.setArcWidth(9);
-                        // Add glow effect
-                        if (paint instanceof Color color) {
-                            rectangle.setEffect(new javafx.scene.effect.DropShadow(10, color));
-                        }
+                        // No glow effect for next-brick preview (keep plain fill)
                         brickGrid.add(rectangle, j, i);
                     }
                 }
@@ -455,7 +509,8 @@ public class GuiController implements Initializable, GameView {
 
     @FXML
     public void pauseGame(ActionEvent actionEvent) {
-        togglePause();
+        // Make the pause button behave like the P key: open the settings overlay
+        openSettings();
     }
 
     private void togglePause() {

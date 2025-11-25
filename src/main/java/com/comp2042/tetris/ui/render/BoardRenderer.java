@@ -1,11 +1,15 @@
 package com.comp2042.tetris.ui.render;
 
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import com.comp2042.tetris.ui.theme.ColorPalette;
+import com.comp2042.tetris.ui.theme.NeonGlowStyle;
 
 /**
  * Renders the board background grid of cells.
  * Responsible only for creating and updating the static background matrix.
+ * Now applies neon-glow effects to all brick cells.
  */
 public final class BoardRenderer {
 
@@ -46,11 +50,28 @@ public final class BoardRenderer {
         }
     }
 
-    private void setRectangleData(int color, Rectangle rectangle) {
+    private void setRectangleData(int cellId, Rectangle rectangle) {
         if (rectangle != null) {
-            rectangle.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(color));
-            rectangle.setArcHeight(9);
-            rectangle.setArcWidth(9);
+            // Apply neon glow if this is a non-empty cell
+            if (cellId != 0) {
+                Color baseColor = ColorPalette.getInstance().getColor(cellId) instanceof Color
+                        ? (Color) ColorPalette.getInstance().getColor(cellId)
+                        : Color.WHITE;
+                Color neonColor = ColorPalette.getNeon(cellId);
+                if (neonColor == null) {
+                    neonColor = baseColor;
+                }
+                NeonGlowStyle.applyNeonGlow(rectangle, baseColor, neonColor);
+                rectangle.setVisible(true);
+            } else {
+                // Empty cell: no fill, no effects
+                rectangle.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(cellId));
+                rectangle.setStroke(null);
+                rectangle.setEffect(null);
+                rectangle.setArcHeight(9);
+                rectangle.setArcWidth(9);
+                rectangle.setVisible(false);
+            }
         }
     }
 }

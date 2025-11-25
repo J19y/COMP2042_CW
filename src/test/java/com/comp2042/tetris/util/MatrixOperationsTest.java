@@ -116,6 +116,21 @@ class MatrixOperationsTest {
     }
 
     @Test
+    void testMerge_ignoresCellsOutsideBoardBounds() {
+        int[][] board = new int[2][2];
+        int[][] brick = {
+            {7, 7},
+            {7, 7}
+        };
+
+        int[][] merged = MatrixOperations.merge(board, brick, 1, 1);
+
+        assertEquals(7, merged[1][1]);
+        assertEquals(0, merged[0][1]);
+        assertEquals(0, merged[1][0]);
+    }
+
+    @Test
     void testClearRows_removesFullRows() {
         // Create a matrix where rows 0 and 2 are completely filled
         int[][] matrix = {

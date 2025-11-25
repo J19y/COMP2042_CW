@@ -11,122 +11,142 @@
 <?import java.net.URL?>
 
 <StackPane fx:id="rootPane" fx:controller="com.comp2042.tetris.ui.view.GuiController"
-           xmlns:fx="http://javafx.com/fxml"
-           prefWidth="700" prefHeight="600"
-           styleClass="root">
-    
+        xmlns:fx="http://javafx.com/fxml"
+        prefWidth="700" prefHeight="600"
+        styleClass="root">
+
     <!-- Background Animation Layer -->
     <Pane fx:id="backgroundPane" />
 
-    <HBox alignment="CENTER" spacing="20">
-        <!-- Left Column: Stats -->
-        <VBox alignment="TOP_CENTER" spacing="20" style="-fx-padding: 50 0 0 0;">
-            <!-- Info Panel (Timer & Score) -->
-            <VBox spacing="15" styleClass="info-panel" minWidth="120" maxWidth="120" alignment="CENTER_LEFT">
-                    <VBox spacing="8" alignment="CENTER_LEFT">
-                        <Text text="TIMER:" styleClass="info-label"/>
-                        <Text fx:id="timerText" text="00:00" styleClass="info-value-timer"/>
+            <HBox alignment="CENTER" spacing="16">
+                <!-- LeftSideContainer: pause at top-left, info at bottom-left -->
+                <VBox fx:id="leftContainer" alignment="TOP_LEFT" spacing="8"
+                      prefHeight="420" minHeight="420" maxHeight="420" style="-fx-padding: 0 12 0 0;">
+                    <!-- pauseContainer at the very top-left -->
+                    <HBox fx:id="pauseContainer" alignment="TOP_LEFT" spacing="0">
+                        <Button fx:id="pauseButton" text="⏸" styleClass="menu-button" onAction="#pauseGame"
+                                style="-fx-font-size: 20px; -fx-min-width: 50px; -fx-min-height: 50px;">
+                            <tooltip>
+                                <Tooltip text="Pause (P)" />
+                            </tooltip>
+                        </Button>
+                    </HBox>
+
+                    <!-- spacer pushes the infoContainer to the bottom of the same height as the game board -->
+                    <Region VBox.vgrow="ALWAYS" />
+
+                    <!-- infoContainer: TIMER and SCORE labels above their values; score in white -->
+                    <VBox fx:id="infoContainer" spacing="6" alignment="CENTER_LEFT" style="-fx-padding: 6 0 12 0;">
+                        <VBox spacing="0" alignment="CENTER_LEFT">
+                            <Text text="TIMER:" styleClass="info-label"/>
+                            <Text fx:id="timerText" text="00:00" styleClass="info-value-timer" style="-fx-fill: white; -fx-font-weight: normal;"/>
+                        </VBox>
+
+                        <VBox spacing="2" alignment="CENTER_LEFT" style="-fx-padding: 6 0 0 0;">
+                            <Text text="SCORE:" styleClass="info-label"/>
+                            <Text fx:id="scoreText" text="0" styleClass="info-value-score" style="-fx-fill: white;"/>
+                        </VBox>
                     </VBox>
-                    <VBox spacing="8" alignment="CENTER_LEFT" style="-fx-padding: 12 0 0 0;">
-                        <Text text="SCORE:" styleClass="info-label"/>
-                        <Text fx:id="scoreText" text="0" styleClass="info-value-score"/>
+                </VBox>
+
+                <!-- Center Column: Game Board -->
+                <!-- Container: 220×420px with 10px padding = 200×400px inner grid -->
+                    <BorderPane fx:id="gameBoard" styleClass="gameBoard"
+                           prefWidth="220" prefHeight="420"
+                           minWidth="220" minHeight="420"
+                           maxWidth="220" maxHeight="420"
+                           style="-fx-padding: 10; -fx-border-insets: 0;">
+                    <center>
+                        <Pane fx:id="boardClipContainer" prefWidth="200" prefHeight="400"
+                              minWidth="200" minHeight="400" maxWidth="200" maxHeight="400"
+                              style="-fx-background-color: transparent;">
+                            <StackPane style="-fx-background-color: transparent;">
+                                <!-- Base game board (200×400 for 10×20 grid at 20px per cell) -->
+                                <GridPane fx:id="gamePanel" hgap="0" vgap="0"
+                                          prefWidth="200" prefHeight="400"
+                                          minWidth="200" minHeight="400"
+                                          maxWidth="200" maxHeight="400"
+                                          style="-fx-background-color: transparent;"/>
+                                <!-- Ghost brick preview layer (overlays gamePanel exactly) -->
+                                <GridPane fx:id="ghostPanel" hgap="0" vgap="0"
+                                          prefWidth="200" prefHeight="400"
+                                          minWidth="200" minHeight="400"
+                                          maxWidth="200" maxHeight="400"
+                                          style="-fx-background-color: transparent;"
+                                          mouseTransparent="true" managed="false"/>
+                                <!-- Active falling brick layer (overlays gamePanel exactly) -->
+                                <GridPane fx:id="brickPanel" hgap="0" vgap="0" mouseTransparent="true" managed="false" 
+                                          prefWidth="200" prefHeight="400"
+                                          minWidth="200" minHeight="400"
+                                          maxWidth="200" maxHeight="400"
+                                          style="-fx-background-color: transparent;"/>
+                                
+                                <!-- Countdown Overlay -->
+                                <StackPane fx:id="countdownOverlay" visible="false">
+                                    <Text fx:id="countdownText" text="3" styleClass="countdown-text"/>
+                                </StackPane>
+                            </StackPane>
+                        </Pane>
+                    </center>
+                </BorderPane>
+
+                <!-- Right Column: NEXT -->
+                <VBox alignment="TOP_CENTER" spacing="20" prefHeight="420" minHeight="420" maxHeight="420" style="-fx-padding: 0 0 0 0;">
+                    <VBox spacing="14" alignment="TOP_CENTER">
+                        <Text text="NEXT" styleClass="panel-label"/>
+                        <StackPane styleClass="next-panel" minWidth="110" prefWidth="110" maxWidth="110" minHeight="120" prefHeight="140" maxHeight="140" alignment="TOP_CENTER">
+                            <VBox fx:id="nextBrickPanel" spacing="8" alignment="TOP_CENTER" style="-fx-padding: 8 6 0 6;"/>
+                        </StackPane>
                     </VBox>
-            </VBox>
-            
-            <!-- Pause Button (on-screen) -->
-            <Button fx:id="pauseButton" text="⏸" styleClass="menu-button" onAction="#pauseGame"
-                    style="-fx-font-size: 20px; -fx-min-width: 50px; -fx-min-height: 50px;">
-                <tooltip>
-                    <Tooltip text="Pause (P)" />
-                </tooltip>
-            </Button>
-        </VBox>
-
-        <!-- Center Column: Game Board -->
-        <BorderPane fx:id="gameBoard" styleClass="gameBoard"
-                   prefWidth="215" prefHeight="425"
-                   minWidth="215" minHeight="425"
-                   maxWidth="215" maxHeight="425">
-            <center>
-                <StackPane>
-                    <Pane fx:id="boardClipContainer" maxWidth="209" maxHeight="419" minWidth="209" minHeight="419" prefWidth="209" prefHeight="419">
-                        <GridPane fx:id="gamePanel" hgap="1" vgap="1"
-                                  prefWidth="209" prefHeight="419"
-                                  minWidth="209" minHeight="419"
-                                  maxWidth="209" maxHeight="419"/>
-                        <GridPane fx:id="ghostPanel" hgap="1" vgap="1"
-                                  prefWidth="209" prefHeight="419"
-                                  minWidth="209" minHeight="419"
-                                  maxWidth="209" maxHeight="419"
-                                  mouseTransparent="true" managed="false"/>
-                        <GridPane fx:id="brickPanel" hgap="1" vgap="1" mouseTransparent="true" managed="false"/>
-                    </Pane>
-                    
-                    <!-- Countdown Overlay -->
-                    <StackPane fx:id="countdownOverlay" visible="false">
-                        <Text fx:id="countdownText" text="3" styleClass="countdown-text"/>
-                    </StackPane>
-                </StackPane>
-            </center>
-        </BorderPane>
-
-        <!-- Right Column: NEXT -->
-        <VBox alignment="TOP_CENTER" spacing="20" style="-fx-padding: 50 0 0 0;">
-            <VBox spacing="5" alignment="CENTER_LEFT">
-                <Text text="NEXT" styleClass="panel-label"/>
-                <StackPane styleClass="next-panel" minWidth="100" minHeight="300" maxWidth="100" maxHeight="300" alignment="TOP_CENTER">
-                    <VBox fx:id="nextBrickPanel" spacing="20" alignment="CENTER" style="-fx-padding: 20 0 0 0;"/>
-                </StackPane>
-            </VBox>
-        </VBox>
-    </HBox>
-
-    <Pane fx:id="pauseDim" styleClass="pause-dim" visible="false" mouseTransparent="true" />
-
-    <!-- Notification Overlay -->
-    <Group fx:id="groupNotification">
-        <StackPane alignment="CENTER">
-            <GameOverPanel fx:id="gameOverPanel"/>
-        </StackPane>
-    </Group>
-    
-    <!-- Settings Overlay -->
-    <StackPane fx:id="settingsOverlay" visible="false" style="-fx-background-color: rgba(0,0,0,0.8);">
-        <VBox spacing="18" alignment="CENTER" styleClass="info-panel" maxWidth="320" maxHeight="320">
-            <Text text="PAUSED" styleClass="panel-label" style="-fx-font-size: 26px;"/>
-
-            <Button fx:id="resumeButton" text="RESUME" styleClass="menu-button" onAction="#resumeGame" prefWidth="200">
-                <graphic>
-                    <Text text="▶" fill="#ffffff" />
-                </graphic>
-            </Button>
-
-            <HBox spacing="10" alignment="CENTER" styleClass="music-controls">
-                <Slider fx:id="volumeSlider" min="0" max="100" value="100" prefWidth="140" />
-                <Button fx:id="musicToggleButton" text="ON" styleClass="menu-button small-button" onAction="#toggleMusic" prefWidth="64"
-                        style="-fx-background-color: transparent; -fx-border-color: rgba(0,255,220,0.12); -fx-border-width: 1px; -fx-background-radius: 10px; -fx-border-radius: 10px; -fx-text-fill: #eaf6ff;">
-                    <graphic>
-                        <Text text="🔊" fill="#ffffff" />
-                    </graphic>
-                    <tooltip>
-                        <Tooltip text="Toggle music (P)" />
-                    </tooltip>
-                </Button>
-                <Text fx:id="volumeText" text="100%" styleClass="info-label"/>
+                </VBox>
             </HBox>
 
-            <Pane prefHeight="1" prefWidth="200" styleClass="settings-separator" />
+            <Pane fx:id="pauseDim" styleClass="pause-dim" visible="false" mouseTransparent="true" />
 
-            <Button text="MAIN MENU" styleClass="menu-button" onAction="#returnToMenu" prefWidth="200">
-                <graphic>
-                    <Text text="⏏" fill="#ffffff" />
-                </graphic>
-            </Button>
-        </VBox>
-    </StackPane>
+            <!-- Notification Overlay -->
+            <Group fx:id="groupNotification">
+                <StackPane alignment="CENTER">
+                    <GameOverPanel fx:id="gameOverPanel"/>
+                </StackPane>
+            </Group>
+    
+            <!-- Settings Overlay -->
+            <StackPane fx:id="settingsOverlay" visible="false" style="-fx-background-color: rgba(0,0,0,0.8);">
+                <VBox spacing="18" alignment="CENTER" styleClass="info-panel" maxWidth="320" maxHeight="320">
+                    <Text text="PAUSED" styleClass="panel-label" style="-fx-font-size: 26px;"/>
 
-    <stylesheets>
-        <URL value="@../styles/window.css"/>
-    </stylesheets>
-</StackPane>
+                    <Button fx:id="resumeButton" text="RESUME" styleClass="menu-button" onAction="#resumeGame" prefWidth="200">
+                        <graphic>
+                            <Text text="▶" fill="#ffffff" />
+                        </graphic>
+                    </Button>
+
+                    <HBox spacing="10" alignment="CENTER" styleClass="music-controls">
+                        <Slider fx:id="volumeSlider" min="0" max="100" value="100" prefWidth="140" />
+                        <Button fx:id="musicToggleButton" text="ON" styleClass="menu-button small-button" onAction="#toggleMusic" prefWidth="64"
+                                style="-fx-background-color: transparent; -fx-border-color: rgba(0,255,220,0.12); -fx-border-width: 1px; -fx-background-radius: 10px; -fx-border-radius: 10px; -fx-text-fill: #eaf6ff;">
+                            <graphic>
+                                <Text text="🔊" fill="#ffffff" />
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Toggle music (P)" />
+                            </tooltip>
+                        </Button>
+                        <Text fx:id="volumeText" text="100%" styleClass="info-label"/>
+                    </HBox>
+
+                    <Pane prefHeight="1" prefWidth="200" styleClass="settings-separator" />
+
+                    <Button text="MAIN MENU" styleClass="menu-button" onAction="#returnToMenu" prefWidth="200">
+                        <graphic>
+                            <Text text="⏏" fill="#ffffff" />
+                        </graphic>
+                    </Button>
+                </VBox>
+            </StackPane>
+
+            <stylesheets>
+                <URL value="@../styles/window.css"/>
+            </stylesheets>
+        </StackPane>
 

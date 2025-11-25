@@ -101,15 +101,30 @@ public class GameOverAnimator {
         int split = 2; // 2x2 pixels
         double pixelSize = size / split;
         
+        // Capture the block's current appearance (fill and effects)
+        javafx.scene.paint.Paint originalFill = block.getFill();
+        javafx.scene.effect.Effect originalEffect = block.getEffect();
+        
         for(int i=0; i<split; i++) {
             for(int j=0; j<split; j++) {
-                Rectangle pixel = new Rectangle(pixelSize, pixelSize, block.getFill());
+                Rectangle pixel = new Rectangle(pixelSize, pixelSize);
+                // Preserve original block's appearance
+                pixel.setFill(originalFill != null ? originalFill : block.getFill());
+                pixel.setStroke(block.getStroke());
+                pixel.setStrokeWidth(block.getStrokeWidth());
+                pixel.setArcHeight(block.getArcHeight());
+                pixel.setArcWidth(block.getArcWidth());
+                
                 pixel.setManaged(false); // Important for manual positioning in GridPane
                 pixel.setTranslateX(bounds.getMinX() + i * pixelSize);
                 pixel.setTranslateY(bounds.getMinY() + j * pixelSize);
                 
-                // Add neon glow
-                pixel.setEffect(new Glow(0.8));
+                // Preserve neon glow effect if present
+                if (originalEffect != null) {
+                    pixel.setEffect(originalEffect);
+                } else {
+                    pixel.setEffect(new Glow(0.8));
+                }
                 
                 gamePanel.getChildren().add(pixel);
                 animatePixel(pixel);

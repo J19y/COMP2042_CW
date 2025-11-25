@@ -297,6 +297,7 @@ public class MenuController {
             
         } catch (IOException e) {
             System.err.println("Failed to load game scene: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

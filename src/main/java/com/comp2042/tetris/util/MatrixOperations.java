@@ -37,7 +37,9 @@ public class MatrixOperations {
                 int targetX = x + j;
                 int targetY = y + i;
                 if (brick[i][j] != 0) {
-                    copy[targetY][targetX] = brick[i][j];
+                    if (targetY >= 0 && targetY < copy.length && targetX >= 0 && targetX < copy[targetY].length) {
+                        copy[targetY][targetX] = brick[i][j];
+                    }
                 }
             }
         }
