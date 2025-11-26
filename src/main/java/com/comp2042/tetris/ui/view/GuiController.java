@@ -63,9 +63,6 @@ public class GuiController implements Initializable, GameView {
 
     @FXML
     private GridPane brickPanel;
-    
-    @FXML
-    private GridPane ghostPanel;
 
     @FXML
     private javafx.scene.layout.VBox nextBrickPanel;
@@ -100,6 +97,9 @@ public class GuiController implements Initializable, GameView {
     
     @FXML
     private javafx.scene.control.Button musicToggleButton;
+
+    @FXML
+    private javafx.scene.layout.HBox helpContainer;
 
     private boolean musicOn = true;
 
@@ -139,6 +139,7 @@ public class GuiController implements Initializable, GameView {
         applyBoardClip();
         bindPauseDim();
         updatePauseDimVisibility();
+        bindHelpContainer();
         mediator = new GameMediator(boardRenderer, viewInitializer, stateManager, gamePanel, gameOverPanel);
 
         startAnimation();
@@ -347,7 +348,7 @@ public class GuiController implements Initializable, GameView {
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         Rectangle[][] displayMatrix = boardRenderer.initBoard(gamePanel, boardMatrix);
 
-        ActiveBrickRenderer activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel, ghostPanel);
+        ActiveBrickRenderer activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel);
         activeBrickRenderer.initialize(brick);
         renderNextBrick(brick.getNextBrickData());
 
@@ -568,5 +569,18 @@ public class GuiController implements Initializable, GameView {
             pauseDimTransition.setOnFinished(e -> pauseDim.setVisible(false));
         }
         pauseDimTransition.play();
+    }
+
+    private void bindHelpContainer() {
+        if (helpContainer == null) {
+            return;
+        }
+        // Set initial visibility based on current state
+        helpContainer.setVisible(stateManager.getCurrentState() == GameStateManager.GameState.MENU);
+        
+        // Listen for state changes and update visibility
+        stateManager.stateProperty().addListener((obs, oldVal, newVal) -> {
+            helpContainer.setVisible(newVal == GameStateManager.GameState.MENU);
+        });
     }
 }

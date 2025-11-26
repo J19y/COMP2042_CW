@@ -67,13 +67,7 @@
                                           minWidth="200" minHeight="400"
                                           maxWidth="200" maxHeight="400"
                                           style="-fx-background-color: transparent;"/>
-                                <!-- Ghost brick preview layer (overlays gamePanel exactly) -->
-                                <GridPane fx:id="ghostPanel" hgap="0" vgap="0"
-                                          prefWidth="200" prefHeight="400"
-                                          minWidth="200" minHeight="400"
-                                          maxWidth="200" maxHeight="400"
-                                          style="-fx-background-color: transparent;"
-                                          mouseTransparent="true" managed="false"/>
+                                <!-- Ghost brick preview layer removed -->
                                 <!-- Active falling brick layer (overlays gamePanel exactly) -->
                                 <GridPane fx:id="brickPanel" hgap="0" vgap="0" mouseTransparent="true" managed="false" 
                                           prefWidth="200" prefHeight="400"
@@ -102,6 +96,22 @@
             </HBox>
 
             <Pane fx:id="pauseDim" styleClass="pause-dim" visible="false" mouseTransparent="true" />
+
+            <!-- Help Container (Bottom-Left) -->
+            <HBox fx:id="helpContainer" alignment="BOTTOM_LEFT" spacing="12" 
+                   style="-fx-padding: 0 0 20 20;" mouseTransparent="true">
+                <!-- Retro Bulb Icon -->
+                <StackPane styleClass="retro-bulb" prefWidth="32" prefHeight="32" 
+                          minWidth="32" minHeight="32" maxWidth="32" maxHeight="32">
+                    <Text text="💡" style="-fx-font-size: 24px;" />
+                </StackPane>
+                
+                <!-- Controls Text -->
+                <VBox alignment="CENTER_LEFT" spacing="2">
+                    <Text text="Mouse" styleClass="controls-text" />
+                    <Text text="WASD" styleClass="controls-text" />
+                </VBox>
+            </HBox>
 
             <!-- Notification Overlay -->
             <Group fx:id="groupNotification">

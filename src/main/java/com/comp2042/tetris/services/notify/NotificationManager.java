@@ -1,6 +1,5 @@
 package com.comp2042.tetris.services.notify;
 
-import com.comp2042.tetris.ui.view.NotificationPanel;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
@@ -11,6 +10,8 @@ import javafx.animation.SequentialTransition;
 import javafx.animation.TranslateTransition;
 import javafx.scene.Group;
 import javafx.scene.text.Text;
+import javafx.scene.paint.Color;
+import com.comp2042.tetris.ui.view.LineClearNotification;
 import javafx.util.Duration;
 
 /**
@@ -20,6 +21,7 @@ import javafx.util.Duration;
 public final class NotificationManager {
     
     private final Group notificationContainer;
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(NotificationManager.class.getName());
 
     /**
      * Creates a new NotificationService.
@@ -39,10 +41,8 @@ public final class NotificationManager {
         if (notificationContainer == null) {
             return;
         }
-        
-        NotificationPanel panel = new NotificationPanel("+" + bonus);
-        notificationContainer.getChildren().add(panel);
-        panel.showScore(notificationContainer.getChildren());
+        // Notifications disabled: old NotificationPanel removed
+        LOGGER.fine(() -> "Score bonus suppressed: +" + bonus);
     }
 
     /**
@@ -54,55 +54,29 @@ public final class NotificationManager {
         if (notificationContainer == null) {
             return;
         }
-        
-        NotificationPanel panel = new NotificationPanel(message);
-        notificationContainer.getChildren().add(panel);
-        panel.showScore(notificationContainer.getChildren());
+        // Notifications disabled: old NotificationPanel removed
+        LOGGER.fine(() -> "Message suppressed: " + message);
     }
 
     public void showLineClearReward(int lines) {
         if (lines <= 0 || notificationContainer == null) return;
-
-        String text = "";
-        String styleClass = "";
-        double scale = 1.0;
-
+        String title;
+        Color accent;
         switch (lines) {
-            case 1: text = "SINGLE"; styleClass = "reward-single"; scale = 1.0; break;
-            case 2: text = "DOUBLE"; styleClass = "reward-double"; scale = 1.2; break;
-            case 3: text = "TRIPLE"; styleClass = "reward-triple"; scale = 1.4; break;
-            case 4: text = "TETRIS!"; styleClass = "reward-tetris"; scale = 1.8; break;
+            case 1: title = "SINGLE"; accent = Color.web("#6EE7B7"); break;
+            case 2: title = "DOUBLE"; accent = Color.web("#60A5FA"); break;
+            case 3: title = "TRIPLE"; accent = Color.web("#FDBA74"); break;
+            case 4: title = "TETRIS!"; accent = Color.web("#FB7185"); break;
             default: return;
         }
 
-        Text rewardText = new Text(text);
-        rewardText.getStyleClass().add(styleClass);
-        
-        notificationContainer.getChildren().add(rewardText);
+        LOGGER.info(() -> "Line clear: " + lines + " lines. Showing reward: " + title);
+        LineClearNotification panel = new LineClearNotification(title, null, accent);
+        panel.show(notificationContainer);
 
-        SequentialTransition sequence = new SequentialTransition();
-
-        ScaleTransition pop = new ScaleTransition(Duration.millis(200), rewardText);
-        pop.setFromX(0); pop.setFromY(0);
-        pop.setToX(scale); pop.setToY(scale);
-        pop.setInterpolator(Interpolator.EASE_OUT);
-
-        PauseTransition hang = new PauseTransition(Duration.millis(800));
-
-        ParallelTransition floatFade = new ParallelTransition();
-        TranslateTransition moveUp = new TranslateTransition(Duration.millis(300), rewardText);
-        moveUp.setByY(-50);
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(300), rewardText);
-        fadeOut.setFromValue(1.0);
-        fadeOut.setToValue(0.0);
-        floatFade.getChildren().addAll(moveUp, fadeOut);
-
-        sequence.getChildren().addAll(pop, hang, floatFade);
-        sequence.setOnFinished(e -> notificationContainer.getChildren().remove(rewardText));
-        sequence.play();
-        
         if (lines == 4) {
             triggerScreenShake();
+            LineClearNotification.spawnConfetti(notificationContainer);
         }
     }
 
