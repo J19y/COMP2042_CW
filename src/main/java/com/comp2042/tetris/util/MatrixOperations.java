@@ -80,7 +80,7 @@ public class MatrixOperations {
             }
         }
         // Scoring logic moved to ScoreService - MatrixOperations should only handle matrix operations
-        return new RowClearResult(clearedRows.size(), tmp, 0);
+        return new RowClearResult(clearedRows.size(), tmp, 0, clearedRows);
     }
 
     public static List<int[][]> deepCopyList(List<int[][]> list){

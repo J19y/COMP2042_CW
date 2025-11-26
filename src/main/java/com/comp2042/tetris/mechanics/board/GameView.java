@@ -13,6 +13,18 @@ public interface GameView {
 
     void refreshGameBackground(int[][] boardMatrix);
 
+    /**
+     * Accepts a ShowResult asynchronously from the game engine so the view
+     * can update visuals (next-brick, active brick, etc.).
+     */
+    void acceptShowResult(com.comp2042.tetris.domain.model.ShowResult result);
+
+    /**
+     * Ask the view to animate a short settle of the active brick, then invoke
+     * the provided callback when the animation finishes.
+     */
+    void settleActiveBrick(Runnable onFinished);
+
     void bindScore(IntegerProperty scoreProperty);
 
     void setInputHandlers(InputActionHandler inputActionHandler, DropInput dropInput, CreateNewGame gameLifecycle);

@@ -30,6 +30,7 @@ public class DefaultBoardComponentsFactory implements BoardComponentsFactory {
 
     @Override
     public BrickPositionManager createPositionManager() {
-        return new BrickPositionManager(4, 10);
+        // Start coordinates set to (4,0) - y=0 is top of board (hidden rows handled elsewhere)
+        return new BrickPositionManager(4, 0);
     }
 }

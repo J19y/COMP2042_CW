@@ -44,8 +44,8 @@ public final class BrickDrop {
                 if (scoreBonus > 0) {
                     scoreService.add(scoreBonus);
                 }
-                // Update result with calculated score for display
-                result = new RowClearResult(result.getLinesRemoved(), result.getNewMatrix(), scoreBonus);
+                // Update result with calculated score for display (preserve cleared row indices)
+                result = new RowClearResult(result.getLinesRemoved(), result.getNewMatrix(), scoreBonus, result.getClearedRows());
             }
 
             // Notify via SpawnManager observers rather than direct callback

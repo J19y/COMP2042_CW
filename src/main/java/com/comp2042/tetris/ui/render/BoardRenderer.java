@@ -4,7 +4,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import com.comp2042.tetris.ui.theme.ColorPalette;
-import com.comp2042.tetris.ui.theme.NeonGlowStyle;
 
 /**
  * Renders the board background grid of cells.
@@ -26,11 +25,15 @@ public final class BoardRenderer {
      */
     public Rectangle[][] initBoard(GridPane gamePanel, int[][] boardMatrix) {
         gamePanel.getChildren().clear(); // Clear existing children to prevent duplicates/overflow
+        // Ensure the GridPane snaps to integer pixels to avoid sub-pixel gaps
+        gamePanel.setSnapToPixel(true);
         Rectangle[][] displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
         for (int i = 2; i < boardMatrix.length; i++) {
             for (int j = 0; j < boardMatrix[i].length; j++) {
                 Rectangle rectangle = new Rectangle(brickSize, brickSize);
                 rectangle.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(0));
+                rectangle.setTranslateX(0);
+                rectangle.setTranslateY(0);
                 displayMatrix[i][j] = rectangle;
                 gamePanel.add(rectangle, j, i - 2);
             }
@@ -61,7 +64,15 @@ public final class BoardRenderer {
                 if (neonColor == null) {
                     neonColor = baseColor;
                 }
-                NeonGlowStyle.applyNeonGlow(rectangle, baseColor, neonColor);
+                // For placed/background bricks we use a subtle stroke-only style
+                // to avoid large glow effects that can visually overflow the board
+                rectangle.setFill(Color.web("#000000", 0.28));
+                rectangle.setStroke(neonColor);
+                rectangle.setStrokeWidth(1);
+                rectangle.setStrokeType(javafx.scene.shape.StrokeType.INSIDE);
+                rectangle.setArcHeight(9);
+                rectangle.setArcWidth(9);
+                rectangle.setEffect(null);
                 rectangle.setVisible(true);
             } else {
                 // Empty cell: no fill, no effects

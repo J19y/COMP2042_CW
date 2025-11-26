@@ -62,6 +62,9 @@ public class GuiController implements Initializable, GameView {
     private Group groupNotification;
 
     @FXML
+    private GridPane ghostPanel;
+
+    @FXML
     private GridPane brickPanel;
 
     @FXML
@@ -74,7 +77,7 @@ public class GuiController implements Initializable, GameView {
     private Text timerText;
     
     private IntegerProperty scoreProperty;
-    private int lastScoreHundred = 0;
+    
     private javafx.animation.Timeline scoreGlowTimeline;
 
     @FXML
@@ -348,7 +351,7 @@ public class GuiController implements Initializable, GameView {
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         Rectangle[][] displayMatrix = boardRenderer.initBoard(gamePanel, boardMatrix);
 
-        ActiveBrickRenderer activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, brickPanel);
+        ActiveBrickRenderer activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, ghostPanel, brickPanel);
         activeBrickRenderer.initialize(brick);
         renderNextBrick(brick.getNextBrickData());
 
@@ -391,6 +394,20 @@ public class GuiController implements Initializable, GameView {
     }
 
     @Override
+    public void acceptShowResult(ShowResult result) {
+        handleResult(result);
+    }
+
+    @Override
+    public void settleActiveBrick(Runnable onFinished) {
+        if (mediator != null) {
+            mediator.settleActiveBrick(onFinished);
+        } else if (onFinished != null) {
+            onFinished.run();
+        }
+    }
+
+    @Override
     public void setInputHandlers(InputActionHandler inputActionHandler, DropInput dropInput, CreateNewGame gameLifecycle) {
         this.inputActionHandler = inputActionHandler;
         this.dropInput = dropInput;
@@ -408,8 +425,7 @@ public class GuiController implements Initializable, GameView {
         this.scoreProperty = integerProperty;
         if (scoreText != null) {
             scoreText.textProperty().bind(integerProperty.asString());
-            // initialize last hundred bucket
-            lastScoreHundred = integerProperty.get() / 100;
+            // initialize last hundred bucket (not used directly)
 
             // listen for score changes and trigger glow every time we cross a 100-point boundary
             integerProperty.addListener((obs, oldV, newV) -> {
@@ -478,7 +494,14 @@ public class GuiController implements Initializable, GameView {
                         rectangle.setFill(paint);
                         rectangle.setArcHeight(9);
                         rectangle.setArcWidth(9);
-                        // No glow effect for next-brick preview (keep plain fill)
+
+                        // Make next-brick preview follow the inside-black placed style
+                        javafx.scene.paint.Paint p = paint;
+                        javafx.scene.paint.Color baseColor = javafx.scene.paint.Color.WHITE;
+                        if (p instanceof javafx.scene.paint.Color) {
+                            baseColor = (javafx.scene.paint.Color) p;
+                        }
+                        com.comp2042.tetris.ui.theme.NeonGlowStyle.applyPlacedStyle(rectangle, baseColor);
                         brickGrid.add(rectangle, j, i);
                     }
                 }

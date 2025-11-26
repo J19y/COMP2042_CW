@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.comp2042.tetris.app.CreateNewGame;
 import com.comp2042.tetris.mechanics.board.GameView;
 import com.comp2042.tetris.domain.model.ViewData;
+import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.ui.input.DropInput;
 import com.comp2042.tetris.ui.input.InputActionHandler;
 
@@ -39,9 +40,18 @@ public class GameViewDecorator implements GameView {
         CreateNewGame gameLifecycle) {
         delegate.setInputHandlers(inputActionHandler, dropInput, gameLifecycle);
     }
-
     @Override
     public void gameOver() {
         delegate.gameOver();
+    }
+
+    @Override
+    public void settleActiveBrick(Runnable onSettled) {
+        delegate.settleActiveBrick(onSettled);
+    }
+
+    @Override
+    public void acceptShowResult(ShowResult showResult) {
+        delegate.acceptShowResult(showResult);
     }
 }

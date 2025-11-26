@@ -68,6 +68,13 @@
                                           maxWidth="200" maxHeight="400"
                                           style="-fx-background-color: transparent;"/>
                                 <!-- Ghost brick preview layer removed -->
+                                <!-- Ghost brick preview layer (under active brick, above board) -->
+                                <GridPane fx:id="ghostPanel" hgap="0" vgap="0" mouseTransparent="true" managed="false"
+                                          prefWidth="200" prefHeight="400"
+                                          minWidth="200" minHeight="400"
+                                          maxWidth="200" maxHeight="400"
+                                          style="-fx-background-color: transparent;"/>
+
                                 <!-- Active falling brick layer (overlays gamePanel exactly) -->
                                 <GridPane fx:id="brickPanel" hgap="0" vgap="0" mouseTransparent="true" managed="false" 
                                           prefWidth="200" prefHeight="400"
