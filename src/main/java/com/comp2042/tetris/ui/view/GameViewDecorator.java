@@ -46,6 +46,11 @@ public class GameViewDecorator implements GameView {
     }
 
     @Override
+    public void setRemainingTime(int seconds) {
+        delegate.setRemainingTime(seconds);
+    }
+
+    @Override
     public void settleActiveBrick(Runnable onSettled) {
         delegate.settleActiveBrick(onSettled);
     }

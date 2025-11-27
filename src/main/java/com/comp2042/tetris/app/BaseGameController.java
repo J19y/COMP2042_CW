@@ -30,7 +30,7 @@ import com.comp2042.tetris.domain.scoring.ScoringPolicy;
  * Base game controller that encapsulates core game logic and input handling.
  * Specific game modes should extend this class and override hooks.
  */
-public class BaseGameController implements GameplayFacade {
+public class BaseGameController implements GameplayFacade, GameModeLifecycle {
     protected final BrickMovement movement;
     protected final BrickDropActions dropActions;
     protected final BoardRead reader;
@@ -77,11 +77,26 @@ public class BaseGameController implements GameplayFacade {
         spawnManager.spawn();
         registerDefaultCommands();
         setupView();
-        onStart();
+        // Do not call onStart() here. Modes should be started explicitly via startMode()
     }
 
     // Hook for subclasses to start timers/effects when game constructed/started
     protected void onStart() {
+        // default no-op
+    }
+
+    @Override
+    public void startMode() {
+        onStart();
+    }
+
+    @Override
+    public void pauseMode() {
+        // default no-op
+    }
+
+    @Override
+    public void resumeMode() {
         // default no-op
     }
 
@@ -248,7 +263,7 @@ public class BaseGameController implements GameplayFacade {
         scoreService.reset();
         view.refreshGameBackground(reader.getBoardMatrix());
         // notify subclasses that a new game has started
-        onStart();
+        // Do NOT call onStart() here; the UI countdown will call startMode() when ready.
     }
     
     @Override

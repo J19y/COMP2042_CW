@@ -30,4 +30,11 @@ public interface GameView {
     void setInputHandlers(InputActionHandler inputActionHandler, DropInput dropInput, CreateNewGame gameLifecycle);
 
     void gameOver();
+
+    /**
+     * Update the view with remaining seconds for timed game modes.
+     * Implementations may ignore this call if they do not display a countdown.
+     * @param seconds remaining seconds in the countdown
+     */
+    void setRemainingTime(int seconds);
 }

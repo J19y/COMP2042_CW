@@ -293,6 +293,21 @@ final class GameControllerTest {
         public void gameOver() {
             // Not needed for these tests.
         }
+
+        @Override
+        public void acceptShowResult(com.comp2042.tetris.domain.model.ShowResult result) {
+            // Not needed for these tests.
+        }
+
+        @Override
+        public void settleActiveBrick(Runnable onFinished) {
+            if (onFinished != null) onFinished.run();
+        }
+
+        @Override
+        public void setRemainingTime(int seconds) {
+            // Not needed for these tests.
+        }
     }
 
     private static final class FixedScoringPolicy implements ScoringPolicy {

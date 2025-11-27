@@ -33,6 +33,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -123,7 +125,12 @@ public class GuiController implements Initializable, GameView {
     private int volume = 100;
     private boolean timerRunning;
     private boolean manualPauseActive;
+    // If true, the view is showing a countdown (remaining time) rather than elapsed time
+    private volatile boolean countdownMode = false;
     private FadeTransition pauseDimTransition;
+    // Low-time (<=10s) flicker timeline
+    private Timeline lowTimeFlicker;
+    private boolean lowTimeActive = false;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -192,15 +199,21 @@ public class GuiController implements Initializable, GameView {
             stateManager.pauseGame();
         }
         
-        javafx.animation.Timeline timeline = new javafx.animation.Timeline(
-            new javafx.animation.KeyFrame(Duration.seconds(0), e -> countdownText.setText("3")),
-            new javafx.animation.KeyFrame(Duration.seconds(1), e -> countdownText.setText("2")),
-            new javafx.animation.KeyFrame(Duration.seconds(2), e -> countdownText.setText("1")),
-            new javafx.animation.KeyFrame(Duration.seconds(3), e -> {
+        Timeline timeline = new Timeline(
+            new KeyFrame(Duration.seconds(0), e -> countdownText.setText("3")),
+            new KeyFrame(Duration.seconds(1), e -> countdownText.setText("2")),
+            new KeyFrame(Duration.seconds(2), e -> countdownText.setText("1")),
+            new KeyFrame(Duration.seconds(3), e -> {
                 countdownOverlay.setVisible(false);
                 stateManager.resumeGame();
                 mediator.ensureLoopRunning();
                 resumeTimerTracking();
+                // Inform the game controller/mode to start mode-specific behaviour (timers, etc.)
+                if (gameLifecycle instanceof com.comp2042.tetris.app.GameModeLifecycle) {
+                    try {
+                        ((com.comp2042.tetris.app.GameModeLifecycle) gameLifecycle).startMode();
+                    } catch (Exception ignored) {}
+                }
             })
         );
         timeline.play();
@@ -295,6 +308,10 @@ public class GuiController implements Initializable, GameView {
         if (timerText == null) {
             return;
         }
+        if (countdownMode) {
+            // countdown updates are pushed from controller via setRemainingTime()
+            return;
+        }
         long totalNanos = accumulatedNanos;
         if (timerRunning) {
             totalNanos += now - startTime;
@@ -329,9 +346,48 @@ public class GuiController implements Initializable, GameView {
         accumulatedNanos = 0L;
         startTime = System.nanoTime();
         timerRunning = false;
+        // Reset countdown mode so elapsed timer display is used by default
+        countdownMode = false;
         if (timerText != null) {
             updateTimerDisplay(0L);
         }
+    }
+
+    @Override
+    public void setRemainingTime(int seconds) {
+        // Called by timed controllers to update the remaining countdown.
+        countdownMode = true;
+        if (timerText == null) return;
+        int minutes = Math.max(0, seconds / 60);
+        int secs = Math.max(0, seconds % 60);
+        final String text = String.format("%02d:%02d", minutes, secs);
+        Platform.runLater(() -> {
+            timerText.setText(text);
+            // Last 10 seconds: turn red and flicker
+            if (seconds <= 10 && seconds >= 0) {
+                if (!lowTimeActive) {
+                    lowTimeActive = true;
+                    timerText.setFill(javafx.scene.paint.Color.RED);
+                    // start a simple flicker (toggle visibility)
+                    lowTimeFlicker = new Timeline(
+                        new KeyFrame(javafx.util.Duration.millis(450), ev -> timerText.setVisible(false)),
+                        new KeyFrame(javafx.util.Duration.millis(900), ev -> timerText.setVisible(true))
+                    );
+                    lowTimeFlicker.setCycleCount(Timeline.INDEFINITE);
+                    lowTimeFlicker.play();
+                }
+            } else {
+                if (lowTimeActive) {
+                    lowTimeActive = false;
+                    if (lowTimeFlicker != null) {
+                        lowTimeFlicker.stop();
+                        lowTimeFlicker = null;
+                    }
+                    timerText.setVisible(true);
+                    timerText.setFill(javafx.scene.paint.Color.WHITE);
+                }
+            }
+        });
     }
 
     private void pauseTimerTracking() {
@@ -412,8 +468,16 @@ public class GuiController implements Initializable, GameView {
         this.inputActionHandler = inputActionHandler;
         this.dropInput = dropInput;
         this.gameLifecycle = gameLifecycle;
-        // Bind the Pause key to opening settings (so pressing P shows the settings overlay)
-        inputHandler.setPauseAction(this::openSettings);
+        // Bind the Pause key to opening settings — but only when input is accepted
+        // and the game-over panel is not currently visible. This prevents opening
+        // the pause/settings overlay after the game-over screen is shown.
+        inputHandler.setPauseAction(() -> {
+            boolean canAccept = stateManager == null ? true : stateManager.canAcceptInput();
+            boolean gameOverVisible = gameOverPanel == null ? false : gameOverPanel.isVisible();
+            if (canAccept && !gameOverVisible) {
+                openSettings();
+            }
+        });
         if (gamePanel != null && inputHandler != null && inputActionHandler != null) {
             inputHandler.attach(gamePanel, this.inputActionHandler,
                 result -> handleResult(result), () -> stateManager.canAcceptInput());
@@ -516,6 +580,14 @@ public class GuiController implements Initializable, GameView {
         manualPauseActive = false;
         updatePauseDimVisibility();
         pauseTimerTracking();
+        // stop any low-time flicker
+        if (lowTimeFlicker != null) {
+            lowTimeFlicker.stop();
+            lowTimeFlicker = null;
+        }
+        lowTimeActive = false;
+        if (timerText != null) timerText.setFill(javafx.scene.paint.Color.WHITE);
+
         mediator.handleGameOver(finalScore);
     }
 
@@ -542,7 +614,12 @@ public class GuiController implements Initializable, GameView {
     @FXML
     public void pauseGame(ActionEvent actionEvent) {
         // Make the pause button behave like the P key: open the settings overlay
-        openSettings();
+        // but only when input is accepted and the game-over panel isn't visible.
+        boolean canAccept = stateManager == null ? true : stateManager.canAcceptInput();
+        boolean gameOverVisible = gameOverPanel == null ? false : gameOverPanel.isVisible();
+        if (canAccept && !gameOverVisible) {
+            openSettings();
+        }
     }
 
     private void togglePause() {
@@ -551,8 +628,14 @@ public class GuiController implements Initializable, GameView {
         updatePauseDimVisibility();
         if (manualPauseActive) {
             pauseTimerTracking();
+            if (gameLifecycle instanceof com.comp2042.tetris.app.GameModeLifecycle) {
+                try { ((com.comp2042.tetris.app.GameModeLifecycle) gameLifecycle).pauseMode(); } catch (Exception ignored) {}
+            }
         } else if (countdownOverlay == null || !countdownOverlay.isVisible()) {
             resumeTimerTracking();
+            if (gameLifecycle instanceof com.comp2042.tetris.app.GameModeLifecycle) {
+                try { ((com.comp2042.tetris.app.GameModeLifecycle) gameLifecycle).resumeMode(); } catch (Exception ignored) {}
+            }
         }
     }
     
