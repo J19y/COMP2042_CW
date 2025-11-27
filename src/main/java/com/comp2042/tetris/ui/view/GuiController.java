@@ -532,6 +532,14 @@ public class GuiController implements Initializable, GameView {
     }
 
     @FXML
+    public void tryAgain(ActionEvent actionEvent) {
+        newGame(actionEvent);
+        if (settingsOverlay != null) {
+            settingsOverlay.setVisible(false);
+        }
+    }
+
+    @FXML
     public void pauseGame(ActionEvent actionEvent) {
         // Make the pause button behave like the P key: open the settings overlay
         openSettings();

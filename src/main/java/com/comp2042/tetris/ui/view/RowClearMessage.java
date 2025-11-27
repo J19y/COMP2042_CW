@@ -1,94 +1,52 @@
 package com.comp2042.tetris.ui.view;
 
-import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.PauseTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.SequentialTransition;
-import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * RowClearMessage - simplified neon floating text variant.
+ * Replaces the previous boxed backdrop and pulsing bars with a single
+ * floating, glowing text that uses the `.floating-score` / `.floating-score-high`
+ * CSS rules defined in `window.css`.
+ */
 public final class RowClearMessage extends StackPane {
 
-    private static final Font TITLE_FONT = Font.font("Orbitron", FontWeight.BOLD, 20);
-    private static final Font SUBTITLE_FONT = Font.font("Segoe UI", FontWeight.SEMI_BOLD, 10);
-    private static final Duration ENTRANCE = Duration.millis(220);
-    private static final Duration HOLD = Duration.millis(920);
-    private static final Duration EXIT = Duration.millis(260);
+    private static final Font TITLE_FONT = Font.font("AXR ArcadeMachine", 22);
+    // Total duration increased so the message remains readable and aligned with effects
+    private static final Duration TOTAL_DURATION = Duration.millis(1000);
 
-    private final Timeline barPulse;
-    private final List<Rectangle> pulseBars = new ArrayList<>();
+    private final Text titleText;
 
     private RowClearMessage(int lines) {
         setPickOnBounds(false);
-        setOpacity(0);
+        setMouseTransparent(true);
+        setOpacity(0.0);
         setAlignment(Pos.CENTER);
 
-        Color accent = accentForLines(lines);
-
-        Text title = new Text(titleForLines(lines));
-        title.setFill(Color.WHITE);
-        title.setFont(TITLE_FONT);
-
-        Text subtitle = new Text(subtitleForLines(lines));
-        subtitle.setFill(accent.deriveColor(0, 1, 1, 0.8));
-        subtitle.setFont(SUBTITLE_FONT);
-
-        VBox textHolder = new VBox(4, title, subtitle);
-        textHolder.setAlignment(Pos.CENTER);
-
-        HBox barRow = new HBox(6);
-        barRow.setAlignment(Pos.CENTER);
-        for (int i = 0; i < 5; i++) {
-            Rectangle bar = new Rectangle(12, 24);
-            bar.setArcWidth(6);
-            bar.setArcHeight(6);
-            bar.setFill(accent.deriveColor(0, 1, 1, 0.7));
-            bar.setStroke(Color.TRANSPARENT);
-            bar.setScaleY(0.45);
-            pulseBars.add(bar);
-            barRow.getChildren().add(bar);
+        String title = titleForLines(lines);
+        titleText = new Text(title);
+        titleText.setFont(TITLE_FONT);
+        // Apply CSS class for neon styling; large combos get the high variant
+        titleText.getStyleClass().add("floating-score");
+        String upper = title.toUpperCase();
+        if (upper.contains("SWEEP") || upper.contains("TETRA") || upper.contains("TRIPLE") || title.length() > 14) {
+            titleText.getStyleClass().add("floating-score-high");
         }
 
-        Rectangle backdrop = new Rectangle(260, 98);
-        backdrop.setArcWidth(28);
-        backdrop.setArcHeight(28);
-        backdrop.setFill(new LinearGradient(0, 0, 1, 1, true, javafx.scene.paint.CycleMethod.NO_CYCLE,
-            new Stop(0, Color.web("#03060f", 0.95)),
-            new Stop(1, Color.web("#0b1420", 0.92))));
-        backdrop.setStroke(accent.deriveColor(0, 1, 1, 0.9));
-        backdrop.setStrokeWidth(2.5);
-        DropShadow glow = new DropShadow(24, accent.deriveColor(0, 1, 1, 0.7));
-        glow.setSpread(0.24);
-        backdrop.setEffect(glow);
+        // Ensure the base text color uses black for readability
+        titleText.setFill(Color.BLACK);
 
-        VBox content = new VBox(10, textHolder, barRow);
-        content.setAlignment(Pos.CENTER);
-
-        getChildren().addAll(backdrop, content);
-
-        barPulse = createBarPulse();
+        getChildren().add(titleText);
     }
 
     public static void show(Group container, int lines) {
@@ -110,38 +68,28 @@ public final class RowClearMessage extends StackPane {
             setTranslateY(-100);
         }
 
-        barPulse.play();
+        // Start immediately visible, then float and fade
+        setScaleX(1.0);
+        setScaleY(1.0);
+        setOpacity(1.0);
 
-        FadeTransition fadeIn = new FadeTransition(ENTRANCE, this);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
+        // Float up by -50px over TOTAL_DURATION (1000ms)
+        TranslateTransition floatUp = new TranslateTransition(TOTAL_DURATION, this);
+        floatUp.setByY(-50);
 
-        ScaleTransition pop = new ScaleTransition(ENTRANCE, this);
-        pop.setFromX(0.76);
-        pop.setFromY(0.76);
-        pop.setToX(1.04);
-        pop.setToY(1.04);
+        // Fade: start at halfway (delay 500ms) and last 500ms so text is readable
+        FadeTransition fade = new FadeTransition(Duration.millis(500), this);
+        fade.setFromValue(1.0);
+        fade.setToValue(0.0);
+        fade.setDelay(Duration.millis(500));
 
-        ScaleTransition settle = new ScaleTransition(Duration.millis(120), this);
-        settle.setFromX(1.04);
-        settle.setFromY(1.04);
-        settle.setToX(1.0);
-        settle.setToY(1.0);
-
-        PauseTransition hold = new PauseTransition(HOLD);
-
-        FadeTransition fadeOut = new FadeTransition(EXIT, this);
-        fadeOut.setFromValue(1.0);
-        fadeOut.setToValue(0.0);
-
-        ParallelTransition entrance = new ParallelTransition(fadeIn, pop);
-        SequentialTransition sequence = new SequentialTransition(entrance, settle, hold, fadeOut);
-        sequence.setOnFinished(e -> cleanup());
-        sequence.play();
+        // Play float and fade immediately
+        floatUp.play();
+        fade.setOnFinished(e -> cleanup());
+        fade.play();
     }
 
     private void cleanup() {
-        barPulse.stop();
         Parent parent = getParent();
         if (parent instanceof Group groupParent) {
             groupParent.getChildren().remove(this);
@@ -150,21 +98,6 @@ public final class RowClearMessage extends StackPane {
         } else if (parent instanceof Pane pane) {
             pane.getChildren().remove(this);
         }
-    }
-
-    private Timeline createBarPulse() {
-        Timeline timeline = new Timeline();
-        for (int i = 0; i < pulseBars.size(); i++) {
-            Rectangle bar = pulseBars.get(i);
-            Duration offset = Duration.millis(i * 70);
-            timeline.getKeyFrames().addAll(
-                new KeyFrame(offset, new KeyValue(bar.scaleYProperty(), 0.45), new KeyValue(bar.opacityProperty(), 0.5)),
-                new KeyFrame(offset.add(Duration.millis(180)), new KeyValue(bar.scaleYProperty(), 1.25), new KeyValue(bar.opacityProperty(), 1.0)),
-                new KeyFrame(offset.add(Duration.millis(320)), new KeyValue(bar.scaleYProperty(), 0.55), new KeyValue(bar.opacityProperty(), 0.6))
-            );
-        }
-        timeline.setCycleCount(Animation.INDEFINITE);
-        return timeline;
     }
 
     private static Node findNotificationStack(Group container) {
@@ -189,20 +122,4 @@ public final class RowClearMessage extends StackPane {
         }
     }
 
-    private static String subtitleForLines(int lines) {
-        return "Matrix sync: " + lines + (lines == 1 ? " row" : " rows");
-    }
-
-    private static Color accentForLines(int lines) {
-        switch (lines) {
-            case 4:
-                return Color.web("#ff5f3c");
-            case 3:
-                return Color.web("#f97316");
-            case 2:
-                return Color.web("#38bdf8");
-            default:
-                return Color.web("#a5b4fc");
-        }
-    }
 }

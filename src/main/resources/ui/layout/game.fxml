@@ -50,12 +50,12 @@
                 </VBox>
 
                 <!-- Center Column: Game Board -->
-                <!-- Container: 220×420px with 10px padding = 200×400px inner grid -->
+                <!-- Container: 202×401px with 0px padding = 200×400px inner grid -->
                     <BorderPane fx:id="gameBoard" styleClass="gameBoard"
-                           prefWidth="220" prefHeight="420"
-                           minWidth="220" minHeight="420"
-                           maxWidth="220" maxHeight="420"
-                           style="-fx-padding: 10; -fx-border-insets: 0;">
+                           prefWidth="202" prefHeight="401"
+                           minWidth="202" minHeight="401"
+                           maxWidth="202" maxHeight="401"
+                           style="-fx-padding: 0; -fx-border-insets: 0;">
                     <center>
                         <Pane fx:id="boardClipContainer" prefWidth="200" prefHeight="400"
                               minWidth="200" minHeight="400" maxWidth="200" maxHeight="400"
@@ -135,6 +135,12 @@
                     <Button fx:id="resumeButton" text="RESUME" styleClass="menu-button" onAction="#resumeGame" prefWidth="200">
                         <graphic>
                             <Text text="▶" fill="#ffffff" />
+                        </graphic>
+                    </Button>
+
+                    <Button text="TRY AGAIN" styleClass="menu-button" onAction="#tryAgain" prefWidth="200">
+                        <graphic>
+                            <Text text="↺" fill="#ffffff" />
                         </graphic>
                     </Button>
 

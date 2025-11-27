@@ -17,10 +17,10 @@
 .gameBoard {
     -fx-border-color: #f6f6f4; /* Off-white border for main bricks container */
     /* remove only the top border so the board appears open at the top */
-    -fx-border-width: 0 2px 2px 2px; /* top right bottom left */
+    -fx-border-width: 0 1px 1px 1px; /* top right bottom left */
     /* soft rounded corners to match the theme */
-        -fx-border-radius: 8px;
-        -fx-background-radius: 8px;
+        -fx-border-radius: 9px;
+        -fx-background-radius: 9px;
         /* reduce inner neon so bricks contrast — keep a faint outer glow only */
         -fx-effect: dropshadow(gaussian, rgba(160, 40, 220, 0.22), 12, 0.28, 0, 0);
         /* much darker interior so the bricks stand out, but partially translucent so background shows through */
@@ -80,7 +80,7 @@
 
 .info-value-timer {
     /* Use digital font and smaller size for timer */
-    -fx-font-family: 'DigitalFont';
+    -fx-font-family: 'Press Start 2P';
     -fx-font-weight: normal;
     -fx-font-size: 28px;
     -fx-fill: white;
@@ -386,5 +386,32 @@
     -fx-font-size: 11px;
     -fx-fill: #00ffdd;
     -fx-effect: dropshadow(gaussian, rgba(0, 255, 221, 0.4), 4, 0.3, 0, 0);
+}
+
+/* Floating combat-style score (neon/cyberpunk) */
+.floating-score {
+    -fx-font-family: "AXR ArcadeMachine", 'Press Start 2P', 'DigitalFont', "Arial";
+    -fx-font-size: 42px;
+    -fx-text-fill: cyan; /* primary neon color */
+    -fx-effect: dropshadow(gaussian, rgba(0,255,255,0.95), 12, 0.6, 0, 0),
+                 dropshadow(gaussian, rgba(0,200,255,0.28), 28, 0.4, 0, 0);
+    /* thin dark outline for readability on bright backgrounds */
+    -fx-stroke: rgba(0,0,0,0.85);
+    -fx-stroke-width: 0.8px;
+    -fx-padding: 0 6 0 6;
+    -fx-font-weight: bold;
+}
+
+/* Variant for big combos or special keywords (SWEEP, PERFECT, TETRIS) */
+.floating-score-high {
+    -fx-font-family: "AXR ArcadeMachine", 'Press Start 2P', 'DigitalFont', "Arial";
+    -fx-font-size: 48px;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(255,20,200,0.95), 14, 0.7, 0, 0),
+                 dropshadow(gaussian, rgba(255,100,220,0.32), 36, 0.35, 0, 0);
+    -fx-stroke: rgba(0,0,0,0.9);
+    -fx-stroke-width: 1px;
+    -fx-padding: 0 8 0 8;
+    -fx-font-weight: 900;
 }
 

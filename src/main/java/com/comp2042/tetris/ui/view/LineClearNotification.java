@@ -20,6 +20,7 @@ public class LineClearNotification extends StackPane {
 
     private final Text title;
     private final Text subtitle;
+    private final Rectangle backdrop;
 
     public LineClearNotification(String titleText, String subtitleText, Color accent) {
         setPickOnBounds(false);
@@ -36,6 +37,8 @@ public class LineClearNotification extends StackPane {
         DropShadow glow = new DropShadow(18, accent.deriveColor(0, 1, 1, 0.6));
         glow.setSpread(0.18);
         backdrop.setEffect(glow);
+
+        this.backdrop = backdrop;
 
         title = new Text(titleText);
         title.getStyleClass().add("line-reward-title");
@@ -85,34 +88,44 @@ public class LineClearNotification extends StackPane {
         }
 
         // Entrance: pop with slight overshoot
-        ScaleTransition pop = new ScaleTransition(Duration.millis(200), this);
+        ScaleTransition pop = new ScaleTransition(Duration.millis(120), this);
         pop.setFromX(0.7);
         pop.setFromY(0.7);
-        pop.setToX(1.06);
-        pop.setToY(1.06);
+        pop.setToX(1.08);
+        pop.setToY(1.08);
         pop.setInterpolator(Interpolator.EASE_OUT);
 
-        ScaleTransition settle = new ScaleTransition(Duration.millis(100), this);
-        settle.setFromX(1.06);
-        settle.setFromY(1.06);
+        ScaleTransition settle = new ScaleTransition(Duration.millis(80), this);
+        settle.setFromX(1.08);
+        settle.setFromY(1.08);
         settle.setToX(1.0);
         settle.setToY(1.0);
 
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(180), this);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(100), this);
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
 
-        // Float up and fade out (smaller distance so it remains visible)
-        TranslateTransition floatUp = new TranslateTransition(Duration.millis(700), this);
-        floatUp.setByY(-40);
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(700), this);
+        // Flashy pulsing glow during hold
+        DropShadow glowEffect = (DropShadow) backdrop.getEffect();
+        Timeline pulseGlow = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(glowEffect.radiusProperty(), 18)),
+            new KeyFrame(Duration.millis(120), new KeyValue(glowEffect.radiusProperty(), 32)),
+            new KeyFrame(Duration.millis(240), new KeyValue(glowEffect.radiusProperty(), 18))
+        );
+        pulseGlow.setCycleCount(2);
+        pulseGlow.setAutoReverse(true);
+
+        PauseTransition hold = new PauseTransition(Duration.millis(240));
+
+        // Float up and fade out faster
+        TranslateTransition floatUp = new TranslateTransition(Duration.millis(500), this);
+        floatUp.setByY(-50);
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(500), this);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
 
-        PauseTransition hold = new PauseTransition(Duration.millis(360));
-
-        SequentialTransition seq = new SequentialTransition(new ParallelTransition(pop, fadeIn), settle, hold,
-                new ParallelTransition(floatUp, fadeOut));
+        SequentialTransition seq = new SequentialTransition(new ParallelTransition(pop, fadeIn), settle,
+                new ParallelTransition(hold, pulseGlow), new ParallelTransition(floatUp, fadeOut));
 
         seq.setOnFinished(e -> {
             // remove from whichever parent we were added to

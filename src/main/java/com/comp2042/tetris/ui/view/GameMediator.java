@@ -197,13 +197,20 @@ final class GameMediator {
         }
         RowClearResult clear = data.getClearRow();
         if (clear != null) {
-            playLockEffects();
-            
+            // Show notifications immediately as soon as the clear is detected
             if (clear.getLinesRemoved() > 0) {
                 if (notificationService != null) {
-                    notificationService.showScoreBonus(clear.getScoreBonus());
+                    // Show the descriptive row-clear message first (top-centered)
                     notificationService.showLineClearReward(clear.getLinesRemoved());
+                    // Show the +score slightly below the message so they feel connected
+                    // Offset chosen to sit just below the row-clear title when the title uses translateY=52
+                    notificationService.showScoreBonus(clear.getScoreBonus(), 96.0);
                 }
+            }
+
+            // Play lock effects and sweep/refresh the board
+            playLockEffects();
+            if (clear.getLinesRemoved() > 0) {
                 // Play neon sweep across cleared rows for visual feedback
                 playNeonSweep(clear.getClearedRows());
                 refreshGameBackground(clear.getNewMatrix());
