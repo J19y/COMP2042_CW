@@ -64,6 +64,8 @@ public class MenuController {
     private javafx.scene.control.Button controlsButton;
     @FXML
     private javafx.scene.layout.StackPane settingsOverlay;
+    // Dim overlay used when settings are opened over the level-selection overlay
+    private javafx.scene.shape.Rectangle settingsDim;
     @FXML
     private javafx.scene.control.Slider volumeSlider;
     @FXML
@@ -87,6 +89,10 @@ public class MenuController {
     private final Random random = new Random();
     private AnimationTimer timer;
     private List<Timeline> titleFlickers = new ArrayList<>();
+
+    // Level Selection state
+    private javafx.scene.layout.VBox levelSelectionContainer;
+    private String selectedGameMode = null; // "CLASSIC", "RUSH", "MYSTERY"
 
     private static final Color[] NEON_COLORS = {
             Color.CYAN, Color.YELLOW, Color.LIME, Color.RED, Color.MAGENTA, Color.ORANGE, Color.DODGERBLUE
@@ -370,6 +376,11 @@ public class MenuController {
             mainMenuUI.setOpacity(1.0);
             backgroundPane.setEffect(null);
             mainMenuUI.setEffect(null);
+            // If level selection overlay is visible, remove its blur and restore opacity
+            if (levelSelectionContainer != null && levelSelectionContainer.isVisible()) {
+                levelSelectionContainer.setEffect(null);
+                levelSelectionContainer.setOpacity(1.0);
+            }
             javafx.animation.ParallelTransition hide = new javafx.animation.ParallelTransition();
             
             // Slide down with opacity fade
@@ -464,6 +475,11 @@ public class MenuController {
             mainMenuUI.setOpacity(0.3);
             backgroundPane.setEffect(new GaussianBlur(15));
             mainMenuUI.setEffect(new GaussianBlur(15));
+            // If the level selection overlay is present, blur it as well so the guide stands out
+            if (levelSelectionContainer != null && levelSelectionContainer.isVisible()) {
+                levelSelectionContainer.setOpacity(0.3);
+                levelSelectionContainer.setEffect(new GaussianBlur(15));
+            }
         }
     }
 
@@ -613,8 +629,35 @@ public class MenuController {
                 fadeOut.setToValue(0.0);
                 fadeOut.setOnFinished(e -> settingsOverlay.setVisible(false));
                 fadeOut.play();
+                // If we added a dim over the level selection, remove it
+                if (settingsDim != null && rootPane.getChildren().contains(settingsDim)) {
+                    rootPane.getChildren().remove(settingsDim);
+                }
             } else {
                 // Show overlay with fade in
+                // If level selection overlay is visible, add a dim behind the settings overlay
+                if (levelSelectionContainer != null && levelSelectionContainer.isVisible()) {
+                    if (settingsDim == null) {
+                        settingsDim = new javafx.scene.shape.Rectangle();
+                        // make the dim lighter for less visual obstruction
+                        settingsDim.setFill(javafx.scene.paint.Color.web("#000000", 0.35));
+                        settingsDim.widthProperty().bind(rootPane.widthProperty());
+                        settingsDim.heightProperty().bind(rootPane.heightProperty());
+                        settingsDim.setOnMouseClicked(ev -> closeSettings());
+                    }
+                    // Ensure dim is placed above levelSelectionContainer and below settingsOverlay
+                    if (!rootPane.getChildren().contains(settingsDim)) {
+                        rootPane.getChildren().add(settingsDim);
+                    }
+                    // Bring settingsOverlay to front so it sits above the dim
+                    if (rootPane.getChildren().contains(settingsOverlay)) {
+                        rootPane.getChildren().remove(settingsOverlay);
+                    }
+                    rootPane.getChildren().add(settingsOverlay);
+                    // Also softly dim the level selection container for better contrast
+                    levelSelectionContainer.setEffect(new javafx.scene.effect.GaussianBlur(8));
+                    levelSelectionContainer.setOpacity(0.6);
+                }
                 settingsOverlay.setOpacity(0);
                 settingsOverlay.setVisible(true);
                 FadeTransition fadeIn = new FadeTransition(Duration.millis(300), settingsOverlay);
@@ -654,6 +697,15 @@ public class MenuController {
             fadeOut.setToValue(0.0);
             fadeOut.setOnFinished(e -> settingsOverlay.setVisible(false));
             fadeOut.play();
+            // Remove dim overlay if present
+            if (settingsDim != null && rootPane.getChildren().contains(settingsDim)) {
+                rootPane.getChildren().remove(settingsDim);
+            }
+            // Restore level selection appearance if present
+            if (levelSelectionContainer != null && levelSelectionContainer.isVisible()) {
+                levelSelectionContainer.setEffect(null);
+                levelSelectionContainer.setOpacity(1.0);
+            }
         }
     }
 
@@ -1037,6 +1089,202 @@ public class MenuController {
 
     @FXML
     private void onPlay() {
+        // Show level selection instead of directly loading the game
+        showLevelSelection();
+    }
+
+    /**
+    * Display the Level Selection view with three mode buttons: Classic, Rush, Mystery.
+     * Hide the title and main buttons during this state.
+     */
+    private void showLevelSelection() {
+        // Hide the title container and year text
+        titleContainer.setVisible(false);
+        yearText.setVisible(false);
+        
+        // Hide the main menu buttons
+        playButton.setVisible(false);
+        quitButton.setVisible(false);
+        
+        // Create or show the level selection container as an overlay so bottom controls are not affected
+        if (levelSelectionContainer == null) {
+            levelSelectionContainer = createLevelSelectionPanel();
+            // set a preferred size so it doesn't stretch the layout
+            levelSelectionContainer.setMaxWidth(480);
+            levelSelectionContainer.setMaxHeight(520);
+            levelSelectionContainer.setOpacity(0);
+            levelSelectionContainer.setVisible(false);
+            // place on rootPane as overlay
+            rootPane.getChildren().add(levelSelectionContainer);
+            javafx.scene.layout.StackPane.setAlignment(levelSelectionContainer, javafx.geometry.Pos.CENTER);
+        }
+
+        // Fade in the level selection overlay
+        levelSelectionContainer.setOpacity(0);
+        levelSelectionContainer.setVisible(true);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(400), levelSelectionContainer);
+        fadeIn.setFromValue(0.0);
+        fadeIn.setToValue(1.0);
+        fadeIn.play();
+    }
+
+    /**
+     * Create the level selection panel with three buttons and a back button.
+     */
+    private javafx.scene.layout.VBox createLevelSelectionPanel() {
+        javafx.scene.layout.VBox container = new javafx.scene.layout.VBox();
+        container.setAlignment(javafx.geometry.Pos.CENTER);
+        container.setSpacing(20);
+        
+        // Title for level selection
+        javafx.scene.text.Text levelTitle = new javafx.scene.text.Text("SELECT MODE");
+        levelTitle.setFill(Color.web("#00ff99"));
+        levelTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: bold;");
+        levelTitle.setEffect(new DropShadow(12, Color.web("#00ff99", 0.5)));
+        
+        // Classic button
+        Button classicButton = createLevelButton("CLASSIC", "CLASSIC");
+        
+        // Rush button
+        Button timedButton = createLevelButton("RUSH", "RUSH");
+        
+        // Mystery button
+        Button mysteryButton = createLevelButton("MYSTERY", "MYSTERY");
+        
+        // Back button (styled like Play/Quit buttons)
+        Button backButton = new Button("BACK");
+        backButton.setStyle(
+            "-fx-font-family: 'Press Start 2P', Arial; " +
+            "-fx-font-size: 11px; " +
+            "-fx-padding: 8 30 8 30; " +
+            "-fx-min-width: 130px; " +
+            "-fx-border-color: rgba(180,180,180,0.6); " +
+            "-fx-border-width: 2px; " +
+            "-fx-background-color: linear-gradient(to bottom right, rgba(120,120,120,0.08), rgba(80,80,80,0.04)); " +
+            "-fx-text-fill: #e0e0e0; " +
+            "-fx-background-radius: 20; " +
+            "-fx-border-radius: 20; " +
+            "-fx-effect: dropshadow(gaussian, rgba(120,120,120,0.2), 10, 0.28, 0, 0);"
+        );
+        setupButtonAnimation(backButton);
+        backButton.setOnAction(e -> hideLevelSelection());
+        
+        container.getChildren().addAll(levelTitle, classicButton, timedButton, mysteryButton);
+        
+        // Add back button in its own HBox at the bottom with some spacing
+        javafx.scene.layout.HBox backButtonBox = new javafx.scene.layout.HBox();
+        backButtonBox.setAlignment(javafx.geometry.Pos.CENTER);
+        backButtonBox.setPadding(new javafx.geometry.Insets(30, 0, 0, 0));
+        backButtonBox.getChildren().add(backButton);
+        container.getChildren().add(backButtonBox);
+        
+        return container;
+    }
+
+    /**
+     * Create a level selection button with animation and styling matching Play/Quit buttons.
+    * Colors: Blue for Classic, Green for Rush, Purple for Mystery.
+     */
+    private Button createLevelButton(String text, String mode) {
+        Button button = new Button(text);
+        
+        // Set styling based on mode with different colors
+        String borderColor;
+        String textColor;
+        String gradientColor1;
+        String gradientColor2;
+        String shadowColor;
+        
+        switch(mode) {
+            case "CLASSIC":
+                // Blue for Classic
+                borderColor = "rgba(100,180,255,0.95)";
+                textColor = "#e3f2ff";
+                gradientColor1 = "rgba(100,180,255,0.12)";
+                gradientColor2 = "rgba(70,140,220,0.06)";
+                shadowColor = "rgba(100,180,255,0.25)";
+                break;
+            case "RUSH":
+                // Green for Rush
+                borderColor = "rgba(100,230,150,0.95)";
+                textColor = "#e7ffde";
+                gradientColor1 = "rgba(100,230,150,0.12)";
+                gradientColor2 = "rgba(70,190,120,0.06)";
+                shadowColor = "rgba(100,230,150,0.25)";
+                break;
+            case "MYSTERY":
+                // Purple for Mystery
+                borderColor = "rgba(200,120,255,0.95)";
+                textColor = "#f3e5ff";
+                gradientColor1 = "rgba(200,120,255,0.12)";
+                gradientColor2 = "rgba(170,90,220,0.06)";
+                shadowColor = "rgba(200,120,255,0.25)";
+                break;
+            default:
+                borderColor = "rgba(100,180,255,0.95)";
+                textColor = "#e3f2ff";
+                gradientColor1 = "rgba(100,180,255,0.12)";
+                gradientColor2 = "rgba(70,140,220,0.06)";
+                shadowColor = "rgba(100,180,255,0.25)";
+        }
+        
+        // Apply consistent styling with Play/Quit buttons but different colors
+        button.setStyle(
+            "-fx-font-family: 'Press Start 2P', Arial; " +
+            "-fx-font-size: 16px; " +
+            "-fx-padding: 12 44 12 44; " +
+            "-fx-min-width: 200px; " +
+            "-fx-border-color: " + borderColor + "; " +
+            "-fx-border-width: 2px; " +
+            "-fx-background-color: linear-gradient(to bottom right, " + gradientColor1 + ", " + gradientColor2 + "); " +
+            "-fx-text-fill: " + textColor + "; " +
+            "-fx-background-radius: 20; " +
+            "-fx-border-radius: 20; " +
+            "-fx-effect: dropshadow(gaussian, " + shadowColor + ", 12, 0.28, 0, 0);"
+        );
+        // Ensure text is centered even for multiline
+        button.setAlignment(javafx.geometry.Pos.CENTER);
+        button.setWrapText(true);
+        button.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        setupButtonAnimation(button);
+        button.setOnAction(e -> loadGameSceneWithMode(mode));
+        return button;
+    }
+
+    /**
+     * Hide the level selection and restore the main menu.
+     */
+    private void hideLevelSelection() {
+        if (levelSelectionContainer != null) {
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(300), levelSelectionContainer);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            fadeOut.setOnFinished(e -> {
+                levelSelectionContainer.setVisible(false);
+                // Remove overlay from rootPane so it no longer affects layout
+                if (rootPane.getChildren().contains(levelSelectionContainer)) {
+                    rootPane.getChildren().remove(levelSelectionContainer);
+                    // recreate so next open will re-add cleanly
+                    levelSelectionContainer = null;
+                }
+                // Restore visibility of main menu elements
+                titleContainer.setVisible(true);
+                yearText.setVisible(true);
+                playButton.setVisible(true);
+                quitButton.setVisible(true);
+            });
+            fadeOut.play();
+        }
+    }
+
+    /**
+     * Load the game scene with the specified mode.
+     * Instantiates the appropriate game controller based on mode.
+     */
+    private void loadGameSceneWithMode(String mode) {
+        selectedGameMode = mode;
+        
         // Fade out transition
         FadeTransition fadeOut = new FadeTransition(Duration.millis(500), rootPane);
         fadeOut.setFromValue(1.0);
@@ -1063,9 +1311,21 @@ public class MenuController {
             fadeIn.play();
             
             GameView decoratedView = new BufferedGameView(controller);
-            // Keep reference to prevent GC or just suppress warning if logic is self-sustaining
+            
+            // Instantiate the appropriate game controller based on selected mode
+            BaseGameController gameController;
+            if ("RUSH".equals(selectedGameMode)) {
+                gameController = new TimedGameController(decoratedView);
+            } else if ("MYSTERY".equals(selectedGameMode)) {
+                gameController = new MysteryGameController(decoratedView);
+            } else {
+                // Default to Classic
+                gameController = new ClassicGameController(decoratedView);
+            }
+            
+            // Keep reference to prevent GC
             @SuppressWarnings("unused")
-            GameController gameController = new GameController(decoratedView);
+            BaseGameController activeController = gameController;
             
         } catch (IOException e) {
             System.err.println("Failed to load game scene: " + e.getMessage());
