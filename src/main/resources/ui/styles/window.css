@@ -370,12 +370,14 @@
     -fx-border-radius: 8px;
     -fx-background-radius: 8px;
     -fx-alignment: center;
-    -fx-effect: dropshadow(gaussian, rgba(255, 170, 0, 0.5), 12, 0.6, 0, 0);
+    /* stronger baseline glow so the bulb appears lit even before hover */
+    -fx-effect: dropshadow(gaussian, rgba(255, 170, 0, 0.78), 20, 0.72, 0, 0);
 }
 
 .retro-bulb:hover {
     -fx-border-color: #ffdd00;
-    -fx-effect: dropshadow(gaussian, rgba(255, 221, 0, 0.8), 16, 0.7, 0, 0);
+    /* a slightly stronger hover to emphasize interaction */
+    -fx-effect: dropshadow(gaussian, rgba(255, 221, 0, 0.92), 24, 0.82, 0, 0);
 }
 
 .controls-text {

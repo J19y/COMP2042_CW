@@ -68,7 +68,6 @@
     <StackPane fx:id="exitConfirmationOverlay" visible="false" style="-fx-background-color: rgba(0, 0, 0, 0.8);">
         <VBox alignment="CENTER" spacing="20" styleClass="confirmation-box">
             <Text text="ARE YOU SURE?" styleClass="confirmation-title"/>
-            <Text text="Do you really want to quit?" styleClass="confirmation-text"/>
             <HBox alignment="CENTER" spacing="20">
                 <Button text="YES" styleClass="menu-button, confirm-yes-button" onAction="#onConfirmQuit"/>
                 <Button text="NO" styleClass="menu-button, confirm-no-button" onAction="#onCancelQuit"/>

@@ -1,9 +1,10 @@
 .root {
-    -fx-background-color: radial-gradient(focus-distance 0% , center 50% 50% , radius 60% , #1a1a2e, #050510);
+    /* slightly darker background for a moodier menu */
+    -fx-background-color: radial-gradient(focus-distance 0% , center 50% 50% , radius 60% , #11121a, #020207);
 }
 
 .menu-button {
-    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-color: rgba(255, 255, 255, 0.035); /* a touch darker */
     -fx-text-fill: white;
     -fx-font-family: "Arial";
     -fx-font-weight: bold;
@@ -11,7 +12,7 @@
     -fx-border-radius: 30px;
     -fx-border-width: 2px;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5, 0, 0, 0);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.72), 6, 0, 0, 0);
     -fx-transition: all 0.3s ease;
 }
 
@@ -49,53 +50,75 @@
     -fx-effect: dropshadow(gaussian, #ff0000, -4, -0.2, 0, 0);
 }
 
-/* Confirmation Overlay Styles */
+/* Confirmation Overlay Styles (Neon theme) */
 .confirmation-box {
-    -fx-background-color: rgba(20, 20, 30, 0.95);
-    -fx-border-color: #00ffff;
-    -fx-border-width: 2px;
-    -fx-border-radius: 15px;
-    -fx-background-radius: 15px;
-    -fx-padding: 20;
-    -fx-max-width: 300px;
-    -fx-max-height: 200px;
-    -fx-effect: dropshadow(gaussian, #00ffff00, 20, 0.3, 0, 0);
+    -fx-background-color: linear-gradient(to bottom right, rgba(8,10,14,0.98), rgba(16,18,22,0.96));
+    -fx-border-color: rgba(0, 230, 255, 0.95);
+    -fx-border-width: 3px;
+    -fx-border-radius: 16px;
+    -fx-background-radius: 16px;
+    -fx-padding: 22;
+    -fx-max-width: 360px;
+    -fx-max-height: 220px;
+    /* toned-down cyan glow to reduce visual heaviness */
+    -fx-effect: dropshadow(gaussian, rgba(0,230,255,0.20), 12, 0.45, 0, 0), dropshadow(gaussian, rgba(0,0,0,0.55), 6, 0.15, 0, 3);
 }
 
 .confirmation-title {
-    -fx-fill: white;
-    -fx-font-family: "Arial Black";
-    -fx-font-size: 18px;
+    -fx-fill: #e6ffff;
+    -fx-font-family: 'Press Start 2P', "Arial Black";
+    -fx-font-size: 20px;
+    -fx-letter-spacing: 1px;
 }
 
 .confirmation-text {
-    -fx-fill: #cccccc;
-    -fx-font-family: "Arial";
-    -fx-font-size: 14px;
+    -fx-fill: #cddfe6;
+    -fx-font-family: 'Press Start 2P', Arial;
+    -fx-font-size: 12px;
+    -fx-padding: 8 0 12 0;
 }
 
+/* YES / NO neon buttons reuse main menu button shapes but with clear color accents */
 .confirm-yes-button {
-    -fx-border-color: #ff0000;
-    -fx-text-fill: #ff0000;
-    -fx-min-width: 80px;
-    -fx-font-size: 14px;
+    -fx-font-family: 'Press Start 2P', Arial;
+    -fx-font-size: 12px;
+    -fx-padding: 8 26 8 26;
+    -fx-min-width: 90px;
+    -fx-border-color: rgba(220,40,40,0.95);
+    -fx-border-width: 2px;
+    -fx-background-color: linear-gradient(to bottom right, rgba(170,40,40,0.12), rgba(120,30,30,0.04));
+    -fx-text-fill: #ffccd0;
+    -fx-background-radius: 22px;
+    -fx-border-radius: 22px;
+    -fx-effect: dropshadow(gaussian, rgba(220,40,40,0.28), 12, 0.32, 0, 0);
 }
 
 .confirm-yes-button:hover {
-    -fx-background-color: rgba(255, 0, 0, 0.1);
-    -fx-effect: dropshadow(gaussian, #ff0000, -4, -0.2, 0, 0);
+    -fx-background-color: linear-gradient(to bottom right, rgba(220,60,60,0.16), rgba(160,40,40,0.06));
+    -fx-effect: dropshadow(gaussian, rgba(255,80,80,0.6), 18, 0.45, 0, 0);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
 }
 
 .confirm-no-button {
-    -fx-border-color: #00ff00;
-    -fx-text-fill: #00ff00;
-    -fx-min-width: 80px;
-    -fx-font-size: 14px;
+    -fx-font-family: 'Press Start 2P', Arial;
+    -fx-font-size: 12px;
+    -fx-padding: 8 26 8 26;
+    -fx-min-width: 90px;
+    -fx-border-color: rgba(60,220,120,0.95);
+    -fx-border-width: 2px;
+    -fx-background-color: linear-gradient(to bottom right, rgba(60,200,110,0.10), rgba(40,140,90,0.04));
+    -fx-text-fill: #eaffef;
+    -fx-background-radius: 22px;
+    -fx-border-radius: 22px;
+    -fx-effect: dropshadow(gaussian, rgba(60,200,120,0.22), 12, 0.32, 0, 0);
 }
 
 .confirm-no-button:hover {
-    -fx-background-color: rgba(0, 255, 0, 0.1);
-    -fx-effect: dropshadow(gaussian, #00ff00, -4, -0.2, 0, 0);
+    -fx-background-color: linear-gradient(to bottom right, rgba(80,230,140,0.14), rgba(50,170,110,0.06));
+    -fx-effect: dropshadow(gaussian, rgba(120,255,170,0.68), 20, 0.48, 0, 0);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
 }
 
 .title-text {
@@ -150,31 +173,42 @@
    CONTROLS BUTTON STYLES (Main Menu)
    ======================================== */
 
-.controls-button {
-    -fx-background-color: transparent; /* fully transparent base */
-    -fx-border-color: transparent;
-    -fx-border-width: 0;
-    -fx-text-fill: transparent; /* let inner icon control color */
-    -fx-padding: 4px;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(255,216,77,0.75), 20, 0.6, 0, 0); /* gentle yellow glow */
+.play-button {
+    -fx-font-family: 'Press Start 2P', "Arial"; /* bold retro for PLAY */
+    -fx-font-size: 18px;
+    -fx-padding: 10 44 10 44;
+    -fx-min-width: 210px;
+    -fx-border-color: rgba(90,200,80,0.9); /* darker green */
+    -fx-border-width: 2px;
+    -fx-background-color: linear-gradient(to bottom right, rgba(100,200,80,0.10), rgba(70,150,60,0.06));
+    -fx-text-fill: #e7ffde; /* slightly muted pale lime */
+    -fx-effect: dropshadow(gaussian, rgba(80,200,90,0.18), 10, 0.28, 0, 0);
 }
 
-.controls-icon {
-    -fx-background-color: transparent; /* ensure no background */
-    -fx-border-color: transparent;
-    -fx-padding: 2px 6px 2px 6px;
-    -fx-border-radius: 20px;
-    -fx-background-radius: 20px;
-    -fx-text-fill: #ffd84d; /* warm yellow for emoji */
-    -fx-font-size: 22px; /* make emoji larger */
-    -fx-effect: dropshadow(gaussian, rgba(255,216,77,0.9), 22, 0.7, 0, 0);
+.play-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, rgba(120,220,100,0.12), rgba(90,180,70,0.07));
+    -fx-border-color: rgba(110,230,110,1);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
 }
 
-.controls-icon:hover {
-    -fx-effect: dropshadow(gaussian, rgba(255,216,77,1.0), 34, 0.85, 0, 0);
-    -fx-scale-x: 1.08;
-    -fx-scale-y: 1.08;
+.quit-button {
+    -fx-font-family: 'Press Start 2P', Arial, sans-serif; /* use retro font for QUIT too */
+    -fx-font-size: 11px; /* make the quit word smaller but keep padding */
+    -fx-padding: 8 30 8 30;
+    -fx-min-width: 150px;
+    -fx-border-color: rgba(180,50,50,0.95); /* darker red */
+    -fx-border-width: 2px;
+    -fx-background-color: linear-gradient(to bottom right, rgba(140,50,50,0.10), rgba(110,40,40,0.06));
+    -fx-text-fill: #ffeeef;
+    -fx-effect: dropshadow(gaussian, rgba(140,40,40,0.18), 10, 0.28, 0, 0);
+}
+
+.quit-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, rgba(170,70,70,0.12), rgba(140,60,60,0.07));
+    -fx-border-color: rgba(200,80,80,1);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
 }
 
 .controls-button.controls-icon {

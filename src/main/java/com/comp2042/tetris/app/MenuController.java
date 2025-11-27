@@ -12,6 +12,9 @@ import com.comp2042.tetris.ui.view.GuiController;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -29,6 +32,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.application.Platform;
 
 public class MenuController {
 
@@ -82,6 +86,7 @@ public class MenuController {
     private final List<Particle> particles = new ArrayList<>();
     private final Random random = new Random();
     private AnimationTimer timer;
+    private List<Timeline> titleFlickers = new ArrayList<>();
 
     private static final Color[] NEON_COLORS = {
             Color.CYAN, Color.YELLOW, Color.LIME, Color.RED, Color.MAGENTA, Color.ORANGE, Color.DODGERBLUE
@@ -117,8 +122,8 @@ public class MenuController {
         if (controlLightImage != null) {
             controlLightImage.setOnMouseEntered(e -> {
                 javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(220), controlLightImage);
-                st.setToX(1.16);
-                st.setToY(1.16);
+                st.setToX(1.25);
+                st.setToY(1.25);
                 st.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
                 st.play();
                 controlLightImage.setEffect(new Glow(0.65));
@@ -146,8 +151,8 @@ public class MenuController {
         if (controlLightVector != null) {
             controlLightVector.setOnMouseEntered(e -> {
                 javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(220), controlLightVector);
-                st.setToX(1.08);
-                st.setToY(1.08);
+                st.setToX(1.15);
+                st.setToY(1.15);
                 st.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
                 st.play();
                 controlLightVector.setEffect(new DropShadow(14, javafx.scene.paint.Color.web("#00f0d8", 0.6)));
@@ -171,30 +176,56 @@ public class MenuController {
         
         // Replace with the light bulb image from resources
         try {
-            javafx.scene.image.ImageView bulbImage = new javafx.scene.image.ImageView(new javafx.scene.image.Image(getClass().getResourceAsStream("/light-bulb3.png")));
+            javafx.scene.image.ImageView bulbImage = new javafx.scene.image.ImageView(new javafx.scene.image.Image(getClass().getResourceAsStream("/originallight-bulb-png.png")));
             bulbImage.setFitWidth(65);
             bulbImage.setFitHeight(65);
             bulbImage.setPreserveRatio(true);
-            bulbImage.setEffect(new Glow(0.3));
+            // Combine Glow and DropShadow for higher intensity
+            DropShadow dropShadow = new DropShadow();
+            dropShadow.setColor(Color.YELLOW);
+            dropShadow.setRadius(5);
+            dropShadow.setSpread(0.2);
+            Glow glow = new Glow(0.2);
+            dropShadow.setInput(glow);
+            bulbImage.setEffect(dropShadow);
+            
+            // Flicker timeline for hover effect
+            javafx.animation.Timeline flickerTimeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(0), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 1.0),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 15)),
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(100), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 0.8),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 12)),
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(200), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 1.0),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 15)),
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(300), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 0.9),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 13)),
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(400), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 1.0),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 15))
+            );
+            flickerTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
             
             // Add smooth hover effect for enhanced glow
             controlsButton.setOnMouseEntered(event -> {
-                // Smooth fade in to bright glow
-                javafx.animation.Timeline glowIn = new javafx.animation.Timeline(
-                    new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, 
-                        new javafx.animation.KeyValue(((Glow)bulbImage.getEffect()).levelProperty(), 0.3)),
-                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(300), 
-                        new javafx.animation.KeyValue(((Glow)bulbImage.getEffect()).levelProperty(), 4.0))
-                );
-                glowIn.play();
+                // Set to max glow and start flickering
+                glow.setLevel(1.0);
+                dropShadow.setRadius(15);
+                flickerTimeline.play();
             });
             controlsButton.setOnMouseExited(event -> {
-                // Smooth fade out to dim glow
+                // Stop flickering and fade out to dim glow
+                flickerTimeline.stop();
                 javafx.animation.Timeline glowOut = new javafx.animation.Timeline(
                     new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, 
-                        new javafx.animation.KeyValue(((Glow)bulbImage.getEffect()).levelProperty(), 4.0)),
-                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(300), 
-                        new javafx.animation.KeyValue(((Glow)bulbImage.getEffect()).levelProperty(), 0.3))
+                        new javafx.animation.KeyValue(glow.levelProperty(), glow.getLevel()),
+                        new javafx.animation.KeyValue(dropShadow.radiusProperty(), dropShadow.getRadius())),
+                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(250), 
+                        new javafx.animation.KeyValue(glow.levelProperty(), 0.2),
+                        new javafx.animation.KeyValue(dropShadow.radiusProperty(), 5))
                 );
                 glowOut.play();
             });
@@ -207,28 +238,54 @@ public class MenuController {
             bulb.setFill(javafx.scene.paint.Color.TRANSPARENT);
             bulb.setStroke(javafx.scene.paint.Color.web("#ffff00"));
             bulb.setStrokeWidth(2);
-            bulb.setEffect(new Glow(0.3));
+            // Combine Glow and DropShadow for higher intensity
+            DropShadow dropShadow = new DropShadow();
+            dropShadow.setColor(Color.YELLOW);
+            dropShadow.setRadius(5);
+            dropShadow.setSpread(0.2);
+            Glow glow = new Glow(0.2);
+            dropShadow.setInput(glow);
+            bulb.setEffect(dropShadow);
             bulb.setScaleX(1.3);
             bulb.setScaleY(1.3);
             
+            // Flicker timeline for hover effect
+            javafx.animation.Timeline flickerTimeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(0), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 1.0),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 15)),
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(100), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 0.8),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 12)),
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(200), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 1.0),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 15)),
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(300), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 0.9),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 13)),
+                new javafx.animation.KeyFrame(javafx.util.Duration.millis(400), 
+                    new javafx.animation.KeyValue(glow.levelProperty(), 1.0),
+                    new javafx.animation.KeyValue(dropShadow.radiusProperty(), 15))
+            );
+            flickerTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+            
             // Add smooth hover effect for SVG fallback too
             controlsButton.setOnMouseEntered(event -> {
-                // Smooth fade in to bright glow
-                javafx.animation.Timeline glowIn = new javafx.animation.Timeline(
-                    new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, 
-                        new javafx.animation.KeyValue(((Glow)bulb.getEffect()).levelProperty(), 0.3)),
-                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(300), 
-                        new javafx.animation.KeyValue(((Glow)bulb.getEffect()).levelProperty(), 4.0))
-                );
-                glowIn.play();
+                // Set to max glow and start flickering
+                glow.setLevel(1.0);
+                dropShadow.setRadius(15);
+                flickerTimeline.play();
             });
             controlsButton.setOnMouseExited(event -> {
-                // Smooth fade out to dim glow
+                // Stop flickering and fade out to dim glow
+                flickerTimeline.stop();
                 javafx.animation.Timeline glowOut = new javafx.animation.Timeline(
                     new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, 
-                        new javafx.animation.KeyValue(((Glow)bulb.getEffect()).levelProperty(), 4.0)),
-                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(300), 
-                        new javafx.animation.KeyValue(((Glow)bulb.getEffect()).levelProperty(), 0.3))
+                        new javafx.animation.KeyValue(glow.levelProperty(), glow.getLevel()),
+                        new javafx.animation.KeyValue(dropShadow.radiusProperty(), dropShadow.getRadius())),
+                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(250), 
+                        new javafx.animation.KeyValue(glow.levelProperty(), 0.2),
+                        new javafx.animation.KeyValue(dropShadow.radiusProperty(), 5))
                 );
                 glowOut.play();
             });
@@ -246,7 +303,7 @@ public class MenuController {
         
         // Set the speaker icon as the button graphic
         try {
-            javafx.scene.image.ImageView speakerImage = new javafx.scene.image.ImageView(new javafx.scene.image.Image(getClass().getResourceAsStream("/whitespeaker.png")));
+            javafx.scene.image.ImageView speakerImage = new javafx.scene.image.ImageView(new javafx.scene.image.Image(getClass().getResourceAsStream("/newWhiteSpeaker.png")));
             speakerImage.setFitWidth(45);
             speakerImage.setFitHeight(45);
             speakerImage.setPreserveRatio(true);
@@ -606,16 +663,32 @@ public class MenuController {
 
         javafx.scene.text.Font customFont = null;
         try {
-            customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/PressStart2P-vaV7.ttf"), 60);
+            // Force the logo font size to 130 so it visibly enlarges regardless of metrics
+            customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/AXR ArcadeMachine.ttf"), 130);
             if (customFont != null) {
                 System.out.println("Loaded custom font: " + customFont.getName());
             } else {
-                System.err.println("Failed to load PressStart2P-vaV7.ttf");
+                System.err.println("Failed to load AXR ArcadeMachine.ttf");
             }
         } catch (Exception e) { 
             System.err.println("Exception loading font: " + e.getMessage());
         }
         
+        if (customFont == null) {
+            try {
+                customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/Arcadia-SVG.ttf"), 130);
+            } catch (Exception e) { /* Ignore */ }
+        }
+        if (customFont == null) {
+            try {
+                customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/Retro Pixel.otf"), 130);
+            } catch (Exception e) { /* Ignore */ }
+        }
+        if (customFont == null) {
+            try {
+                customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/PressStart2P-vaV7.ttf"), 130);
+            } catch (Exception e) { /* Ignore */ }
+        }
         if (customFont == null) {
             try {
                 customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/digital.ttf"), 80);
@@ -630,23 +703,71 @@ public class MenuController {
             letter.getStyleClass().add("title-text");
             letter.setFont(customFont);
             letter.setFill(titleColors[i % titleColors.length]);
-            
-            // Add glow effect - Reduced as requested
+            // Force explicit CSS font-size and family to avoid font-metric mismatches
+            try {
+                String family = customFont.getName();
+                letter.setStyle("-fx-font-size: 130px; -fx-font-family: '" + family + "';");
+            } catch (Exception ignored) {
+                letter.setStyle("-fx-font-size: 130px;");
+            }
+
+            // Add glow effect; increase radius to complement bigger font
             DropShadow glow = new DropShadow();
             glow.setColor(titleColors[i % titleColors.length]);
-            glow.setRadius(10);
-            glow.setSpread(0.2);
+            glow.setRadius(16);
+            glow.setSpread(0.25);
             letter.setEffect(glow);
 
             titleContainer.getChildren().add(letter);
         }
         
 
+        for (Node node : titleContainer.getChildren()) {
+            if (node instanceof Text) {
+                Text letter = (Text) node;
+                Timeline flicker = new Timeline(
+                    new KeyFrame(Duration.ZERO, new KeyValue(((DropShadow)letter.getEffect()).radiusProperty(), 10.0)),
+                    new KeyFrame(Duration.millis(100), new KeyValue(((DropShadow)letter.getEffect()).radiusProperty(), 20.0)),
+                    new KeyFrame(Duration.millis(200), new KeyValue(((DropShadow)letter.getEffect()).radiusProperty(), 10.0)),
+                    new KeyFrame(Duration.millis(300), new KeyValue(((DropShadow)letter.getEffect()).radiusProperty(), 15.0)),
+                    new KeyFrame(Duration.millis(400), new KeyValue(((DropShadow)letter.getEffect()).radiusProperty(), 10.0))
+                );
+                flicker.setCycleCount(Timeline.INDEFINITE);
+                titleFlickers.add(flicker);
+                letter.setOnMouseEntered(e -> flicker.play());
+                letter.setOnMouseExited(e -> {
+                    flicker.stop();
+                    ((DropShadow)letter.getEffect()).setRadius(10.0);
+                });
+            }
+        }
+
+        // Tight spacing between large letters per request
+        titleContainer.setSpacing(3);
+        // Move the title up slightly so it sits higher on the menu
+        titleContainer.setTranslateY(-12);
+
         javafx.scene.text.Font yearFont = null;
         try {
-            yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/NineByFiveNbp-MypB.ttf"), 40);
+            // Prefer a slightly larger PressStart2P font for the year text
+            yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/PressStart2P-vaV7.ttf"), 15);
         } catch (Exception e) { /* Ignore */ }
         
+        if (yearFont == null) {
+             try {
+                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/AXR ArcadeMachine.ttf"), 40);
+            } catch (Exception e) { /* Ignore */ }
+        }
+        if (yearFont == null) {
+             try {
+                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/Arcadia-SVG.ttf"), 40);
+            } catch (Exception e) { /* Ignore */ }
+        }
+        if (yearFont == null) {
+             try {
+                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/NineByFiveNbp-MypB.ttf"), 40);
+            } catch (Exception e) { /* Ignore */ }
+        }
         if (yearFont == null) {
              try {
                 yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/digital.ttf"), 40);
@@ -656,7 +777,39 @@ public class MenuController {
         
         yearText.setFont(yearFont);
         yearText.setFill(Color.WHITE);
-        yearText.setEffect(new DropShadow(10, Color.CYAN));
+        // remove glow for a flatter arcade look
+        yearText.setEffect(null);
+        // force a CSS size as well in case font metrics differ
+        try {
+            yearText.setStyle("-fx-font-size: 20px; -fx-font-family: '" + yearFont.getName() + "';");
+        } catch (Exception ignored) {
+            yearText.setStyle("-fx-font-size: 20px;");
+        }
+
+        // Position the year text directly beneath the TETRIS title and keep it centered.
+        Runnable positionYear = () -> {
+            Platform.runLater(() -> {
+                try {
+                    double titleX = titleContainer.getLayoutX() + titleContainer.getTranslateX();
+                    double titleY = titleContainer.getLayoutY() + titleContainer.getTranslateY();
+                    double titleW = titleContainer.getBoundsInParent().getWidth();
+                    double titleH = titleContainer.getBoundsInParent().getHeight();
+                    double yearW = yearText.getBoundsInParent().getWidth();
+                    // center year under title
+                    yearText.setLayoutX(titleX + Math.max(0, (titleW - yearW) / 2.0));
+                    yearText.setLayoutY(titleY + titleH + 6); // small gap
+                } catch (Exception ignored) {
+                    // ignore layout timing issues
+                }
+            });
+        };
+
+        // Run once after initial layout
+        positionYear.run();
+
+        // Update when title or rootPane change size/position
+        titleContainer.boundsInParentProperty().addListener((obs, oldVal, newVal) -> positionYear.run());
+        rootPane.widthProperty().addListener((obs, oldVal, newVal) -> positionYear.run());
     }
 
     private void setupButtons() {
@@ -670,11 +823,81 @@ public class MenuController {
             quitButton.setFont(buttonFont);
         }
 
+        // Move the play and quit buttons down slightly for better spacing under the title
+        if (playButton != null) playButton.setTranslateY(10);
+        if (quitButton != null) quitButton.setTranslateY(10);
+
         setupButtonAnimation(playButton);
         setupButtonAnimation(quitButton);
     }
 
     private void setupButtonAnimation(Button button) {
+        if (button == null) return;
+        button.setCursor(javafx.scene.Cursor.HAND);
+
+        // Neon glow drop shadow that will be pulsed
+        DropShadow glow = new DropShadow();
+        Color effectColor = (button == playButton) ? Color.web("#00ff99", 0.95) : Color.web("#ff6b6b", 0.95);
+        glow.setColor(effectColor);
+        glow.setRadius(8);
+        glow.setSpread(0.28);
+        glow.setOffsetX(0);
+        glow.setOffsetY(0);
+
+        // Scale transitions for enter/exit
+        javafx.animation.ScaleTransition scaleUp = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(160), button);
+        scaleUp.setToX(1.06);
+        scaleUp.setToY(1.06);
+        scaleUp.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+
+        javafx.animation.ScaleTransition scaleDown = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(120), button);
+        scaleDown.setToX(1.0);
+        scaleDown.setToY(1.0);
+        scaleDown.setInterpolator(javafx.animation.Interpolator.EASE_IN);
+
+        // Pulse timeline to animate glow radius for a subtle neon breathing effect
+        Timeline pulse = new Timeline(
+            new KeyFrame(javafx.util.Duration.ZERO, new KeyValue(glow.radiusProperty(), 8.0)),
+            new KeyFrame(javafx.util.Duration.millis(180), new KeyValue(glow.radiusProperty(), 20.0)),
+            new KeyFrame(javafx.util.Duration.millis(360), new KeyValue(glow.radiusProperty(), 10.0))
+        );
+        pulse.setCycleCount(javafx.animation.Animation.INDEFINITE);
+
+        // Mouse handlers
+        button.setOnMouseEntered(e -> {
+            button.setEffect(glow);
+            scaleUp.playFromStart();
+            pulse.play();
+        });
+
+        button.setOnMouseExited(e -> {
+            // stop pulsing then fade the glow out smoothly
+            pulse.stop();
+            Timeline fadeOut = new Timeline(
+                new KeyFrame(javafx.util.Duration.ZERO, new KeyValue(glow.radiusProperty(), glow.getRadius())),
+                new KeyFrame(javafx.util.Duration.millis(220), new KeyValue(glow.radiusProperty(), 0.0))
+            );
+            fadeOut.setOnFinished(ev -> button.setEffect(null));
+            fadeOut.play();
+            scaleDown.playFromStart();
+        });
+
+        // Press feedback
+        button.setOnMousePressed(e -> {
+            button.setScaleX(button.getScaleX() * 0.98);
+            button.setScaleY(button.getScaleY() * 0.98);
+        });
+        button.setOnMouseReleased(e -> {
+            // restore to hovered scale if still hovering, otherwise to normal
+            if (button.isHover()) {
+                button.setScaleX(1.06);
+                button.setScaleY(1.06);
+            } else {
+                button.setScaleX(1.0);
+                button.setScaleY(1.0);
+            }
+        });
+
     }
 
     private void startAnimation() {
@@ -689,14 +912,16 @@ public class MenuController {
 
     private void updateBackground() {
         // Spawn new shapes
-        if (random.nextDouble() < 0.02) { // 2% chance per frame
+        if (random.nextDouble() < 0.03) { // 3% chance per frame as requested
             spawnFallingShape();
         }
 
         // Spawn particles
-        if (random.nextDouble() < 0.1) {
+        if (random.nextDouble() < 0.18) { // 18% chance - more frequent particles
             spawnParticle();
         }
+
+        // (Rotating ring effect removed per request)
 
         // Update shapes
         Iterator<FallingShape> shapeIt = fallingShapes.iterator();
@@ -719,6 +944,8 @@ public class MenuController {
                 particleIt.remove();
             }
         }
+
+        // (No parallax stars)
     }
 
     private void spawnFallingShape() {
@@ -737,7 +964,22 @@ public class MenuController {
 
         backgroundPane.getChildren().add(shape);
         fallingShapes.add(new FallingShape(shape, 0.5 + random.nextDouble() * 1.5));
+
+        // Spawn burst of colored particles for arcade effect
+        for (int i = 0; i < 4; i++) {
+            double px = x + (random.nextDouble() - 0.5) * 50;
+            double py = -80 + random.nextDouble() * 30;
+            Rectangle p = new Rectangle(2 + random.nextDouble() * 2, 2 + random.nextDouble() * 2, color);
+            p.setOpacity(0.8);
+            p.setTranslateX(px);
+            p.setTranslateY(py);
+            p.setEffect(new Glow(0.7));
+            backgroundPane.getChildren().add(p);
+            particles.add(new Particle(p));
+        }
     }
+
+    
 
     private Node createRandomTetromino(double size, Color color) {
         javafx.scene.Group group = new javafx.scene.Group();
@@ -776,14 +1018,22 @@ public class MenuController {
         double x = random.nextDouble() * backgroundPane.getWidth();
         double y = random.nextDouble() * backgroundPane.getHeight();
         
-        Rectangle p = new Rectangle(2, 2, Color.WHITE);
-        p.setOpacity(random.nextDouble() * 0.5);
+        // Use neon colors for arcade theme instead of just white
+        Color particleColor = random.nextDouble() < 0.3 ? Color.WHITE : NEON_COLORS[random.nextInt(NEON_COLORS.length)];
+        Rectangle p = new Rectangle(2, 2, particleColor);
+        p.setOpacity(random.nextDouble() * 0.7 + 0.2); // Slightly more opaque for visibility
         p.setTranslateX(x);
         p.setTranslateY(y);
+        // Add subtle glow to ambient particles
+        if (random.nextDouble() < 0.4) {
+            p.setEffect(new Glow(0.3));
+        }
         
         backgroundPane.getChildren().add(p);
         particles.add(new Particle(p));
     }
+
+    // Rotating ring effect removed — other visual features retained
 
     @FXML
     private void onPlay() {
