@@ -1,5 +1,13 @@
 package com.comp2042.tetris.app;
 
+import java.util.Objects;
+
+import com.comp2042.tetris.domain.model.RowClearResult;
+import com.comp2042.tetris.domain.model.ShowResult;
+import com.comp2042.tetris.domain.model.ViewData;
+import com.comp2042.tetris.domain.scoring.ClassicScoringPolicy;
+import com.comp2042.tetris.domain.scoring.ScoreManager;
+import com.comp2042.tetris.domain.scoring.ScoringPolicy;
 import com.comp2042.tetris.mechanics.board.BoardFactory;
 import com.comp2042.tetris.mechanics.board.BoardLifecycle;
 import com.comp2042.tetris.mechanics.board.BoardPorts;
@@ -13,18 +21,12 @@ import com.comp2042.tetris.mechanics.movement.BrickMove;
 import com.comp2042.tetris.mechanics.movement.BrickMovement;
 import com.comp2042.tetris.mechanics.spawn.BrickSpawn;
 import com.comp2042.tetris.mechanics.spawn.SpawnManager;
-
-import javafx.beans.property.IntegerProperty;
+import com.comp2042.tetris.services.audio.MusicManager;
 import com.comp2042.tetris.ui.input.EventSource;
 import com.comp2042.tetris.ui.input.EventType;
 import com.comp2042.tetris.ui.input.MoveEvent;
-import java.util.Objects;
-import com.comp2042.tetris.domain.model.RowClearResult;
-import com.comp2042.tetris.domain.model.ShowResult;
-import com.comp2042.tetris.domain.model.ViewData;
-import com.comp2042.tetris.domain.scoring.ClassicScoringPolicy;
-import com.comp2042.tetris.domain.scoring.ScoreManager;
-import com.comp2042.tetris.domain.scoring.ScoringPolicy;
+
+import javafx.beans.property.IntegerProperty;
 
 /**
  * Base game controller that encapsulates core game logic and input handling.
@@ -128,18 +130,41 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
     @Override
     public ShowResult onLeft(MoveEvent event) {
         ViewData vd = moveHandler.handleLeftMove();
+        try {
+            com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
+            double original = mm.getMusicVolume();
+            // duck music briefly so the SFX is audible
+            try { mm.fadeMusicTo(Math.max(0.01, original * 0.45), 40); } catch (Exception ignored) {}
+            mm.playSfxAtVolume("/audio/RotationSoundEffect.mp3", 0.95);
+            // restore a little after
+            try { mm.fadeMusicTo(original, 200); } catch (Exception ignored) {}
+        } catch (Exception ignored) {}
         return new ShowResult(null, vd);
     }
 
     @Override
     public ShowResult onRight(MoveEvent event) {
         ViewData vd = moveHandler.handleRightMove();
+        try {
+            com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
+            double original = mm.getMusicVolume();
+            try { mm.fadeMusicTo(Math.max(0.01, original * 0.45), 40); } catch (Exception ignored) {}
+            mm.playSfxAtVolume("/audio/RotationSoundEffect.mp3", 0.95);
+            try { mm.fadeMusicTo(original, 200); } catch (Exception ignored) {}
+        } catch (Exception ignored) {}
         return new ShowResult(null, vd);
     }
 
     @Override
     public ShowResult onRotate(MoveEvent event) {
         ViewData vd = moveHandler.handleRotation();
+        try {
+            com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
+            double original = mm.getMusicVolume();
+            try { mm.fadeMusicTo(Math.max(0.01, original * 0.35), 30); } catch (Exception ignored) {}
+            mm.playSfxAtVolume("/audio/RotationSoundEffect.mp3", 1.0);
+            try { mm.fadeMusicTo(original, 200); } catch (Exception ignored) {}
+        } catch (Exception ignored) {}
         return new ShowResult(null, vd);
     }
 
@@ -200,6 +225,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
                         view.refreshGameBackground(reader.getBoardMatrix());
                     }
                 });
+                try { MusicManager.getInstance().playSfx("/audio/BricksCollisionEffect.mp3"); } catch (Exception ignored) {}
                 // Return current view data immediately so UI remains responsive
                 return new ShowResult(null, reader.getViewData());
             } else {
@@ -253,6 +279,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
             }
             spawnManager.spawn();
             view.refreshGameBackground(reader.getBoardMatrix());
+            try { MusicManager.getInstance().playSfx("/audio/BricksCollisionEffect.mp3"); } catch (Exception ignored) {}
             return new ShowResult(clear, reader.getViewData());
         }
     }

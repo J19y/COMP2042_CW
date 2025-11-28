@@ -84,10 +84,12 @@ public class GameOverPanel extends BorderPane {
         menuButton.setDisable(true);
 
         retryButton.setOnAction(e -> {
+            try { com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {}
             hide();
             retryAction.run();
         });
         menuButton.setOnAction(e -> {
+            try { com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {}
             hide();
             returnAction.run();
         });

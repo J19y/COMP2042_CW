@@ -2,7 +2,10 @@ package com.comp2042.tetris.ui.view;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.comp2042.tetris.app.CreateNewGame;
 import com.comp2042.tetris.app.GameLoopController;
@@ -10,6 +13,7 @@ import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.model.ViewData;
 import com.comp2042.tetris.mechanics.board.GameView;
 import com.comp2042.tetris.mechanics.state.GameStateManager;
+import com.comp2042.tetris.services.audio.MusicManager;
 import com.comp2042.tetris.services.notify.NotificationManager;
 import com.comp2042.tetris.ui.input.DropInput;
 import com.comp2042.tetris.ui.input.EventSource;
@@ -21,6 +25,8 @@ import com.comp2042.tetris.ui.render.ActiveBrickRenderer;
 import com.comp2042.tetris.ui.render.BoardRenderer;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.event.ActionEvent;
@@ -33,11 +39,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class GuiController implements Initializable, GameView {
 
@@ -174,6 +175,12 @@ public class GuiController implements Initializable, GameView {
             }
         }
 
+        // Initialize MusicManager with current values
+        try {
+            MusicManager.getInstance().setMusicVolume(volume / 100.0);
+            MusicManager.getInstance().setMusicEnabled(musicOn);
+        } catch (Exception ignored) {}
+
         // Fade-in will be triggered once the scene is ready
         Platform.runLater(() -> {
             if (backgroundPane != null && backgroundPane.getScene() != null) {
@@ -211,7 +218,15 @@ public class GuiController implements Initializable, GameView {
         javafx.util.Callback<String, javafx.animation.ParallelTransition> animateNum = (text) -> {
             // Zero-duration preparer to set the text at the moment this transition begins
             javafx.animation.PauseTransition pre = new javafx.animation.PauseTransition(Duration.ZERO);
-            pre.setOnFinished(ev -> countdownText.setText(text));
+                pre.setOnFinished(ev -> {
+                    countdownText.setText(text);
+                    try {
+                        // Play 321->GO effect at the start of the sequence so audio aligns with countdown visuals
+                                if ("3".equals(text)) {
+                                    com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfxImmediate("/audio/321GOEffect.mp3");
+                                }
+                    } catch (Exception ignored) {}
+                });
 
             // Zoom In (Overshoot)
             javafx.animation.ScaleTransition scale = new javafx.animation.ScaleTransition(Duration.millis(400), countdownText);
@@ -236,6 +251,12 @@ public class GuiController implements Initializable, GameView {
         };
 
         // Chain the animations sequence
+        // Duck the music during the countdown and restore after the sequence finishes
+        final com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
+        final double originalMusicVol = mm.getMusicVolume();
+        final double duckedVol = Math.max(0.05, originalMusicVol * 0.25);
+        try { mm.fadeMusicTo(duckedVol, 160); } catch (Exception ignored) {}
+
         javafx.animation.SequentialTransition sequence = new javafx.animation.SequentialTransition(
             animateNum.call("3"),
             new javafx.animation.PauseTransition(Duration.millis(100)), // slight pause
@@ -245,8 +266,10 @@ public class GuiController implements Initializable, GameView {
             new javafx.animation.PauseTransition(Duration.millis(100)),
             animateNum.call("GO")
         );
-        
+
         sequence.setOnFinished(e -> {
+            // Restore music volume slowly while resuming the game
+            try { mm.fadeMusicTo(originalMusicVol, 1200); } catch (Exception ignored) {}
             countdownOverlay.setVisible(false);
             stateManager.resumeGame();
             mediator.ensureLoopRunning();
@@ -257,7 +280,7 @@ public class GuiController implements Initializable, GameView {
                 } catch (Exception ignored) {}
             }
         });
-        
+
         sequence.play();
     }
     
@@ -310,6 +333,16 @@ public class GuiController implements Initializable, GameView {
                 fadeIn.setToValue(1.0);
                 fadeIn.play();
             });
+            ft.setOnFinished(e2 -> {
+                // Ensure the 10s tick won't keep playing if we go back to menu
+                try { com.comp2042.tetris.services.audio.MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3"); } catch (Exception ignored) {}
+                root.setOpacity(0);
+                stage.setScene(scene);
+                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(Duration.millis(600), root);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            });
             ft.play();
             
         } catch (IOException e) {
@@ -322,6 +355,7 @@ public class GuiController implements Initializable, GameView {
         if (volume < 100) {
             volume += 10;
             updateVolumeText();
+            try { com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {}
         }
     }
     
@@ -330,6 +364,7 @@ public class GuiController implements Initializable, GameView {
         if (volume > 0) {
             volume -= 10;
             updateVolumeText();
+            try { com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {}
         }
     }
     
@@ -337,7 +372,9 @@ public class GuiController implements Initializable, GameView {
         if (volumeText != null) {
             volumeText.setText(volume + "%");
         }
-        // TODO: Connect to actual audio service
+        try {
+            MusicManager.getInstance().setMusicVolume(volume / 100.0);
+        } catch (Exception ignored) {}
     }
     
     private void startAnimation() {
@@ -382,6 +419,7 @@ public class GuiController implements Initializable, GameView {
         } else {
             updateVolumeText();
         }
+        try { MusicManager.getInstance().setMusicEnabled(musicOn); } catch (Exception ignored) {}
     }
 
     private void resetTimerTracking() {
@@ -406,7 +444,7 @@ public class GuiController implements Initializable, GameView {
         Platform.runLater(() -> {
             timerText.setText(text);
             // Last 10 seconds: turn red and flicker
-            if (seconds <= 10 && seconds >= 0) {
+            if (seconds <= 10 && seconds > 0) {
                 if (!lowTimeActive) {
                     lowTimeActive = true;
                     timerText.setFill(javafx.scene.paint.Color.RED);
@@ -417,6 +455,22 @@ public class GuiController implements Initializable, GameView {
                     );
                     lowTimeFlicker.setCycleCount(Timeline.INDEFINITE);
                     lowTimeFlicker.play();
+                }
+                try {
+                    // Play the 10-second countdown tick each second louder (absolute volume)
+                    com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfxAtVolume("/audio/10SecondsTimer.mp3", 0.95);
+                } catch (Exception ignored) {}
+            } else if (seconds <= 0) {
+                // If the timer reached zero, immediately stop any ticking sound so it doesn't linger
+                try { com.comp2042.tetris.services.audio.MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3"); } catch (Exception ignored) {}
+                if (lowTimeActive) {
+                    lowTimeActive = false;
+                    if (lowTimeFlicker != null) {
+                        lowTimeFlicker.stop();
+                        lowTimeFlicker = null;
+                    }
+                    timerText.setVisible(true);
+                    timerText.setFill(javafx.scene.paint.Color.WHITE);
                 }
             } else {
                 if (lowTimeActive) {
@@ -630,6 +684,14 @@ public class GuiController implements Initializable, GameView {
         lowTimeActive = false;
         if (timerText != null) timerText.setFill(javafx.scene.paint.Color.WHITE);
 
+        // Stop the 10-seconds tick if it is playing, then fade into the game-over soundtrack
+        try {
+            com.comp2042.tetris.services.audio.MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3");
+        } catch (Exception ignored) {}
+        try {
+            MusicManager.getInstance().playTrack(MusicManager.Track.GAME_OVER, 900, 2);
+        } catch (Exception ignored) {}
+
         mediator.handleGameOver(finalScore);
     }
 
@@ -651,6 +713,8 @@ public class GuiController implements Initializable, GameView {
         if (settingsOverlay != null) {
             settingsOverlay.setVisible(false);
         }
+        // Stop the 10s ticking if it was playing when the user retried
+        try { com.comp2042.tetris.services.audio.MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3"); } catch (Exception ignored) {}
     }
 
     @FXML

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Random;
 
 import com.comp2042.tetris.mechanics.board.GameView;
+import com.comp2042.tetris.services.audio.MusicManager;
 import com.comp2042.tetris.ui.view.BufferedGameView;
 import com.comp2042.tetris.ui.view.GuiController;
 
@@ -130,6 +131,14 @@ public class MenuController {
         fade.setToValue(0);
         fade.setOnFinished(e -> rootPane.getChildren().remove(fadeOverlay)); // Remove after fade
         fade.play();
+
+        // Start menu music with fade-in
+        try {
+            double initialVol = (volumeSlider != null) ? volumeSlider.getValue() / 100.0 : 1.0;
+            MusicManager.getInstance().setMusicVolume(initialVol);
+            MusicManager.getInstance().setMusicEnabled(true);
+            MusicManager.getInstance().playTrack(MusicManager.Track.MAIN_MENU, 1200);
+        } catch (Exception ignored) {}
     }
 
     /**
@@ -442,6 +451,7 @@ public class MenuController {
         // Hover pulse/glow for the image if available
         if (controlLightImage != null) {
             controlLightImage.setOnMouseEntered(e -> {
+                try { MusicManager.getInstance().playSfx("/audio/RotationSoundEffect.mp3", 1.4); } catch (Exception ignored) {}
                 javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(220), controlLightImage);
                 st.setToX(1.25);
                 st.setToY(1.25);
@@ -471,6 +481,7 @@ public class MenuController {
         // Hover behavior for vector fallback
         if (controlLightVector != null) {
             controlLightVector.setOnMouseEntered(e -> {
+                try { MusicManager.getInstance().playSfx("/audio/RotationSoundEffect.mp3", 1.4); } catch (Exception ignored) {}
                 javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(220), controlLightVector);
                 st.setToX(1.15);
                 st.setToY(1.15);
@@ -532,6 +543,7 @@ public class MenuController {
             
             // Add smooth hover effect for enhanced glow
             controlsButton.setOnMouseEntered(event -> {
+                try { MusicManager.getInstance().playSfx("/audio/RotationSoundEffect.mp3", 1.4); } catch (Exception ignored) {}
                 // Set to max glow and start flickering
                 glow.setLevel(1.0);
                 dropShadow.setRadius(15);
@@ -552,6 +564,8 @@ public class MenuController {
             });
             
             controlsButton.setGraphic(bulbImage);
+            // play click SFX when pressed
+            controlsButton.setOnMousePressed(ev -> { try { MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {} });
         } catch (Exception e) {
             // Fallback to SVG if image fails
             javafx.scene.shape.SVGPath bulb = new javafx.scene.shape.SVGPath();
@@ -592,6 +606,7 @@ public class MenuController {
             
             // Add smooth hover effect for SVG fallback too
             controlsButton.setOnMouseEntered(event -> {
+                try { MusicManager.getInstance().playSfx("/audio/RotationSoundEffect.mp3", 1.4); } catch (Exception ignored) {}
                 // Set to max glow and start flickering
                 glow.setLevel(1.0);
                 dropShadow.setRadius(15);
@@ -612,6 +627,7 @@ public class MenuController {
             });
             
             controlsButton.setGraphic(bulb);
+            controlsButton.setOnMousePressed(ev -> { try { MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {} });
         }
         controlsButton.setText("");
         controlsButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
@@ -647,7 +663,11 @@ public class MenuController {
         // Volume slider listener
         if (volumeSlider != null && volumeText != null) {
             volumeSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-                volumeText.setText((int) newVal.doubleValue() + "%");
+                double pct = newVal.doubleValue();
+                volumeText.setText((int) pct + "%");
+                try {
+                    MusicManager.getInstance().setMusicVolume(pct / 100.0);
+                } catch (Exception ignored) {}
             });
         }
     }
@@ -1020,12 +1040,16 @@ public class MenuController {
                 Text mutedIcon = new Text("🔇");
                 mutedIcon.setFill(Color.WHITE);
                 musicToggleButton.setGraphic(mutedIcon);
+                try { MusicManager.getInstance().setMusicEnabled(false); } catch (Exception ignored) {}
+                try { MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {}
             } else {
                 musicToggleButton.setText("ON");
                 // Change icon to unmuted
                 Text unmutedIcon = new Text("🔊");
                 unmutedIcon.setFill(Color.WHITE);
                 musicToggleButton.setGraphic(unmutedIcon);
+                try { MusicManager.getInstance().setMusicEnabled(true); } catch (Exception ignored) {}
+                try { MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {}
             }
         }
     }
@@ -1259,6 +1283,7 @@ public class MenuController {
 
         // Mouse handlers
         button.setOnMouseEntered(e -> {
+            try { MusicManager.getInstance().playSfx("/audio/RotationSoundEffect.mp3", 1.4); } catch (Exception ignored) {}
             button.setEffect(glow);
             scaleUp.playFromStart();
             pulse.play();
@@ -1278,6 +1303,7 @@ public class MenuController {
 
         // Press feedback
         button.setOnMousePressed(e -> {
+            try { MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {}
             button.setScaleX(button.getScaleX() * 0.98);
             button.setScaleY(button.getScaleY() * 0.98);
         });
@@ -1678,6 +1704,17 @@ public class MenuController {
      */
     private void loadGameSceneWithMode(String mode) {
         selectedGameMode = mode;
+
+        // Start the appropriate game music (fade)
+        try {
+            if ("RUSH".equals(mode)) {
+                MusicManager.getInstance().playTrack(MusicManager.Track.RUSH, 900);
+            } else if ("MYSTERY".equals(mode)) {
+                MusicManager.getInstance().playTrack(MusicManager.Track.MYSTERY, 900);
+            } else {
+                MusicManager.getInstance().playTrack(MusicManager.Track.CLASSIC, 900);
+            }
+        } catch (Exception ignored) {}
     
         // Create a "Warp" effect: Scale up + Fade out
         javafx.animation.ParallelTransition warpTransition = new javafx.animation.ParallelTransition();
