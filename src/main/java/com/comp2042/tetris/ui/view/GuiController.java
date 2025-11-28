@@ -189,34 +189,76 @@ public class GuiController implements Initializable, GameView {
     
     private void startCountdown() {
         if (countdownOverlay == null) return;
+
         manualPauseActive = false;
         updatePauseDimVisibility();
         pauseTimerTracking();
         resetTimerTracking();
+
         countdownOverlay.setVisible(true);
-        countdownText.setText("3");
+        // Reset state
+        countdownText.setScaleX(0);
+        countdownText.setScaleY(0);
+        countdownText.setOpacity(0);
+
         if (!stateManager.isPaused()) {
             stateManager.pauseGame();
         }
-        
-        Timeline timeline = new Timeline(
-            new KeyFrame(Duration.seconds(0), e -> countdownText.setText("3")),
-            new KeyFrame(Duration.seconds(1), e -> countdownText.setText("2")),
-            new KeyFrame(Duration.seconds(2), e -> countdownText.setText("1")),
-            new KeyFrame(Duration.seconds(3), e -> {
-                countdownOverlay.setVisible(false);
-                stateManager.resumeGame();
-                mediator.ensureLoopRunning();
-                resumeTimerTracking();
-                // Inform the game controller/mode to start mode-specific behaviour (timers, etc.)
-                if (gameLifecycle instanceof com.comp2042.tetris.app.GameModeLifecycle) {
-                    try {
-                        ((com.comp2042.tetris.app.GameModeLifecycle) gameLifecycle).startMode();
-                    } catch (Exception ignored) {}
-                }
-            })
+
+        // Helper to animate a single number. We set the text when the animation starts
+        // (using a zero-duration PauseTransition) so the same Text node can be reused
+        // without being overwritten at creation time.
+        javafx.util.Callback<String, javafx.animation.ParallelTransition> animateNum = (text) -> {
+            // Zero-duration preparer to set the text at the moment this transition begins
+            javafx.animation.PauseTransition pre = new javafx.animation.PauseTransition(Duration.ZERO);
+            pre.setOnFinished(ev -> countdownText.setText(text));
+
+            // Zoom In (Overshoot)
+            javafx.animation.ScaleTransition scale = new javafx.animation.ScaleTransition(Duration.millis(400), countdownText);
+            scale.setFromX(0.0);
+            scale.setFromY(0.0);
+            scale.setToX(1.5);
+            scale.setToY(1.5);
+            scale.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+
+            // Fade In
+            javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.millis(200), countdownText);
+            fade.setFromValue(0.0);
+            fade.setToValue(1.0);
+
+            // Fade Out at the end of the second
+            javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(Duration.millis(300), countdownText);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            fadeOut.setDelay(Duration.millis(600)); // Wait a bit before fading out
+
+            return new javafx.animation.ParallelTransition(pre, scale, fade, fadeOut);
+        };
+
+        // Chain the animations sequence
+        javafx.animation.SequentialTransition sequence = new javafx.animation.SequentialTransition(
+            animateNum.call("3"),
+            new javafx.animation.PauseTransition(Duration.millis(100)), // slight pause
+            animateNum.call("2"),
+            new javafx.animation.PauseTransition(Duration.millis(100)),
+            animateNum.call("1"),
+            new javafx.animation.PauseTransition(Duration.millis(100)),
+            animateNum.call("GO")
         );
-        timeline.play();
+        
+        sequence.setOnFinished(e -> {
+            countdownOverlay.setVisible(false);
+            stateManager.resumeGame();
+            mediator.ensureLoopRunning();
+            resumeTimerTracking();
+            if (gameLifecycle instanceof com.comp2042.tetris.app.GameModeLifecycle) {
+                try {
+                    ((com.comp2042.tetris.app.GameModeLifecycle) gameLifecycle).startMode();
+                } catch (Exception ignored) {}
+            }
+        });
+        
+        sequence.play();
     }
     
     @FXML

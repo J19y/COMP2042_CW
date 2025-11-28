@@ -15,6 +15,7 @@ import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -32,7 +33,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.application.Platform;
 
 public class MenuController {
 
@@ -89,6 +89,8 @@ public class MenuController {
     private final Random random = new Random();
     private AnimationTimer timer;
     private List<Timeline> titleFlickers = new ArrayList<>();
+    // Ensure launch animation plays only once per app session
+    private static boolean launchPlayed = false;
 
     // Level Selection state
     private javafx.scene.layout.VBox levelSelectionContainer;
@@ -102,6 +104,16 @@ public class MenuController {
     public void initialize() {
         setupTitle();
         setupButtons();
+        // Prepare initial hidden state for launch animation if this is the first time
+        prepareLaunchForAnimation();
+        if (!launchPlayed) {
+            playLaunchAnimation();
+            launchPlayed = true;
+        } else {
+            // Ensure UI is visible and interactive if we already played the launch animation
+            finalizeLaunchState();
+        }
+        // background/particle animation
         startAnimation();
 
         setupControlLight();
@@ -118,6 +130,309 @@ public class MenuController {
         fade.setToValue(0);
         fade.setOnFinished(e -> rootPane.getChildren().remove(fadeOverlay)); // Remove after fade
         fade.play();
+    }
+
+    /**
+     * Prepare the UI nodes for the launch animation: hide title and buttons and disable interactivity.
+     */
+    private void prepareLaunchForAnimation() {
+        // Hide title and year until logo animation plays
+        if (titleContainer != null) {
+            titleContainer.setOpacity(0.0);
+            titleContainer.setScaleX(0.96);
+            titleContainer.setScaleY(0.96);
+        }
+        if (yearText != null) {
+            yearText.setOpacity(0.0);
+        }
+
+        // Ensure main interactive buttons are invisible & non-interactive until the animation completes
+        Button[] uiButtons = new Button[]{playButton, quitButton, controlsButton, settingsButton};
+        for (Button b : uiButtons) {
+            if (b != null) {
+                b.setOpacity(0.0);
+                b.setDisable(true);
+                b.setMouseTransparent(true);
+            }
+        }
+
+        // Also prepare individual title letters for pre-appearance animation
+        if (titleContainer != null) {
+            for (Node n : titleContainer.getChildren()) {
+                // start letters tiny and slightly lower so staggered pop-in feels tactile
+                n.setOpacity(0.0);
+                n.setScaleX(0.65);
+                n.setScaleY(0.65);
+                n.setTranslateY(18);
+            }
+        }
+    }
+
+    /**
+     * Called after the launch animation is finished or when it should be skipped. Restores interactivity.
+     */
+    private void finalizeLaunchState() {
+        if (titleContainer != null) {
+            titleContainer.setOpacity(1.0);
+            titleContainer.setScaleX(1.0);
+            titleContainer.setScaleY(1.0);
+            // Reset each letter to ensure it's visible and not transformed (fix: logo disappearing on return)
+            for (Node n : titleContainer.getChildren()) {
+                n.setVisible(true);
+                n.setOpacity(1.0);
+                n.setScaleX(1.0);
+                n.setScaleY(1.0);
+                n.setTranslateX(0.0);
+                n.setTranslateY(0.0);
+                n.setRotate(0.0);
+            }
+        }
+        if (yearText != null) yearText.setOpacity(1.0);
+
+        Button[] uiButtons = new Button[]{playButton, quitButton, controlsButton, settingsButton};
+        for (Button b : uiButtons) {
+            if (b != null) {
+                b.setOpacity(1.0);
+                b.setDisable(false);
+                b.setMouseTransparent(false);
+            }
+        }
+    }
+
+    /**
+     * Runs the launch animation sequence: CRT/glitch on the title, scanline sweep, then reveal buttons sequentially.
+     */
+    private void playLaunchAnimation() {
+        // Disable any UI interaction while animation runs
+        rootPane.setDisable(true);
+
+        // Fade/scale the title into view
+        javafx.animation.Timeline showTitle = new javafx.animation.Timeline(
+            new javafx.animation.KeyFrame(Duration.ZERO,
+                new KeyValue(titleContainer.opacityProperty(), 0.0),
+                new KeyValue(titleContainer.scaleXProperty(), 0.96),
+                new KeyValue(titleContainer.scaleYProperty(), 0.96)),
+            new javafx.animation.KeyFrame(Duration.millis(520),
+                new KeyValue(titleContainer.opacityProperty(), 1.0, javafx.animation.Interpolator.EASE_OUT),
+                new KeyValue(titleContainer.scaleXProperty(), 1.02, javafx.animation.Interpolator.EASE_OUT),
+                new KeyValue(titleContainer.scaleYProperty(), 1.02, javafx.animation.Interpolator.EASE_OUT))
+        );
+
+        // Brief settling back to 1.0 scale
+        javafx.animation.Timeline settleTitle = new javafx.animation.Timeline(
+            new javafx.animation.KeyFrame(Duration.millis(0), new KeyValue(titleContainer.scaleXProperty(), 1.02), new KeyValue(titleContainer.scaleYProperty(), 1.02)),
+            new javafx.animation.KeyFrame(Duration.millis(160), new KeyValue(titleContainer.scaleXProperty(), 1.0), new KeyValue(titleContainer.scaleYProperty(), 1.0))
+        );
+
+        // Create a subtle CRT scanline overlay that sweeps across the title during the glitch
+        Rectangle scanline = new Rectangle();
+        scanline.setWidth(rootPane.getWidth());
+        scanline.setHeight(10);
+        scanline.setFill(javafx.scene.paint.Color.web("#ffffff", 0.06));
+        scanline.setBlendMode(javafx.scene.effect.BlendMode.SRC_OVER);
+        scanline.setOpacity(0);
+        // place over the title roughly at its center
+        double titleY = titleContainer.getLayoutY() + titleContainer.getTranslateY();
+        scanline.setTranslateY(titleY - 12);
+        // Make sure it is above background but below overlays like settings; add near top of root
+        rootPane.getChildren().add(scanline);
+
+        // Create several quick glitch bursts that shift letters, flicker alpha and flash a stronger glow
+        javafx.animation.Timeline glitchTimeline = new javafx.animation.Timeline();
+        int bursts = 4;
+        double baseTime = 600; // ms offset after showTitle
+        for (int i = 0; i < bursts; i++) {
+            double t0 = baseTime + i * 180;
+
+            // Add KeyFrame to trigger a quick random letter displacement
+            javafx.animation.KeyFrame kf = new javafx.animation.KeyFrame(Duration.millis(t0), e -> {
+                // small random subset of letters get an instantaneous offset and alpha jitter
+                int letters = titleContainer.getChildren().size();
+                for (int li = 0; li < letters; li++) {
+                    if (Math.random() < 0.45) {
+                        Node n = titleContainer.getChildren().get(li);
+                        double xOff = (Math.random() - 0.5) * 18.0; // left/right
+                        double yOff = (Math.random() - 0.5) * 6.0;
+                        // quick translate and opacity flicker
+                        javafx.animation.TranslateTransition tt = new javafx.animation.TranslateTransition(javafx.util.Duration.millis(90), n);
+                        tt.setByX(xOff);
+                        tt.setByY(yOff);
+                        tt.setAutoReverse(true);
+                        tt.setCycleCount(2);
+                        tt.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
+                        tt.play();
+
+                        javafx.animation.Timeline alpha = new javafx.animation.Timeline(
+                            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new KeyValue(n.opacityProperty(), n.getOpacity())),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(60), new KeyValue(n.opacityProperty(), Math.max(0.2, Math.random()))),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(120), new KeyValue(n.opacityProperty(), 1.0))
+                        );
+                        alpha.play();
+
+                        // briefly increase the DropShadow radius to create a white-hot CRT pop
+                        if (n instanceof Text && ((Text) n).getEffect() instanceof DropShadow) {
+                            DropShadow ds = (DropShadow) ((Text) n).getEffect();
+                            javafx.animation.Timeline dsPulse = new javafx.animation.Timeline(
+                                new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new KeyValue(ds.radiusProperty(), ds.getRadius())),
+                                new javafx.animation.KeyFrame(javafx.util.Duration.millis(100), new KeyValue(ds.radiusProperty(), ds.getRadius() + 30)),
+                                new javafx.animation.KeyFrame(javafx.util.Duration.millis(160), new KeyValue(ds.radiusProperty(), ds.getRadius()))
+                            );
+                            dsPulse.play();
+                        }
+                    }
+                }
+
+                // brief scanline flicker effect
+                javafx.animation.Timeline scan = new javafx.animation.Timeline(
+                    new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new KeyValue(scanline.opacityProperty(), 0.0), new KeyValue(scanline.translateYProperty(), titleContainer.getLayoutY())),
+                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(40), new KeyValue(scanline.opacityProperty(), 1.0)),
+                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(160), new KeyValue(scanline.translateYProperty(), titleContainer.getLayoutY() + 32)),
+                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(220), new KeyValue(scanline.opacityProperty(), 0.0))
+                );
+                scan.play();
+
+            });
+
+            glitchTimeline.getKeyFrames().add(kf);
+        }
+
+        // After glitches, bring the year text and proceed to reveal buttons
+        double revealTime = baseTime + bursts * 180 + 220;
+        javafx.animation.KeyFrame revealKF = new javafx.animation.KeyFrame(Duration.millis(revealTime), e -> {
+            // show year
+            if (yearText != null) {
+                FadeTransition fy = new FadeTransition(Duration.millis(260), yearText);
+                yearText.setOpacity(0);
+                fy.setToValue(1.0);
+                fy.play();
+            }
+
+            // remove scanline after a small delay
+            javafx.animation.Timeline removeScan = new javafx.animation.Timeline(new javafx.animation.KeyFrame(javafx.util.Duration.millis(420), ev -> rootPane.getChildren().remove(scanline)));
+            removeScan.play();
+
+            // Reveal main menu buttons one by one with neon glow fade-in
+            List<Node> revealButtons = new ArrayList<>();
+            if (playButton != null) revealButtons.add(playButton);
+            if (quitButton != null) revealButtons.add(quitButton);
+            if (controlsButton != null) revealButtons.add(controlsButton);
+            if (settingsButton != null) revealButtons.add(settingsButton);
+
+            double startDelay = 0;
+            for (Node b : revealButtons) {
+                b.setOpacity(0.0);
+                b.setVisible(true);
+                javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(Duration.millis(360), b);
+                ft.setToValue(1.0);
+                ft.setDelay(javafx.util.Duration.millis(startDelay));
+
+                // Slight pop and translate
+                javafx.animation.TranslateTransition tt = new javafx.animation.TranslateTransition(Duration.millis(360), b);
+                tt.setFromY(10);
+                tt.setToY(0);
+                tt.setDelay(javafx.util.Duration.millis(startDelay));
+
+                // Do not add an extra reveal glow here — keep the original hover/responsive effects
+                // Finalize to enable interactivity after last button revealed
+                ft.play();
+                tt.play();
+                // no extra glow Pulse
+
+                startDelay += 120; // stagger
+            }
+
+            // Re-enable interactivity after full reveal
+            javafx.animation.Timeline reenable = new javafx.animation.Timeline(new javafx.animation.KeyFrame(javafx.util.Duration.millis(startDelay + 420), ev2 -> {
+                rootPane.setDisable(false);
+                finalizeLaunchState();
+            }));
+            reenable.play();
+
+        });
+
+        // Chain the sequences
+        // First: per-letter pre-appearance pop-in so the logo "assembles" politely before the CRT glitches.
+        // Each letter gets a short fade+overshoot scale, a tiny rotation settle and a neon DropShadow power-up pulse.
+        javafx.animation.ParallelTransition preTitle = new javafx.animation.ParallelTransition();
+        // Also bring the overall container to alpha 1 so letter-level fades are visible.
+        if (titleContainer != null) {
+            javafx.animation.FadeTransition containerFade = new javafx.animation.FadeTransition(javafx.util.Duration.millis(90), titleContainer);
+            containerFade.setFromValue(titleContainer.getOpacity());
+            containerFade.setToValue(1.0);
+            preTitle.getChildren().add(containerFade);
+        }
+        if (titleContainer != null) {
+            int idx = 0;
+            for (Node n : titleContainer.getChildren()) {
+                // ensure starting values
+                n.setOpacity(0.0);
+                n.setScaleX(0.65);
+                n.setScaleY(0.65);
+                n.setTranslateY(18);
+
+                // Slightly different durations and an overshoot make the letters pop in more satisfyingly
+                javafx.animation.FadeTransition f = new javafx.animation.FadeTransition(javafx.util.Duration.millis(220), n);
+                f.setToValue(1.0);
+                f.setDelay(javafx.util.Duration.millis(idx * 68));
+                f.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+
+                javafx.animation.ScaleTransition s = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(300), n);
+                s.setFromX(0.65);
+                s.setFromY(0.65);
+                s.setToX(1.08); // slight overshoot
+                s.setToY(1.08);
+                s.setDelay(javafx.util.Duration.millis(idx * 68));
+                s.setInterpolator(javafx.animation.Interpolator.SPLINE(0.2, 0.85, 0.25, 1.0));
+
+                // settle back gently after the overshoot
+                javafx.animation.ScaleTransition settle = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(140), n);
+                settle.setFromX(1.08);
+                settle.setFromY(1.08);
+                settle.setToX(1.0);
+                settle.setToY(1.0);
+                settle.setDelay(javafx.util.Duration.millis(idx * 68 + 260));
+                settle.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+
+                // small translate pop
+                javafx.animation.TranslateTransition t = new javafx.animation.TranslateTransition(javafx.util.Duration.millis(300), n);
+                t.setFromY(18);
+                t.setToY(0);
+                t.setDelay(javafx.util.Duration.millis(idx * 68));
+                t.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+
+                // tiny rotation jitter then settle to 0 to feel like pieces snapping together
+                double rotStart = (Math.random() - 0.5) * 12.0; // random -6..6
+                n.setRotate(rotStart);
+                javafx.animation.RotateTransition rot = new javafx.animation.RotateTransition(javafx.util.Duration.millis(360), n);
+                rot.setToAngle(0);
+                rot.setDelay(javafx.util.Duration.millis(idx * 68 + 20));
+                rot.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+
+                // Neon power-up pulse on the letter's DropShadow effect (if present)
+                if (n instanceof Text && ((Text) n).getEffect() instanceof DropShadow) {
+                    DropShadow ds = (DropShadow) ((Text) n).getEffect();
+                    // ensure starting radius is small so pulse is noticeable
+                    double originalRadius = ds.getRadius();
+                    ds.setRadius(Math.max(2.0, originalRadius * 0.12));
+                    javafx.animation.Timeline dsPulse = new javafx.animation.Timeline(
+                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new javafx.animation.KeyValue(ds.radiusProperty(), ds.getRadius())),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(120 + idx * 24), new javafx.animation.KeyValue(ds.radiusProperty(), Math.max(20, originalRadius * 1.5))),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(320 + idx * 24), new javafx.animation.KeyValue(ds.radiusProperty(), Math.max(10, originalRadius)))
+                    );
+                    dsPulse.setDelay(javafx.util.Duration.millis(0));
+                    preTitle.getChildren().add(dsPulse);
+                }
+
+                preTitle.getChildren().addAll(f, s, settle, t, rot);
+                idx++;
+            }
+        }
+
+        preTitle.setOnFinished(ev -> showTitle.play());
+        showTitle.setOnFinished(ev -> settleTitle.play());
+        settleTitle.setOnFinished(ev -> glitchTimeline.play());
+        preTitle.play();
+        glitchTimeline.getKeyFrames().add(revealKF);
     }
 
     private void setupControlLight() {
@@ -516,7 +831,7 @@ public class MenuController {
         // Load or fallback to default font
         javafx.scene.text.Font neonFont = null;
         try {
-            neonFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/PressStart2P-vaV7.ttf"), 10);
+            neonFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/PressStart2P-vaV7.ttf"), 10);
         } catch (Exception ignored) {}
         if (neonFont == null) {
             neonFont = javafx.scene.text.Font.font("Consolas", 10);
@@ -634,7 +949,7 @@ public class MenuController {
                     rootPane.getChildren().remove(settingsDim);
                 }
             } else {
-                // Show overlay with fade in
+                // Show overlay with Elastic Pop-up effect
                 // If level selection overlay is visible, add a dim behind the settings overlay
                 if (levelSelectionContainer != null && levelSelectionContainer.isVisible()) {
                     if (settingsDim == null) {
@@ -658,12 +973,39 @@ public class MenuController {
                     levelSelectionContainer.setEffect(new javafx.scene.effect.GaussianBlur(8));
                     levelSelectionContainer.setOpacity(0.6);
                 }
-                settingsOverlay.setOpacity(0);
+
                 settingsOverlay.setVisible(true);
-                FadeTransition fadeIn = new FadeTransition(Duration.millis(300), settingsOverlay);
+                settingsOverlay.setOpacity(0);
+                settingsOverlay.setScaleX(0.5); // Start small
+                settingsOverlay.setScaleY(0.5);
+
+                // Fade In
+                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(Duration.millis(300), settingsOverlay);
                 fadeIn.setFromValue(0.0);
                 fadeIn.setToValue(1.0);
-                fadeIn.play();
+
+                // Elastic Scale (using a Timeline to simulate a spring bounce)
+                javafx.animation.Timeline bounce = new javafx.animation.Timeline(
+                    new javafx.animation.KeyFrame(Duration.millis(0), 
+                        new javafx.animation.KeyValue(settingsOverlay.scaleXProperty(), 0.5), 
+                        new javafx.animation.KeyValue(settingsOverlay.scaleYProperty(), 0.5)
+                    ),
+                    new javafx.animation.KeyFrame(Duration.millis(200), 
+                        new javafx.animation.KeyValue(settingsOverlay.scaleXProperty(), 1.1) // Overshoot to 110%
+                    ), 
+                    new javafx.animation.KeyFrame(Duration.millis(200), 
+                        new javafx.animation.KeyValue(settingsOverlay.scaleYProperty(), 1.1)
+                    ),
+                    new javafx.animation.KeyFrame(Duration.millis(400), 
+                        new javafx.animation.KeyValue(settingsOverlay.scaleXProperty(), 1.0, javafx.animation.Interpolator.EASE_OUT) // Settle at 100%
+                    ),
+                    new javafx.animation.KeyFrame(Duration.millis(400), 
+                        new javafx.animation.KeyValue(settingsOverlay.scaleYProperty(), 1.0, javafx.animation.Interpolator.EASE_OUT)
+                    )
+                );
+
+                javafx.animation.ParallelTransition popUp = new javafx.animation.ParallelTransition(fadeIn, bounce);
+                popUp.play();
             }
         }
     }
@@ -716,7 +1058,7 @@ public class MenuController {
         javafx.scene.text.Font customFont = null;
         try {
             // Force the logo font size to 130 so it visibly enlarges regardless of metrics
-            customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/AXR ArcadeMachine.ttf"), 130);
+            customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/AXR ArcadeMachine.ttf"), 130);
             if (customFont != null) {
                 System.out.println("Loaded custom font: " + customFont.getName());
             } else {
@@ -728,7 +1070,7 @@ public class MenuController {
         
         if (customFont == null) {
             try {
-                customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/Arcadia-SVG.ttf"), 130);
+                customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Arcadia-SVG.ttf"), 130);
             } catch (Exception e) { /* Ignore */ }
         }
         if (customFont == null) {
@@ -738,12 +1080,12 @@ public class MenuController {
         }
         if (customFont == null) {
             try {
-                customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/PressStart2P-vaV7.ttf"), 130);
+                customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/PressStart2P-vaV7.ttf"), 130);
             } catch (Exception e) { /* Ignore */ }
         }
         if (customFont == null) {
             try {
-                customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/digital.ttf"), 80);
+                customFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/digital.ttf"), 80);
             } catch (Exception e) { /* Ignore */ }
         }
         if (customFont == null) {
@@ -802,27 +1144,27 @@ public class MenuController {
         javafx.scene.text.Font yearFont = null;
         try {
             // Prefer a slightly larger PressStart2P font for the year text
-            yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/PressStart2P-vaV7.ttf"), 15);
+            yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/PressStart2P-vaV7.ttf"), 15);
         } catch (Exception e) { /* Ignore */ }
         
         if (yearFont == null) {
              try {
-                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/AXR ArcadeMachine.ttf"), 40);
+                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/AXR ArcadeMachine.ttf"), 40);
             } catch (Exception e) { /* Ignore */ }
         }
         if (yearFont == null) {
              try {
-                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/Arcadia-SVG.ttf"), 40);
+                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/Arcadia-SVG.ttf"), 40);
             } catch (Exception e) { /* Ignore */ }
         }
         if (yearFont == null) {
              try {
-                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/NineByFiveNbp-MypB.ttf"), 40);
+                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/NineByFiveNbp-MypB.ttf"), 40);
             } catch (Exception e) { /* Ignore */ }
         }
         if (yearFont == null) {
              try {
-                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/digital.ttf"), 40);
+                yearFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/digital.ttf"), 40);
             } catch (Exception e) { /* Ignore */ }
         }
         if (yearFont == null) yearFont = javafx.scene.text.Font.font("Arial", 40);
@@ -867,7 +1209,7 @@ public class MenuController {
     private void setupButtons() {
         javafx.scene.text.Font buttonFont = null;
         try {
-            buttonFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/PressStart2P-vaV7.ttf"), 16);
+            buttonFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/PressStart2P-vaV7.ttf"), 16);
         } catch (Exception e) { /* Ignore */ }
         
         if (buttonFont != null) {
@@ -1119,13 +1461,29 @@ public class MenuController {
             javafx.scene.layout.StackPane.setAlignment(levelSelectionContainer, javafx.geometry.Pos.CENTER);
         }
 
-        // Fade in the level selection overlay
-        levelSelectionContainer.setOpacity(0);
+        // Show container
         levelSelectionContainer.setVisible(true);
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(400), levelSelectionContainer);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-        fadeIn.play();
+        levelSelectionContainer.setOpacity(1.0);
+
+        // ANIMATE CHILDREN (Title + Buttons) ONE BY ONE
+        int delay = 0;
+        for (javafx.scene.Node child : levelSelectionContainer.getChildren()) {
+            child.setOpacity(0);
+            child.setTranslateY(20); // Start lower
+
+            javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(Duration.millis(400), child);
+            ft.setToValue(1.0);
+            
+            javafx.animation.TranslateTransition tt = new javafx.animation.TranslateTransition(Duration.millis(400), child);
+            tt.setToY(0);
+            tt.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+
+            javafx.animation.ParallelTransition entry = new javafx.animation.ParallelTransition(ft, tt);
+            entry.setDelay(Duration.millis(delay)); // Stagger delays
+            entry.play();
+            
+            delay += 100; // Next item appears 100ms later
+        }
     }
 
     /**
@@ -1248,6 +1606,40 @@ public class MenuController {
         button.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
         setupButtonAnimation(button);
+        // Attach a descriptive tooltip matching the neon arcade theme
+        String tipText;
+        switch (mode) {
+            case "CLASSIC":
+                tipText = "Standard rules with steady progression and traditional scoring — focus on precise stacking to build high scores.";
+                break;
+            case "RUSH":
+                tipText = "A timed challenge: clear as many lines as you can before the clock runs out. Faster gravity increases the pressure.";
+                break;
+            case "MYSTERY":
+                tipText = "Unpredictable piece sequences and increased speed create a chaotic, high-intensity experience for skilled players.";
+                break;
+            default:
+                tipText = "Standard rules with steady progression and traditional scoring.";
+        }
+
+        javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(tipText);
+        // Neat neon styling to fit the game's theme
+        tooltip.setWrapText(true);
+        tooltip.setMaxWidth(260);
+        tooltip.setStyle(
+            "-fx-background-color: rgba(6,6,8,0.86); " +
+            "-fx-text-fill: #e6ffff; " +
+            "-fx-font-family: 'Press Start 2P', Arial; " +
+            "-fx-font-size: 10px; " +
+            "-fx-padding: 8px; " +
+            "-fx-border-color: rgba(0,255,220,0.16); " +
+            "-fx-border-width: 1px; " +
+            "-fx-border-radius: 8px; " +
+            "-fx-background-radius: 8px; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,255,220,0.12), 10, 0.2, 0, 0);"
+        );
+        button.setTooltip(tooltip);
+
         button.setOnAction(e -> loadGameSceneWithMode(mode));
         return button;
     }
@@ -1268,8 +1660,10 @@ public class MenuController {
                     // recreate so next open will re-add cleanly
                     levelSelectionContainer = null;
                 }
-                // Restore visibility of main menu elements
+                // Restore visibility of main menu elements and make sure title letters are restored
                 titleContainer.setVisible(true);
+                // Ensure any per-letter properties are reset (covers case where launch animation had been used)
+                finalizeLaunchState();
                 yearText.setVisible(true);
                 playButton.setVisible(true);
                 quitButton.setVisible(true);
@@ -1284,13 +1678,27 @@ public class MenuController {
      */
     private void loadGameSceneWithMode(String mode) {
         selectedGameMode = mode;
-        
-        // Fade out transition
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(500), rootPane);
-        fadeOut.setFromValue(1.0);
-        fadeOut.setToValue(0.0);
-        fadeOut.setOnFinished(e -> loadGameScene());
-        fadeOut.play();
+    
+        // Create a "Warp" effect: Scale up + Fade out
+        javafx.animation.ParallelTransition warpTransition = new javafx.animation.ParallelTransition();
+
+        // 1. Zoom into the screen (Scale X/Y from 1.0 to 3.0)
+        javafx.animation.ScaleTransition zoom = new javafx.animation.ScaleTransition(Duration.millis(500), rootPane);
+        zoom.setFromX(1.0);
+        zoom.setFromY(1.0);
+        zoom.setToX(3.0);
+        zoom.setToY(3.0);
+        zoom.setInterpolator(javafx.animation.Interpolator.EASE_IN); // Accelerate into the warp
+
+        // 2. Fade out
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.millis(500), rootPane);
+        fade.setFromValue(1.0);
+        fade.setToValue(0.0);
+        fade.setInterpolator(javafx.animation.Interpolator.EASE_IN);
+
+        warpTransition.getChildren().addAll(zoom, fade);
+        warpTransition.setOnFinished(e -> loadGameScene());
+        warpTransition.play();
     }
 
     private void loadGameScene() {

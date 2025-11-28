@@ -1,7 +1,6 @@
 package com.comp2042.tetris.ui.view;
 
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
 
 /**
  * Extracted from GuiController to follow Single Responsibility Principle.
@@ -13,7 +12,7 @@ public final class ViewInitializer {
 
     public void loadFonts(Class<?> loaderClass) {
         try {
-            java.net.URL res = loaderClass.getClassLoader().getResource("digital.ttf");
+            java.net.URL res = loaderClass.getClassLoader().getResource("fonts/digital.ttf");
             if (res != null) {
                 javafx.scene.text.Font f = javafx.scene.text.Font.loadFont(res.toExternalForm(), 38);
                 if (f != null) {

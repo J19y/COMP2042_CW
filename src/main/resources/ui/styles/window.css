@@ -5,12 +5,17 @@
 /* Load local fonts for consistent display */
 @font-face {
     font-family: 'DigitalFont';
-    src: url("../../digital.ttf");
+    src: url("../../fonts/digital.ttf");
+}
+
+@font-face {
+    font-family: 'AXR ArcadeMachine';
+    src: url("../../fonts/AXR ArcadeMachine.ttf");
 }
 
 @font-face {
     font-family: 'Press Start 2P';
-    src: url("../../PressStart2P-vaV7.ttf");
+    src: url("../../fonts/PressStart2P-vaV7.ttf");
 }
 
 /* Game Board - Central Focus */
@@ -94,10 +99,10 @@
 }
 
 .game-over-text {
-    font-family: "Impact", "Bebas Neue", "Segoe UI Black", sans-serif;
-    -fx-font-family: "Impact", "Bebas Neue", "Segoe UI Black", sans-serif;
-    font-size: 72px;
-    -fx-font-size: 72px;
+    font-family: "AXR ArcadeMachine", "Impact", "Bebas Neue", "Segoe UI Black", sans-serif;
+    -fx-font-family: "AXR ArcadeMachine", "Impact", "Bebas Neue", "Segoe UI Black", sans-serif;
+    font-size: 120px;
+    -fx-font-size: 120px;
     fill: #ff1c1c;
     -fx-fill: #ff1c1c;
     color: #ff1c1c;
@@ -156,10 +161,10 @@
 }
 
 .game-over-score {
-    font-family: "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;
-    -fx-font-family: "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;
-    font-size: 32px;
-    -fx-font-size: 32px;
+    font-family: 'Press Start 2P', "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;
+    -fx-font-family: 'Press Start 2P', "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;
+    font-size: 18px;
+    -fx-font-size: 18px;
     -fx-letter-spacing: 2px;
     -fx-text-fill: #ffffff;
     -fx-effect: none;
