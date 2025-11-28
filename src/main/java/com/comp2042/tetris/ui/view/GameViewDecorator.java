@@ -3,9 +3,9 @@ package com.comp2042.tetris.ui.view;
 import java.util.Objects;
 
 import com.comp2042.tetris.app.CreateNewGame;
-import com.comp2042.tetris.mechanics.board.GameView;
-import com.comp2042.tetris.domain.model.ViewData;
 import com.comp2042.tetris.domain.model.ShowResult;
+import com.comp2042.tetris.domain.model.ViewData;
+import com.comp2042.tetris.mechanics.board.GameView;
 import com.comp2042.tetris.ui.input.DropInput;
 import com.comp2042.tetris.ui.input.InputActionHandler;
 
@@ -58,5 +58,15 @@ public class GameViewDecorator implements GameView {
     @Override
     public void acceptShowResult(ShowResult showResult) {
         delegate.acceptShowResult(showResult);
+    }
+
+    @Override
+    public void showMessage(String message) {
+        delegate.showMessage(message);
+    }
+
+    @Override
+    public void showEventMessage(String message) {
+        delegate.showEventMessage(message);
     }
 }

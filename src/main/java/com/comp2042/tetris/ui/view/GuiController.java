@@ -64,6 +64,9 @@ public class GuiController implements Initializable, GameView {
     @FXML
     private Group groupNotification;
 
+    // Notification manager used to display short event messages
+    private NotificationManager notificationService;
+
     @FXML
     private GridPane ghostPanel;
 
@@ -486,6 +489,82 @@ public class GuiController implements Initializable, GameView {
         });
     }
 
+    @Override
+    public void setBoardVisibility(boolean visible) {
+        // Toggle main game panels and active-piece layers
+        Platform.runLater(() -> {
+            try {
+                if (gamePanel != null) {
+                    gamePanel.setOpacity(visible ? 1.0 : 0.0);
+                }
+                if (brickPanel != null) {
+                    brickPanel.setVisible(visible);
+                }
+                if (ghostPanel != null) {
+                    ghostPanel.setVisible(visible);
+                }
+                if (nextBrickPanel != null) {
+                    nextBrickPanel.setOpacity(visible ? 1.0 : 0.0);
+                }
+            } catch (Exception ignored) {}
+        });
+    }
+
+    @Override
+    public void showMessage(String message) {
+        try {
+            if (notificationService != null && message != null && !message.isEmpty()) {
+                notificationService.showMessage(message);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    public void showEventMessage(String message) {
+        try {
+            System.out.println("GuiController: showEventMessage -> " + message);
+            if (notificationService != null && message != null && !message.isEmpty()) {
+                notificationService.showEventMessage(message);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    public void playEarthquakeAnimation() {
+        try {
+            Platform.runLater(() -> {
+                try {
+                    // Short shake timeline on the main game panel
+                    if (gamePanel != null) {
+                        javafx.animation.Timeline shake = new javafx.animation.Timeline(
+                            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new javafx.animation.KeyValue(gamePanel.translateXProperty(), 0)),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(40), new javafx.animation.KeyValue(gamePanel.translateXProperty(), -10)),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(80), new javafx.animation.KeyValue(gamePanel.translateXProperty(), 10)),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(120), new javafx.animation.KeyValue(gamePanel.translateXProperty(), -6)),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(160), new javafx.animation.KeyValue(gamePanel.translateXProperty(), 6)),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(200), new javafx.animation.KeyValue(gamePanel.translateXProperty(), 0))
+                        );
+                        shake.play();
+                    }
+
+                    // Neon flash on the board (temporary Glow) to emphasize the event
+                    if (gamePanel != null) {
+                        javafx.scene.effect.Glow g = new javafx.scene.effect.Glow(0.0);
+                        javafx.scene.effect.Effect prev = gamePanel.getEffect();
+                        gamePanel.setEffect(g);
+                        javafx.animation.Timeline glow = new javafx.animation.Timeline(
+                            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new javafx.animation.KeyValue(g.levelProperty(), 0.0)),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(60), new javafx.animation.KeyValue(g.levelProperty(), 0.9)),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(260), new javafx.animation.KeyValue(g.levelProperty(), 0.0))
+                        );
+                        glow.setOnFinished(e -> gamePanel.setEffect(prev));
+                        glow.play();
+                    }
+                } catch (Exception ignored) {}
+            });
+        } catch (Exception ignored) {}
+    }
+
     private void pauseTimerTracking() {
         if (timerRunning) {
             accumulatedNanos += System.nanoTime() - startTime;
@@ -507,7 +586,7 @@ public class GuiController implements Initializable, GameView {
         activeBrickRenderer.initialize(brick);
         renderNextBrick(brick.getNextBrickData());
 
-        NotificationManager notificationService = new NotificationManager(groupNotification);
+        notificationService = new NotificationManager(groupNotification);
 
         GameLoopController gameLoopController = new GameLoopController(Duration.millis(400),
             () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)));

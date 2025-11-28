@@ -57,6 +57,53 @@ public final class RowClearMessage extends StackPane {
         message.play(container);
     }
 
+    /**
+     * Show a custom message using the same visual style as the row-clear message.
+     * This is used for Mystery Mode events (e.g. "Earthquake!", "The Fog").
+     */
+    public static void showCustom(Group container, String message) {
+        if (container == null || message == null || message.isEmpty()) return;
+        System.out.println("RowClearMessage: showCustom -> " + message);
+        RowClearMessage msg = new RowClearMessage(message);
+        msg.play(container);
+    }
+
+    private RowClearMessage(String message) {
+        setPickOnBounds(false);
+        setMouseTransparent(true);
+        setOpacity(0.0);
+        setAlignment(Pos.CENTER);
+
+        titleText = new Text(message);
+
+        // Do not hard-set the font size here; let the CSS classes (floating-score-event) control
+        // the font-family and font-size. The font is already registered via @font-face in CSS.
+
+        // Use distinct CSS for event messages so they don't look like row-clear messages
+        titleText.getStyleClass().add("floating-score-event");
+        String upper = message.toUpperCase();
+        if (upper.contains("SWEEP") || upper.contains("TETRA") || upper.contains("TRIPLE") || message.length() > 14) {
+            titleText.getStyleClass().add("floating-score-event-high");
+        }
+
+        // Ensure the inner fill uses the neon event colour so the text is not black.
+        // Prefer Press Start 2P for the event messages (smaller, arcade-like).
+        try {
+            javafx.scene.text.Font press = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/PressStart2P-vaV7.ttf"), 26);
+            if (press != null) {
+                titleText.setFont(press);
+            }
+        } catch (Exception ignored) {}
+
+        // Set explicit fill colour to be sure Text nodes don't fall back to black
+        if (titleText.getStyleClass().contains("floating-score-event-high")) {
+            titleText.setFill(Color.web("#FF6BE0"));
+        } else {
+            titleText.setFill(Color.web("#FFE082"));
+        }
+        getChildren().add(titleText);
+    }
+
     private void play(Group container) {
         Node target = findNotificationStack(container);
         if (target instanceof StackPane stack) {

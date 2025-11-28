@@ -420,3 +420,37 @@
     -fx-font-weight: 900;
 }
 
+/* Distinct style for one-off Mystery-mode event messages so they are visually
+   different to row-clear messages. Uses Press Start 2P style family and
+   brighter inner colors (not black) to avoid confusion. */
+.floating-score-event {
+    -fx-font-family: 'Press Start 2P', "AXR ArcadeMachine", 'DigitalFont', "Arial";
+    /* smaller than row-clear text so events are visually distinct but not overwhelming */
+    -fx-font-size: 26px;
+    -fx-text-fill: #FFE082; /* soft neon yellow */
+    -fx-fill: #FFE082; /* ensure Text nodes use the same inner color */
+    /* softer neon glow (smaller radius and spread) so message is readable but not overpowering */
+    -fx-effect: dropshadow(gaussian, rgba(255,224,130,0.85), 6, 0.35, 0, 0),
+                 dropshadow(gaussian, rgba(255,160,32,0.22), 12, 0.22, 0, 0);
+    /* use a stroke similar to inner color so event messages read as a neon fill rather than black core */
+    -fx-stroke: rgba(255,224,130,0.95);
+    -fx-stroke-width: 0.8px;
+    -fx-padding: 0 6 0 6;
+    -fx-font-weight: bold;
+}
+
+.floating-score-event-high {
+    -fx-font-family: 'Press Start 2P', "AXR ArcadeMachine", 'DigitalFont', "Arial";
+    /* slightly larger variant for longer/important event messages */
+    -fx-font-size: 34px;
+    -fx-text-fill: #FF6BE0; /* neon pink */
+    -fx-fill: #FF6BE0; /* ensure Text nodes use the same inner color */
+    /* reduce intensity for high-variant as well */
+    -fx-effect: dropshadow(gaussian, rgba(255,107,224,0.88), 9, 0.45, 0, 0),
+                 dropshadow(gaussian, rgba(255,60,160,0.28), 18, 0.28, 0, 0);
+    -fx-stroke: rgba(255,107,224,0.88);
+    -fx-stroke-width: 0.9px;
+    -fx-padding: 0 8 0 8;
+    -fx-font-weight: 900;
+}
+

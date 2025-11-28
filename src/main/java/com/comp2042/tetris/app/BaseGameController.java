@@ -48,6 +48,9 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
     protected final java.util.Map<EventType, GameCommand> commands
         = new java.util.EnumMap<>(EventType.class);
 
+    // Indicates whether the game logic in this controller is active (not game over)
+    protected volatile boolean active = true;
+
     public BaseGameController(GameView view) {
         this(view, new ClassicScoringPolicy(), new ScoreManager());
     }
@@ -74,8 +77,9 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
         this.moveHandler = new BrickMove(movement, reader);
         this.scoringPolicy = policy;
         this.dropHandler = new BrickDrop(dropActions, reader, scoreService, spawnManager, scoringPolicy);
-        // Register observer for game-over events (Observer pattern minimal integration)
-        spawnManager.addGameOverObserver(view::gameOver);
+        // Register observer for game-over events so the controller is notified first
+        // and can perform internal cleanup before delegating to the view.
+        spawnManager.addGameOverObserver(this::gameOver);
         spawnManager.spawn();
         registerDefaultCommands();
         setupView();
@@ -120,6 +124,8 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     @Override
     public ShowResult onDown(MoveEvent event) {
+        // Prevent processing if controller is no longer active (game over)
+        if (!active) return new ShowResult(null, reader.getViewData());
         ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
         if (result.getClearRow() != null) {
             view.refreshGameBackground(reader.getBoardMatrix());
@@ -129,6 +135,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     @Override
     public ShowResult onLeft(MoveEvent event) {
+        if (!active) return new ShowResult(null, reader.getViewData());
         ViewData vd = moveHandler.handleLeftMove();
         try {
             com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
@@ -144,6 +151,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     @Override
     public ShowResult onRight(MoveEvent event) {
+        if (!active) return new ShowResult(null, reader.getViewData());
         ViewData vd = moveHandler.handleRightMove();
         try {
             com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
@@ -157,6 +165,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     @Override
     public ShowResult onRotate(MoveEvent event) {
+        if (!active) return new ShowResult(null, reader.getViewData());
         ViewData vd = moveHandler.handleRotation();
         try {
             com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
@@ -170,6 +179,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     @Override
     public ShowResult handle(MoveEvent event) {
+        if (!active) return new ShowResult(null, reader.getViewData());
         GameCommand handler = commands.get(event.getEventType());
         if (handler == null) {
             return new ShowResult(null, reader.getViewData());
@@ -286,6 +296,8 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     @Override
     public void createNewGame() {
+        // Reactivate controller logic when a new game starts
+        active = true;
         boardLifecycle.newGame();
         scoreService.reset();
         view.refreshGameBackground(reader.getBoardMatrix());
@@ -300,6 +312,8 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     // Convenience hook that subclasses may call to trigger game over
     protected void gameOver() {
+        // mark controller inactive so future input/ticks are ignored
+        active = false;
         view.gameOver();
     }
 }

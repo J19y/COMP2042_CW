@@ -180,4 +180,40 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         // Ignore gameOver flag here; a fresh board should not be game over.
         spawnBrick();
     }
+
+    /**
+     * Add a garbage line at the bottom and push everything up by one row.
+     * Ensures at least one empty cell in the bottom row so it's solvable.
+     */
+    public void addGarbageLine() {
+        int[][] newMatrix = new int[rows][cols];
+        // shift up: row 0 becomes previous row 1 ... last-1 becomes previous last
+        for (int r = 0; r < rows - 1; r++) {
+            System.arraycopy(boardMatrix[r + 1], 0, newMatrix[r], 0, cols);
+        }
+        // create garbage bottom row with at least one hole
+        java.util.Random rnd = new java.util.Random();
+        int[] bottom = new int[cols];
+        int holeIndex = rnd.nextInt(cols);
+        for (int c = 0; c < cols; c++) {
+            if (c == holeIndex) {
+                bottom[c] = 0;
+            } else {
+                bottom[c] = rnd.nextBoolean() ? 1 : 0;
+            }
+        }
+        // ensure at least one filled cell if rnd produced all zero except hole
+        boolean anyBlock = false;
+        for (int c = 0; c < cols; c++) {
+            if (bottom[c] != 0) { anyBlock = true; break; }
+        }
+        if (!anyBlock) {
+            // set random cell (not hole) to a block
+            for (int c = 0; c < cols; c++) {
+                if (c != holeIndex) { bottom[c] = 1; break; }
+            }
+        }
+        newMatrix[rows - 1] = bottom;
+        boardMatrix = newMatrix;
+    }
 }
