@@ -30,7 +30,7 @@ public class GameOverAnimator {
         backdropBlur.setInput(backdropDarken);
     }
 
-    public void playDigitalFragmentationSequence(Rectangle[][] displayMatrix, int finalScore) {
+    public void playDigitalFragmentationSequence(Rectangle[][] displayMatrix, int finalScore, int totalLines, long gameTime) {
         // 1. The Glitch (Digital Crunch)
         // TODO: Play digital crunch sound
         
@@ -56,11 +56,11 @@ public class GameOverAnimator {
         glitch.setCycleCount(2);
         
         // 2. Data Dissolve starts after glitch
-        glitch.setOnFinished(e -> startDissolveCascade(displayMatrix, finalScore));
+        glitch.setOnFinished(e -> startDissolveCascade(displayMatrix, finalScore, totalLines, gameTime));
         glitch.play();
     }
 
-    private void startDissolveCascade(Rectangle[][] displayMatrix, int finalScore) {
+    private void startDissolveCascade(Rectangle[][] displayMatrix, int finalScore, int totalLines, long gameTime) {
         if (displayMatrix == null) return;
 
         // Process row by row from top to bottom
@@ -75,7 +75,7 @@ public class GameOverAnimator {
         
            cascade.setOnFinished(e -> {
                playBackdropTransition();
-               if (gameOverPanel != null) gameOverPanel.show(finalScore);
+               if (gameOverPanel != null) gameOverPanel.show(finalScore, totalLines, gameTime);
            });
         cascade.play();
     }

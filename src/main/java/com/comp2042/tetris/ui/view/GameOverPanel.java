@@ -12,14 +12,17 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 public class GameOverPanel extends BorderPane {
 
     private final Label gameOverLabel;
     private final Label scoreLabel;
+    private final Label statsLabel;
     private final Button retryButton;
     private final Button menuButton;
+    private final Rectangle glowRect;
     
     private Runnable retryAction = () -> {};
     private Runnable returnAction = () -> {};
@@ -29,6 +32,15 @@ public class GameOverPanel extends BorderPane {
         gameOverLabel.getStyleClass().add("game-over-text");
         scoreLabel = new Label("Final Score: 0");
         scoreLabel.getStyleClass().add("game-over-score");
+        statsLabel = new Label("Lines Cleared: 0\nTime Played: 00:00");
+        statsLabel.getStyleClass().add("game-over-stats");
+        
+        // Add a glowing background rectangle for extra visual impact
+        glowRect = new Rectangle();
+        glowRect.getStyleClass().add("game-over-glow");
+        glowRect.setManaged(false);
+        glowRect.setMouseTransparent(true);
+        
         // Try to load and apply the AXR ArcadeMachine font for the header and final score
         try {
             javafx.scene.text.Font arcadeFontSmall = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/AXR ArcadeMachine.ttf"), 28);
@@ -45,13 +57,16 @@ public class GameOverPanel extends BorderPane {
             try {
                 if (pressStartFont != null) {
                     scoreLabel.setFont(pressStartFont);
+                    statsLabel.setFont(javafx.scene.text.Font.font(pressStartFont.getFamily(), 24));
                 } else if (arcadeFontSmall != null) {
                     scoreLabel.setFont(arcadeFontSmall);
+                    statsLabel.setFont(javafx.scene.text.Font.font(arcadeFontSmall.getFamily(), 20));
                 }
                 // Force an inline style so CSS won't accidentally override the family/size at runtime
                 String scoreFamily = (pressStartFont != null) ? pressStartFont.getFamily() : (arcadeFontSmall == null ? "Arial" : arcadeFontSmall.getFamily());
                 try {
                     scoreLabel.setStyle("-fx-font-family: '" + scoreFamily + "'; -fx-font-size: 18px;");
+                    statsLabel.setStyle("-fx-font-family: '" + scoreFamily + "'; -fx-font-size: 14px;");
                 } catch (Exception ignored) {
                 }
             } catch (Exception e) {
@@ -98,8 +113,11 @@ public class GameOverPanel extends BorderPane {
         actions.setAlignment(Pos.CENTER);
         actions.getStyleClass().add("game-over-actions");
 
-        VBox content = new VBox(18, gameOverLabel, scoreLabel, actions);
+        VBox content = new VBox(18, gameOverLabel, scoreLabel, statsLabel, actions);
         content.setAlignment(Pos.CENTER);
+        
+        // Add the glow rectangle as background
+        getChildren().add(glowRect);
         setCenter(content);
         getStyleClass().add("game-over-panel");
         setVisible(false);
@@ -108,11 +126,22 @@ public class GameOverPanel extends BorderPane {
         resetLabelState();
     }
     
-    public void show(int finalScore) {
+    public void show(int finalScore, int linesCleared, long timePlayedMillis) {
         scoreLabel.setText("Final Score: " + finalScore);
+        // Calculate actual stats
+        int minutes = (int) (timePlayedMillis / 60000);
+        int seconds = (int) ((timePlayedMillis % 60000) / 1000);
+        statsLabel.setText(String.format("Lines Cleared: %d\nTime Played: %02d:%02d", linesCleared, minutes, seconds));
         super.setVisible(true);
         retryButton.setDisable(false);
         menuButton.setDisable(false);
+
+        // Position and size the glow rectangle to match the panel
+        glowRect.setWidth(getWidth() - 20);
+        glowRect.setHeight(getHeight() - 20);
+        glowRect.setX(10);
+        glowRect.setY(10);
+        glowRect.setOpacity(0);
 
         // Reset positions for animated entrance
         gameOverLabel.setTranslateY(-50); // Start slightly above
@@ -123,8 +152,11 @@ public class GameOverPanel extends BorderPane {
         scoreLabel.setOpacity(0);
         scoreLabel.setTranslateY(20);
         
-        // Assume the HBox containing buttons is the 3rd child of the VBox
-        javafx.scene.Node buttonBox = ((VBox)this.getCenter()).getChildren().get(2);
+        statsLabel.setOpacity(0);
+        statsLabel.setTranslateY(20);
+        
+        // Assume the HBox containing buttons is the 4th child of the VBox
+        javafx.scene.Node buttonBox = ((VBox)this.getCenter()).getChildren().get(3);
         buttonBox.setOpacity(0);
         buttonBox.setTranslateY(20);
 
@@ -134,13 +166,15 @@ public class GameOverPanel extends BorderPane {
                 new KeyValue(gameOverLabel.opacityProperty(), 0),
                 new KeyValue(gameOverLabel.translateYProperty(), -100),
                 new KeyValue(gameOverLabel.scaleXProperty(), 3.0),
-                new KeyValue(gameOverLabel.scaleYProperty(), 3.0)
+                new KeyValue(gameOverLabel.scaleYProperty(), 3.0),
+                new KeyValue(glowRect.opacityProperty(), 0)
             ),
             new KeyFrame(Duration.millis(300),
                 new KeyValue(gameOverLabel.opacityProperty(), 1),
                 new KeyValue(gameOverLabel.translateYProperty(), 0, javafx.animation.Interpolator.EASE_IN),
                 new KeyValue(gameOverLabel.scaleXProperty(), 1.0, javafx.animation.Interpolator.EASE_IN),
-                new KeyValue(gameOverLabel.scaleYProperty(), 1.0, javafx.animation.Interpolator.EASE_IN)
+                new KeyValue(gameOverLabel.scaleYProperty(), 1.0, javafx.animation.Interpolator.EASE_IN),
+                new KeyValue(glowRect.opacityProperty(), 0.6)
             )
         );
 
@@ -155,7 +189,18 @@ public class GameOverPanel extends BorderPane {
         ParallelTransition showScore = new ParallelTransition(fadeScore, slideScore);
         showScore.setDelay(Duration.millis(300)); // Wait for slam
 
-        // 3. Fade/Slide in Buttons (Delayed more)
+        // 3. Fade/Slide in Stats (Delayed more)
+        FadeTransition fadeStats = new FadeTransition(Duration.millis(400), statsLabel);
+        fadeStats.setFromValue(0); 
+        fadeStats.setToValue(1);
+        
+        TranslateTransition slideStats = new TranslateTransition(Duration.millis(400), statsLabel);
+        slideStats.setToY(0);
+        
+        ParallelTransition showStats = new ParallelTransition(fadeStats, slideStats);
+        showStats.setDelay(Duration.millis(400));
+
+        // 4. Fade/Slide in Buttons (Delayed more)
         FadeTransition fadeButtons = new FadeTransition(Duration.millis(400), buttonBox);
         fadeButtons.setFromValue(0); 
         fadeButtons.setToValue(1);
@@ -167,7 +212,17 @@ public class GameOverPanel extends BorderPane {
         showButtons.setDelay(Duration.millis(500));
 
         // Play all
-        new ParallelTransition(slam, showScore, showButtons).play();
+        new ParallelTransition(slam, showScore, showStats, showButtons).play();
+        
+        // Add a subtle pulsing glow animation
+        Timeline glowPulse = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(glowRect.opacityProperty(), 0.6)),
+            new KeyFrame(Duration.millis(2000), new KeyValue(glowRect.opacityProperty(), 0.3)),
+            new KeyFrame(Duration.millis(4000), new KeyValue(glowRect.opacityProperty(), 0.6))
+        );
+        glowPulse.setCycleCount(Timeline.INDEFINITE);
+        glowPulse.setDelay(Duration.millis(800));
+        glowPulse.play();
     }
     
     public void hide() {
@@ -184,6 +239,10 @@ public class GameOverPanel extends BorderPane {
         gameOverLabel.setTranslateX(0);
         gameOverLabel.setText("GAME OVER");
         scoreLabel.setText("Final Score: 0");
+        statsLabel.setText("Lines Cleared: 0\nTime Played: 00:00");
+        statsLabel.setOpacity(1);
+        statsLabel.setTranslateY(0);
+        glowRect.setOpacity(0);
     }
 
     public void setOnRetry(Runnable retryAction) {

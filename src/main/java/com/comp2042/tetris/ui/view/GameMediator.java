@@ -1,5 +1,7 @@
 package com.comp2042.tetris.ui.view;
 
+import java.util.List;
+
 import com.comp2042.tetris.app.GameLoopController;
 import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.domain.model.ShowResult;
@@ -16,7 +18,6 @@ import javafx.scene.effect.Glow;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-import java.util.List;
 
 // Mediates interactions between UI components and game state/rendering logic.
 final class GameMediator {
@@ -306,7 +307,7 @@ final class GameMediator {
         }
     }
 
-    void handleGameOver(int finalScore) {
+    void handleGameOver(int finalScore, int totalLines, long gameTime) {
         if (gameLoopController != null) {
             gameLoopController.stop();
         }
@@ -314,7 +315,7 @@ final class GameMediator {
         
         // Trigger the "Digital Fragmentation" sequence
         if (gameOverAnimator != null) {
-            gameOverAnimator.playDigitalFragmentationSequence(displayMatrix, finalScore);
+            gameOverAnimator.playDigitalFragmentationSequence(displayMatrix, finalScore, totalLines, gameTime);
         }
     }
 

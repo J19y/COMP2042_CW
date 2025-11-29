@@ -50,6 +50,8 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     // Indicates whether the game logic in this controller is active (not game over)
     protected volatile boolean active = true;
+    protected int totalLinesCleared = 0;
+    protected long gameStartTime = 0;
 
     public BaseGameController(GameView view) {
         this(view, new ClassicScoringPolicy(), new ScoreManager());
@@ -93,6 +95,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     @Override
     public void startMode() {
+        gameStartTime = System.currentTimeMillis();
         onStart();
     }
 
@@ -108,9 +111,9 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     // Registers default command handlers for each event type.
     protected void registerDefaultCommands() {
-        commands.put(EventType.LEFT, new MoveCommand(moveHandler::handleLeftMove));
-        commands.put(EventType.RIGHT, new MoveCommand(moveHandler::handleRightMove));
-        commands.put(EventType.ROTATE, new MoveCommand(moveHandler::handleRotation));
+        commands.put(EventType.LEFT, new MoveLeftCommand(movement, reader));
+        commands.put(EventType.RIGHT, new MoveRightCommand(movement, reader));
+        commands.put(EventType.ROTATE, new RotateCommand(movement, reader));
         commands.put(EventType.DOWN, new SoftDropCommand(dropHandler, view, reader));
         commands.put(EventType.HARD_DROP,
             new HardDropCommand(dropActions, scoringPolicy, scoreService, spawnManager, reader, view));
@@ -194,20 +197,85 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
         }
     }
 
-    private static final class MoveCommand implements GameCommand {
-        private final java.util.function.Supplier<ViewData> movement;
+    private static final class MoveLeftCommand implements GameCommand {
+        private final BrickMovement movement;
+        private final BoardRead reader;
 
-        private MoveCommand(java.util.function.Supplier<ViewData> movement) {
+        private MoveLeftCommand(BrickMovement movement, BoardRead reader) {
             this.movement = movement;
+            this.reader = reader;
         }
 
         @Override
         public ShowResult execute(MoveEvent event) {
-            return new ShowResult(null, movement.get());
+            boolean moved = movement.moveBrickLeft();
+            ViewData vd = reader.getViewData();
+            if (moved) {
+                try {
+                    com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
+                    double original = mm.getMusicVolume();
+                    try { mm.fadeMusicTo(Math.max(0.01, original * 0.45), 40); } catch (Exception ignored) {}
+                    mm.playSfxAtVolume("/audio/RotationSoundEffect.mp3", 0.95);
+                    try { mm.fadeMusicTo(original, 200); } catch (Exception ignored) {}
+                } catch (Exception ignored) {}
+            }
+            return new ShowResult(null, vd);
         }
     }
 
-    private static final class SoftDropCommand implements GameCommand {
+    private static final class MoveRightCommand implements GameCommand {
+        private final BrickMovement movement;
+        private final BoardRead reader;
+
+        private MoveRightCommand(BrickMovement movement, BoardRead reader) {
+            this.movement = movement;
+            this.reader = reader;
+        }
+
+        @Override
+        public ShowResult execute(MoveEvent event) {
+            boolean moved = movement.moveBrickRight();
+            ViewData vd = reader.getViewData();
+            if (moved) {
+                try {
+                    com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
+                    double original = mm.getMusicVolume();
+                    try { mm.fadeMusicTo(Math.max(0.01, original * 0.45), 40); } catch (Exception ignored) {}
+                    mm.playSfxAtVolume("/audio/RotationSoundEffect.mp3", 0.95);
+                    try { mm.fadeMusicTo(original, 200); } catch (Exception ignored) {}
+                } catch (Exception ignored) {}
+            }
+            return new ShowResult(null, vd);
+        }
+    }
+
+    private static final class RotateCommand implements GameCommand {
+        private final BrickMovement movement;
+        private final BoardRead reader;
+
+        private RotateCommand(BrickMovement movement, BoardRead reader) {
+            this.movement = movement;
+            this.reader = reader;
+        }
+
+        @Override
+        public ShowResult execute(MoveEvent event) {
+            boolean rotated = movement.rotateLeftBrick();
+            ViewData vd = reader.getViewData();
+            if (rotated) {
+                try {
+                    com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
+                    double original = mm.getMusicVolume();
+                    try { mm.fadeMusicTo(Math.max(0.01, original * 0.5), 30); } catch (Exception ignored) {}
+                    mm.playSfxAtVolume("/audio/RotationSoundEffect.mp3", 1.0);
+                    try { mm.fadeMusicTo(original, 200); } catch (Exception ignored) {}
+                } catch (Exception ignored) {}
+            }
+            return new ShowResult(null, vd);
+        }
+    }
+
+    private final class SoftDropCommand implements GameCommand {
         private final BrickDrop dropHandler;
         private final GameView view;
         private final BoardRead reader;
@@ -233,6 +301,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
                     view.acceptShowResult(asyncResult);
                     if (asyncResult.getClearRow() != null) {
                         view.refreshGameBackground(reader.getBoardMatrix());
+                        totalLinesCleared += asyncResult.getClearRow().getLinesRemoved();
                     }
                 });
                 try { MusicManager.getInstance().playSfx("/audio/BricksCollisionEffect.mp3"); } catch (Exception ignored) {}
@@ -242,13 +311,14 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
                 ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
                 if (result.getClearRow() != null) {
                     view.refreshGameBackground(reader.getBoardMatrix());
+                    totalLinesCleared += result.getClearRow().getLinesRemoved();
                 }
                 return result;
             }
         }
     }
 
-    private static final class HardDropCommand implements GameCommand {
+    private final class HardDropCommand implements GameCommand {
         private final BrickDropActions dropActions;
         private final ScoringPolicy scoringPolicy;
         private final ScoreManager scoreService;
@@ -286,6 +356,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
                     scoreService.add(bonus);
                 }
                 clear = new RowClearResult(clear.getLinesRemoved(), clear.getNewMatrix(), bonus, clear.getClearedRows());
+                totalLinesCleared += clear.getLinesRemoved();
             }
             spawnManager.spawn();
             view.refreshGameBackground(reader.getBoardMatrix());
@@ -298,6 +369,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
     public void createNewGame() {
         // Reactivate controller logic when a new game starts
         active = true;
+        totalLinesCleared = 0;
         boardLifecycle.newGame();
         scoreService.reset();
         view.refreshGameBackground(reader.getBoardMatrix());
@@ -315,5 +387,13 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
         // mark controller inactive so future input/ticks are ignored
         active = false;
         view.gameOver();
+    }
+
+    public int getTotalLinesCleared() {
+        return totalLinesCleared;
+    }
+
+    public long getGameStartTime() {
+        return gameStartTime;
     }
 }

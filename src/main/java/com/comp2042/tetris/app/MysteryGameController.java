@@ -35,6 +35,9 @@ public class MysteryGameController extends BaseGameController {
 
     @Override
     protected void onStart() {
+        try {
+            com.comp2042.tetris.services.audio.MusicManager.getInstance().playTrack(com.comp2042.tetris.services.audio.MusicManager.Track.MYSTERY, 900);
+        } catch (Exception ignored) {}
         // Start timers: speed-up every 30s, and random events every 15-20s
         stopSpeedUpTimerIfRunning();
         elapsedSeconds = 0;

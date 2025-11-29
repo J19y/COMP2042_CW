@@ -752,6 +752,13 @@ public class GuiController implements Initializable, GameView {
     @Override
     public void gameOver() {
         int finalScore = getCurrentScore();
+        int totalLines = 0;
+        long gameTime = 0;
+        if (gameLifecycle instanceof com.comp2042.tetris.app.BaseGameController) {
+            com.comp2042.tetris.app.BaseGameController controller = (com.comp2042.tetris.app.BaseGameController) gameLifecycle;
+            totalLines = controller.getTotalLinesCleared();
+            gameTime = System.currentTimeMillis() - controller.getGameStartTime();
+        }
         manualPauseActive = false;
         updatePauseDimVisibility();
         pauseTimerTracking();
@@ -768,10 +775,10 @@ public class GuiController implements Initializable, GameView {
             com.comp2042.tetris.services.audio.MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3");
         } catch (Exception ignored) {}
         try {
-            MusicManager.getInstance().playTrack(MusicManager.Track.GAME_OVER, 900, 2);
+            MusicManager.getInstance().playTrack(MusicManager.Track.GAME_OVER, 900, 1);
         } catch (Exception ignored) {}
 
-        mediator.handleGameOver(finalScore);
+        mediator.handleGameOver(finalScore, totalLines, gameTime);
     }
 
     @FXML

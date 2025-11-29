@@ -107,6 +107,8 @@
     -fx-fill: #ff1c1c;
     color: #ff1c1c;
     -fx-text-fill: #ff1c1c;
+    -fx-stroke: black;
+    -fx-stroke-width: 3px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 22, 0.5, 0, 8);
 }
 
@@ -121,7 +123,10 @@
 }
 
 .game-over-panel {
-    -fx-background-color: linear-gradient(to bottom right, rgba(6, 6, 12, 0.95), rgba(12, 12, 30, 0.95));
+    -fx-background-color: 
+        linear-gradient(to bottom right, rgba(6, 6, 12, 0.95), rgba(12, 12, 30, 0.95)),
+        radial-gradient(center 30% 30%, radius 60%, rgba(255, 50, 50, 0.1), transparent),
+        radial-gradient(center 70% 70%, radius 40%, rgba(255, 100, 100, 0.05), transparent);
     -fx-border-radius: 24px;
     -fx-background-radius: 24px;
     -fx-padding: 42px;
@@ -168,6 +173,27 @@
     -fx-letter-spacing: 2px;
     -fx-text-fill: #ffffff;
     -fx-effect: none;
+}
+
+.game-over-stats {
+    font-family: 'Press Start 2P', "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;
+    -fx-font-family: 'Press Start 2P', "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;
+    font-size: 14px;
+    -fx-font-size: 14px;
+    -fx-letter-spacing: 1px;
+    -fx-text-fill: #b0b0b0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 4, 0.2, 0, 1);
+    -fx-text-alignment: center;
+}
+
+.game-over-glow {
+    -fx-fill: rgba(255, 28, 28, 0.1);
+    -fx-stroke: rgba(255, 100, 100, 0.3);
+    -fx-stroke-width: 2;
+    -fx-stroke-type: inside;
+    -fx-arc-width: 24;
+    -fx-arc-height: 24;
+    -fx-effect: dropshadow(gaussian, rgba(255, 28, 28, 0.4), 30, 0.6, 0, 0);
 }
 
 .pause-dim {

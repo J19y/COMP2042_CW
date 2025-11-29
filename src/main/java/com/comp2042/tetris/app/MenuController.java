@@ -137,7 +137,7 @@ public class MenuController {
             double initialVol = (volumeSlider != null) ? volumeSlider.getValue() / 100.0 : 1.0;
             MusicManager.getInstance().setMusicVolume(initialVol);
             MusicManager.getInstance().setMusicEnabled(true);
-            MusicManager.getInstance().playTrack(MusicManager.Track.MAIN_MENU, 1200);
+            MusicManager.getInstance().playTrack(MusicManager.Track.MAIN_MENU, 3000);
         } catch (Exception ignored) {}
     }
 

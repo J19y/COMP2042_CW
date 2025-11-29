@@ -1,6 +1,8 @@
 package com.comp2042.tetris.app;
 
 import com.comp2042.tetris.mechanics.board.GameView;
+import com.comp2042.tetris.services.audio.MusicManager;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -20,6 +22,9 @@ public class TimedGameController extends BaseGameController {
 
     @Override
     protected void onStart() {
+        try {
+            MusicManager.getInstance().playTrack(MusicManager.Track.RUSH, 900);
+        } catch (Exception ignored) {}
         // reset timer
         stopCountdownIfRunning();
         remainingSeconds = DEFAULT_SECONDS;
