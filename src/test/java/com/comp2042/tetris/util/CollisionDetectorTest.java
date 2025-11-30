@@ -39,6 +39,17 @@ class CollisionDetectorTest {
     }
 
     @Test
+    void detectsCollisionWhenBrickPositionsAboveBoard() {
+        int[][] board = new int[4][4];
+        int[][] brick = {
+            {1, 1},
+            {1, 0}
+        };
+
+        assertTrue(CollisionDetector.isCollision(board, brick, 0, -1));
+    }
+
+    @Test
     void noCollisionWhenPlacementIsClear() {
         // Empty board gives plenty of room for the brick
         int[][] board = new int[4][4];

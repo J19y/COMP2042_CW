@@ -58,7 +58,7 @@ public class GameController implements GameplayFacade {
 
     public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager, BoardFactory boardFactory) {
         this(view, policy, scoreManager,
-            new SimpleBoardPorts(Objects.requireNonNull(boardFactory, "boardFactory must not be null").create(25, 10)));
+            new SimpleBoardPorts(Objects.requireNonNull(boardFactory, "boardFactory must not be null").create(22, 10)));
     }
 
     public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager, BoardPorts boardPorts) {
@@ -166,11 +166,30 @@ public class GameController implements GameplayFacade {
 
         @Override
         public ShowResult execute(MoveEvent event) {
-            ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
-            if (result.getClearRow() != null) {
-                view.refreshGameBackground(reader.getBoardMatrix());
+            // Check whether moving down would collide — if so, animate a short settle
+            com.comp2042.tetris.domain.model.ViewData current = reader.getViewData();
+            boolean wouldCollide = com.comp2042.tetris.util.CollisionDetector.isCollision(
+                reader.getBoardMatrix(), current.getBrickData(), current.getxPosition(), current.getyPosition() + 1);
+
+            if (wouldCollide) {
+                // Ask the view to animate the active brick settling, then perform the merge
+                view.settleActiveBrick(() -> {
+                    ShowResult asyncResult = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
+                    // deliver the result to the view asynchronously so UI updates (next-brick, clears)
+                    view.acceptShowResult(asyncResult);
+                    if (asyncResult.getClearRow() != null) {
+                        view.refreshGameBackground(reader.getBoardMatrix());
+                    }
+                });
+                // Return current view data immediately so UI remains responsive
+                return new ShowResult(null, reader.getViewData());
+            } else {
+                ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
+                if (result.getClearRow() != null) {
+                    view.refreshGameBackground(reader.getBoardMatrix());
+                }
+                return result;
             }
-            return result;
         }
     }
 
@@ -211,7 +230,7 @@ public class GameController implements GameplayFacade {
                 if (bonus > 0) {
                     scoreService.add(bonus);
                 }
-                clear = new RowClearResult(clear.getLinesRemoved(), clear.getNewMatrix(), bonus);
+                clear = new RowClearResult(clear.getLinesRemoved(), clear.getNewMatrix(), bonus, clear.getClearedRows());
             }
             spawnManager.spawn();
             view.refreshGameBackground(reader.getBoardMatrix());

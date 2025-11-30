@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.effect.Glow?>
+<?import javafx.scene.effect.DropShadow?>
+<?import java.net.URL?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Path?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.Tooltip?>
+
+<StackPane fx:id="rootPane" prefWidth="700" prefHeight="600" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.comp2042.tetris.app.MenuController">
+    
+    <!-- Background Animation Layer -->
+    <Pane fx:id="backgroundPane" />
+    
+    <!-- Main UI Layer -->
+    <BorderPane fx:id="mainMenuUI">
+        <top>
+            <VBox alignment="CENTER" spacing="5" style="-fx-padding: 110 0 0 0;">
+                <HBox fx:id="titleContainer" alignment="CENTER" spacing="5">
+                    <!-- Letters will be added dynamically or statically here -->
+                </HBox>
+                <Text fx:id="yearText" text="2042" styleClass="year-text"/>
+            </VBox>
+        </top>
+        
+        <center>
+            <VBox alignment="CENTER" spacing="20">
+                <Button text="PLAY" styleClass="menu-button, play-button" onAction="#onPlay" fx:id="playButton"/>
+                <Button text="QUIT" styleClass="menu-button, quit-button" onAction="#onQuit" fx:id="quitButton"/>
+            </VBox>
+        </center>
+        
+        <bottom>
+            <BorderPane style="-fx-padding: 20;">
+                <right>
+                    <HBox alignment="CENTER_RIGHT" spacing="10">
+                        <!-- Settings Button -->
+                        <Button fx:id="settingsButton" text="" styleClass="settings-button" 
+                            onAction="#toggleSettings" 
+                            style="-fx-cursor: hand; -fx-background-color: transparent; -fx-border-color: transparent;"
+                            prefWidth="50" prefHeight="50" minWidth="50" minHeight="50" />
+                    </HBox>
+                </right>
+                <left>
+                        <Button fx:id="controlsButton" text="" styleClass="controls-button controls-icon" 
+                            onAction="#openControllerPanel" 
+                            style="-fx-cursor: hand; -fx-font-size: 18px; -fx-padding: 6px;"
+                            prefWidth="100" prefHeight="100" minWidth="100" minHeight="100" />
+                </left>
+            </BorderPane>
+        </bottom>
+    </BorderPane>
+
+    <!-- Exit Confirmation Overlay -->
+    <StackPane fx:id="exitConfirmationOverlay" visible="false" style="-fx-background-color: rgba(0, 0, 0, 0.8);">
+        <VBox alignment="CENTER" spacing="20" styleClass="confirmation-box">
+            <Text text="ARE YOU SURE?" styleClass="confirmation-title"/>
+            <HBox alignment="CENTER" spacing="20">
+                <Button text="YES" styleClass="menu-button, confirm-yes-button" onAction="#onConfirmQuit"/>
+                <Button text="NO" styleClass="menu-button, confirm-no-button" onAction="#onCancelQuit"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+    <!-- Settings Overlay -->
+    <StackPane fx:id="settingsOverlay" visible="false" style="-fx-background-color: rgba(0,0,0,0.8);" onMouseClicked="#closeSettings">
+        <VBox spacing="18" alignment="CENTER" styleClass="info-panel" maxWidth="320" maxHeight="320">
+            <HBox spacing="10" alignment="CENTER" styleClass="music-controls">
+                <Slider fx:id="volumeSlider" min="0" max="100" value="100" prefWidth="140" />
+                <Button fx:id="musicToggleButton" text="ON" styleClass="menu-button small-button" onAction="#toggleMusic" prefWidth="64"
+                        style="-fx-background-color: transparent; -fx-border-color: rgba(0,255,220,0.12); -fx-border-width: 1px; -fx-background-radius: 10px; -fx-border-radius: 10px; -fx-text-fill: #eaf6ff;">
+                    <graphic>
+                        <Text text="🔊" fill="#ffffff" />
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="Toggle music" />
+                    </tooltip>
+                </Button>
+                <Text fx:id="volumeText" text="100%" styleClass="info-label"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+    <stylesheets>
+        <URL value="@../styles/menu.css"/>
+    </stylesheets>
+</StackPane>

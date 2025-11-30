@@ -9,11 +9,29 @@ import javafx.util.Duration;
  * Extracted from GuiController to isolate timing concerns.
  */
 public final class GameLoop {
-    private final Timeline timeline;
+    private Timeline timeline;
+    private final Runnable onTick;
+    private javafx.util.Duration interval;
 
     public GameLoop(Duration interval, Runnable onTick) {
-        this.timeline = new Timeline(new KeyFrame(interval, _ -> onTick.run()));
+        this.onTick = onTick;
+        this.interval = interval;
+        this.timeline = new Timeline(new KeyFrame(interval, _ -> this.onTick.run()));
         this.timeline.setCycleCount(Timeline.INDEFINITE);
+    }
+
+    public void setInterval(Duration newInterval) {
+        boolean running = isRunning();
+        timeline.stop();
+        this.interval = newInterval;
+        this.timeline.getKeyFrames().clear();
+        this.timeline.getKeyFrames().add(new KeyFrame(newInterval, _ -> this.onTick.run()));
+        this.timeline.setCycleCount(Timeline.INDEFINITE);
+        if (running) timeline.play();
+    }
+
+    public Duration getInterval() {
+        return interval;
     }
 
     public void start() {

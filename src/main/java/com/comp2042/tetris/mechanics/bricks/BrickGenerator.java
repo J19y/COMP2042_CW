@@ -13,4 +13,8 @@ public interface BrickGenerator {
      * removing it from the generator's buffer.
      */
     Brick peekNextBrick();
+
+    
+    // Peeks at the next N bricks in the queue.
+    java.util.List<Brick> peekNextBricks(int count);
 }

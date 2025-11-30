@@ -40,4 +40,14 @@ public final class GameLoopController {
     public boolean isRunning() {
         return gameLoop != null && gameLoop.isRunning();
     }
+
+    public void setInterval(Duration interval) {
+        if (gameLoop != null) {
+            gameLoop.setInterval(interval);
+        }
+    }
+
+    public Duration getInterval() {
+        return gameLoop == null ? null : gameLoop.getInterval();
+    }
 }

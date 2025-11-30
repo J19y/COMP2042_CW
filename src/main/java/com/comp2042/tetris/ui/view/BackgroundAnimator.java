@@ -1,0 +1,197 @@
+package com.comp2042.tetris.ui.view;
+
+import javafx.animation.AnimationTimer;
+import javafx.scene.Node;
+import javafx.scene.effect.GaussianBlur;
+import javafx.scene.effect.Glow;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+
+/**
+ * Handles the background animation (falling shapes and particles).
+ * Extracted from GuiController to follow SRP.
+ */
+public class BackgroundAnimator {
+
+    private static final Color[] NEON_COLORS = {
+            Color.CYAN, Color.YELLOW, Color.LIME, Color.RED, Color.MAGENTA, Color.ORANGE, Color.DODGERBLUE
+    };
+
+    private final Pane backgroundPane;
+    private final List<FallingShape> fallingShapes = new ArrayList<>();
+    private final List<Particle> particles = new ArrayList<>();
+    private final Random random = new Random();
+    private AnimationTimer animationTimer;
+    private final Runnable onUpdate;
+
+    public BackgroundAnimator(Pane backgroundPane, Runnable onUpdate) {
+        this.backgroundPane = backgroundPane;
+        this.onUpdate = onUpdate;
+    }
+
+    public void start() {
+        animationTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                updateBackground();
+                if (onUpdate != null) {
+                    onUpdate.run();
+                }
+            }
+        };
+        animationTimer.start();
+    }
+
+    public void stop() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+    }
+
+    private void updateBackground() {
+        if (backgroundPane == null) return;
+
+        // Spawn new shapes
+        if (random.nextDouble() < 0.01) { // Softer frequency
+            spawnFallingShape();
+        }
+
+        // Spawn particles
+        if (random.nextDouble() < 0.05) {
+            spawnParticle();
+        }
+
+        // Update shapes
+        Iterator<FallingShape> shapeIt = fallingShapes.iterator();
+        while (shapeIt.hasNext()) {
+            FallingShape shape = shapeIt.next();
+            shape.update();
+            if (shape.isOffScreen()) {
+                backgroundPane.getChildren().remove(shape.node);
+                shapeIt.remove();
+            }
+        }
+
+        // Update particles
+        Iterator<Particle> particleIt = particles.iterator();
+        while (particleIt.hasNext()) {
+            Particle p = particleIt.next();
+            p.update();
+            if (p.isDead()) {
+                backgroundPane.getChildren().remove(p.node);
+                particleIt.remove();
+            }
+        }
+    }
+
+    private void spawnFallingShape() {
+        double x = random.nextDouble() * backgroundPane.getWidth();
+        double size = 8 + random.nextDouble() * 10;
+        Color color = NEON_COLORS[random.nextInt(NEON_COLORS.length)];
+
+        Node shape = createRandomTetromino(size, color);
+
+        shape.setTranslateX(x);
+        shape.setTranslateY(-100);
+
+        shape.setOpacity(0.18);
+        shape.setEffect(new GaussianBlur(2 + random.nextDouble() * 3));
+
+        backgroundPane.getChildren().add(shape);
+        fallingShapes.add(new FallingShape(shape, 0.3 + random.nextDouble() * 0.8));
+    }
+
+    private Node createRandomTetromino(double size, Color color) {
+        javafx.scene.Group group = new javafx.scene.Group();
+        // 0: I, 1: J, 2: L, 3: O, 4: S, 5: T, 6: Z
+        int type = random.nextInt(7);
+
+        int[][] coords = getTetrominoCoords(type);
+
+        for (int[] coord : coords) {
+            Rectangle rect = new Rectangle(size, size, Color.TRANSPARENT);
+            rect.setStroke(color);
+            rect.setStrokeWidth(2);
+            rect.setEffect(new Glow(0.5));
+            rect.setX(coord[0] * size);
+            rect.setY(coord[1] * size);
+            group.getChildren().add(rect);
+        }
+
+        return group;
+    }
+
+    private int[][] getTetrominoCoords(int type) {
+        return switch (type) {
+            case 0 -> new int[][]{{0, 0}, {1, 0}, {2, 0}, {3, 0}}; // I
+            case 1 -> new int[][]{{0, 0}, {0, 1}, {1, 1}, {2, 1}}; // J
+            case 2 -> new int[][]{{2, 0}, {0, 1}, {1, 1}, {2, 1}}; // L
+            case 3 -> new int[][]{{0, 0}, {1, 0}, {0, 1}, {1, 1}}; // O
+            case 4 -> new int[][]{{1, 0}, {2, 0}, {0, 1}, {1, 1}}; // S
+            case 5 -> new int[][]{{1, 0}, {0, 1}, {1, 1}, {2, 1}}; // T
+            case 6 -> new int[][]{{0, 0}, {1, 0}, {1, 1}, {2, 1}}; // Z
+            default -> new int[][]{{0, 0}};
+        };
+    }
+
+    private void spawnParticle() {
+        double x = random.nextDouble() * backgroundPane.getWidth();
+        double y = random.nextDouble() * backgroundPane.getHeight();
+
+        Rectangle p = new Rectangle(1.5, 1.5, Color.WHITE);
+        p.setOpacity(random.nextDouble() * 0.35);
+        p.setTranslateX(x);
+        p.setTranslateY(y);
+
+        backgroundPane.getChildren().add(p);
+        particles.add(new Particle(p));
+    }
+
+    private static class FallingShape {
+        Node node;
+        double speed;
+        double rotationSpeed;
+
+        FallingShape(Node node, double speed) {
+            this.node = node;
+            this.speed = speed;
+            this.rotationSpeed = Math.random() * 2 - 1;
+        }
+
+        void update() {
+            node.setTranslateY(node.getTranslateY() + speed);
+            node.setRotate(node.getRotate() + rotationSpeed);
+        }
+
+        boolean isOffScreen() {
+            return node.getTranslateY() > 800; // Assuming height is 600
+        }
+    }
+
+    private static class Particle {
+        Node node;
+        double life = 1.0;
+        double decay;
+
+        Particle(Node node) {
+            this.node = node;
+            this.decay = 0.005 + Math.random() * 0.01;
+        }
+
+        void update() {
+            life -= decay;
+            node.setOpacity(life);
+            node.setTranslateY(node.getTranslateY() + 0.5);
+        }
+
+        boolean isDead() {
+            return life <= 0;
+        }
+    }
+}

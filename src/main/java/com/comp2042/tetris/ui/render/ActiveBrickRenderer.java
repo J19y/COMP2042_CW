@@ -1,90 +1,162 @@
 package com.comp2042.tetris.ui.render;
 
 import com.comp2042.tetris.domain.model.ViewData;
+import com.comp2042.tetris.ui.theme.ColorPalette;
+import com.comp2042.tetris.ui.theme.NeonGlowStyle;
 
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 /**
- * Handles rendering of the active falling brick.
- * Extracted from GuiController to follow Single Responsibility Principle.
- * This class is only responsible for displaying and updating the active brick's position and appearance.
+ * Renders the currently falling Tetromino and its ghost aligned with the landing row.
+ * Applies neon-glow effects to all active bricks for a cohesive visual style.
+ * Ghost bricks match the neon style but with reduced opacity for clear distinction.
  */
 public final class ActiveBrickRenderer {
-    
     private final int brickSize;
+    private final GridPane ghostPanel;
     private final GridPane brickPanel;
-    private final GridPane gamePanel;
     private Rectangle[][] rectangles;
+    private Rectangle[][] ghostRectangles;
 
-
-    // Constructor for ActiveBrickRenderer.
-    public ActiveBrickRenderer(int brickSize, GridPane brickPanel, GridPane gamePanel) {
+    public ActiveBrickRenderer(int brickSize, GridPane ghostPanel, GridPane brickPanel) {
         this.brickSize = brickSize;
+        this.ghostPanel = ghostPanel;
         this.brickPanel = brickPanel;
-        this.gamePanel = gamePanel;
     }
 
-    // Initialize the brick panel with rectangles based on the brick data.
     public void initialize(ViewData brick) {
+        if (brickPanel == null) {
+            return;
+        }
+        brickPanel.getChildren().clear();
+        if (ghostPanel != null) ghostPanel.getChildren().clear();
+
         int[][] brickData = brick.getBrickData();
         rectangles = new Rectangle[brickData.length][brickData[0].length];
-        
+        ghostRectangles = new Rectangle[brickData.length][brickData[0].length];
+
         for (int i = 0; i < brickData.length; i++) {
             for (int j = 0; j < brickData[i].length; j++) {
-                Rectangle rectangle = new Rectangle(brickSize, brickSize);
-                rectangle.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(brickData[i][j]));
-                rectangles[i][j] = rectangle;
-                if (brickPanel != null) {
-                    brickPanel.add(rectangle, j, i);
-                }
+                Rectangle gRect = new Rectangle(brickSize, brickSize);
+                gRect.setVisible(false);
+                ghostRectangles[i][j] = gRect;
+                if (ghostPanel != null) ghostPanel.add(gRect, j, i);
+
+                Rectangle rect = new Rectangle(brickSize, brickSize);
+                rectangles[i][j] = rect;
+                brickPanel.add(rect, j, i);
             }
         }
+
+        updateColors(brickData);
         updatePosition(brick);
     }
 
-
-    // Refresh the brick panel with new brick data and position.
     public void refresh(ViewData brick) {
         if (rectangles == null) {
             initialize(brick);
             return;
         }
-        
-        updatePosition(brick);
         updateColors(brick.getBrickData());
+        updatePosition(brick);
     }
 
-    
-    // Update the position of the brick panel based on the brick's coordinates.
-    private void updatePosition(ViewData brick) {
-        if (brickPanel == null || gamePanel == null) {
+    /**
+     * Animate a short settle/pop on the active brick layer, then run the callback.
+     */
+    public void animateSettle(Runnable onFinished) {
+        if (brickPanel == null) {
+            if (onFinished != null) onFinished.run();
             return;
         }
-        
-        double layoutX = gamePanel.getLayoutX() + 
-            brick.getxPosition() * brickPanel.getVgap() + 
-            brick.getxPosition() * brickSize;
-        double layoutY = -42 + gamePanel.getLayoutY() + 
-            brick.getyPosition() * brickPanel.getHgap() + 
-            brick.getyPosition() * brickSize;
-        
-        brickPanel.setLayoutX(layoutX);
-        brickPanel.setLayoutY(layoutY);
+
+        javafx.animation.TranslateTransition tt = new javafx.animation.TranslateTransition(javafx.util.Duration.millis(120), brickPanel);
+        tt.setFromY(-6);
+        tt.setToY(0);
+        tt.setInterpolator(javafx.animation.Interpolator.EASE_IN);
+
+        javafx.animation.ScaleTransition st = new javafx.animation.ScaleTransition(javafx.util.Duration.millis(120), brickPanel);
+        st.setFromX(0.96);
+        st.setFromY(0.96);
+        st.setToX(1.0);
+        st.setToY(1.0);
+        st.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+
+        javafx.animation.ParallelTransition pt = new javafx.animation.ParallelTransition(tt, st);
+        pt.setOnFinished(e -> {
+            brickPanel.setTranslateY(0);
+            brickPanel.setScaleX(1.0);
+            brickPanel.setScaleY(1.0);
+            if (onFinished != null) onFinished.run();
+        });
+        pt.play();
     }
 
-    
-    // Update the colors of the rectangles based on the brick data.
+    private void updatePosition(ViewData brick) {
+        if (brickPanel == null) {
+            return;
+        }
+        double cellWidth = brickSize + brickPanel.getHgap();
+        double cellHeight = brickSize + brickPanel.getVgap();
+        double x = brick.getxPosition() * cellWidth;
+        // Snap translations to integer pixels to avoid sub-pixel gaps at container borders
+        double tx = Math.round(x);
+        brickPanel.setTranslateX(tx);
+        if (ghostPanel != null) ghostPanel.setTranslateX(tx);
+
+        double freeTranslateY = (brick.getyPosition() - 2) * cellHeight;
+        brickPanel.setTranslateY(Math.round(freeTranslateY));
+
+        // Position ghost panel using ghostY
+        int ghostY = brick.getGhostY();
+        double ghostTranslateY = (ghostY - 2) * cellHeight;
+        if (ghostPanel != null) {
+            ghostPanel.setTranslateY(Math.round(ghostTranslateY));
+        }
+        brickPanel.setSnapToPixel(true);
+        // Ghost is intentionally disabled: do not translate or show ghostPanel
+    }
+
     private void updateColors(int[][] brickData) {
         for (int i = 0; i < brickData.length && i < rectangles.length; i++) {
             for (int j = 0; j < brickData[i].length && j < rectangles[i].length; j++) {
                 Rectangle rect = rectangles[i][j];
+                Rectangle gRect = (ghostRectangles != null) ? ghostRectangles[i][j] : null;
+
                 if (rect != null) {
-                    rect.setFill(com.comp2042.tetris.ui.theme.CellColor.fromValue(brickData[i][j]));
-                    rect.setArcHeight(9);
-                    rect.setArcWidth(9);
+                    if (brickData[i][j] != 0) {
+                        // Active brick styling
+                        Color baseColor = ColorPalette.getInstance().getColor(brickData[i][j]) instanceof Color
+                                ? (Color) ColorPalette.getInstance().getColor(brickData[i][j])
+                                : Color.WHITE;
+                        Color neonColor = ColorPalette.getNeon(brickData[i][j]);
+                        if (neonColor == null) {
+                            neonColor = baseColor;
+                        }
+                        // Use the original active neon style for the falling brick (brighter glow)
+                        NeonGlowStyle.applyNeonGlow(rect, baseColor, neonColor);
+                        rect.setVisible(true);
+
+                        // Ghost brick: use muted neon styling so it reads like the active brick
+                        if (gRect != null) {
+                            NeonGlowStyle.applyGhostNeon(gRect, baseColor, neonColor);
+                            gRect.setVisible(true);
+                        }
+                    } else {
+                        rect.setFill(Color.TRANSPARENT);
+                        rect.setStroke(null);
+                        rect.setEffect(null);
+                        rect.setVisible(false);
+                        if (gRect != null) {
+                            gRect.setVisible(false);
+                        }
+                    }
                 }
             }
         }
     }
+    
+    // Ghost-related methods removed — ghost intentionally disabled
 }

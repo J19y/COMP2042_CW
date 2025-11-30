@@ -10,7 +10,7 @@ public class RandomBrickGenerator implements BrickGenerator {
 
     private final List<Supplier<Brick>> brickSuppliers;
     private final Deque<Brick> nextBricks = new ArrayDeque<>();
-    private static final int QUEUE_SIZE = 2;
+    private static final int QUEUE_SIZE = 5;
 
     // Creates a new RandomBrickGenerator and initializes the brick queue
     public RandomBrickGenerator() {
@@ -37,7 +37,7 @@ public class RandomBrickGenerator implements BrickGenerator {
 
     @Override
     public Brick getBrick() {
-        if (nextBricks.size() <= 1) {
+        if (nextBricks.size() <= QUEUE_SIZE) {
             addNextRandomBrick();
         }
         return nextBricks.poll();
@@ -46,5 +46,22 @@ public class RandomBrickGenerator implements BrickGenerator {
     @Override
     public Brick peekNextBrick() {
         return nextBricks.peek();
+    }
+
+    @Override
+    public List<Brick> peekNextBricks(int count) {
+        List<Brick> result = new java.util.ArrayList<>();
+        // Ensure we have enough bricks
+        while (nextBricks.size() < count) {
+            addNextRandomBrick();
+        }
+        
+        int i = 0;
+        for (Brick b : nextBricks) {
+            if (i >= count) break;
+            result.add(b);
+            i++;
+        }
+        return result;
     }
 }

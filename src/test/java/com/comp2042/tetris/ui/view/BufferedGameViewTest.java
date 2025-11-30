@@ -106,5 +106,20 @@ class BufferedGameViewTest {
         public void gameOver() {
             // not required for these tests
         }
+
+        @Override
+        public void setRemainingTime(int seconds) {
+            // not required for these tests
+        }
+
+        @Override
+        public void acceptShowResult(com.comp2042.tetris.domain.model.ShowResult result) {
+            // not required for these tests
+        }
+
+        @Override
+        public void settleActiveBrick(Runnable onFinished) {
+            if (onFinished != null) onFinished.run();
+        }
     }
 }

@@ -34,10 +34,12 @@ public class MatrixOperations {
         int[][] copy = copy(filledFields);
         for (int i = 0; i < brick.length; i++) {
             for (int j = 0; j < brick[i].length; j++) {
-                int targetX = x + i;
-                int targetY = y + j;
-                if (brick[j][i] != 0) {
-                    copy[targetY][targetX] = brick[j][i];
+                int targetX = x + j;
+                int targetY = y + i;
+                if (brick[i][j] != 0) {
+                    if (targetY >= 0 && targetY < copy.length && targetX >= 0 && targetX < copy[targetY].length) {
+                        copy[targetY][targetX] = brick[i][j];
+                    }
                 }
             }
         }
@@ -78,7 +80,7 @@ public class MatrixOperations {
             }
         }
         // Scoring logic moved to ScoreService - MatrixOperations should only handle matrix operations
-        return new RowClearResult(clearedRows.size(), tmp, 0);
+        return new RowClearResult(clearedRows.size(), tmp, 0, clearedRows);
     }
 
     public static List<int[][]> deepCopyList(List<int[][]> list){
