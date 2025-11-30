@@ -13,10 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * Handles the background animation (falling shapes and particles).
- * Extracted from GuiController to follow SRP.
- */
+
 public class BackgroundAnimator {
 
     private static final Color[] NEON_COLORS = {
@@ -57,17 +54,17 @@ public class BackgroundAnimator {
     private void updateBackground() {
         if (backgroundPane == null) return;
 
-        // Spawn new shapes
-        if (random.nextDouble() < 0.01) { // Softer frequency
+        
+        if (random.nextDouble() < 0.01) { 
             spawnFallingShape();
         }
 
-        // Spawn particles
+        
         if (random.nextDouble() < 0.05) {
             spawnParticle();
         }
 
-        // Update shapes
+        
         Iterator<FallingShape> shapeIt = fallingShapes.iterator();
         while (shapeIt.hasNext()) {
             FallingShape shape = shapeIt.next();
@@ -78,7 +75,7 @@ public class BackgroundAnimator {
             }
         }
 
-        // Update particles
+        
         Iterator<Particle> particleIt = particles.iterator();
         while (particleIt.hasNext()) {
             Particle p = particleIt.next();
@@ -109,7 +106,7 @@ public class BackgroundAnimator {
 
     private Node createRandomTetromino(double size, Color color) {
         javafx.scene.Group group = new javafx.scene.Group();
-        // 0: I, 1: J, 2: L, 3: O, 4: S, 5: T, 6: Z
+        
         int type = random.nextInt(7);
 
         int[][] coords = getTetrominoCoords(type);
@@ -129,13 +126,13 @@ public class BackgroundAnimator {
 
     private int[][] getTetrominoCoords(int type) {
         return switch (type) {
-            case 0 -> new int[][]{{0, 0}, {1, 0}, {2, 0}, {3, 0}}; // I
-            case 1 -> new int[][]{{0, 0}, {0, 1}, {1, 1}, {2, 1}}; // J
-            case 2 -> new int[][]{{2, 0}, {0, 1}, {1, 1}, {2, 1}}; // L
-            case 3 -> new int[][]{{0, 0}, {1, 0}, {0, 1}, {1, 1}}; // O
-            case 4 -> new int[][]{{1, 0}, {2, 0}, {0, 1}, {1, 1}}; // S
-            case 5 -> new int[][]{{1, 0}, {0, 1}, {1, 1}, {2, 1}}; // T
-            case 6 -> new int[][]{{0, 0}, {1, 0}, {1, 1}, {2, 1}}; // Z
+            case 0 -> new int[][]{{0, 0}, {1, 0}, {2, 0}, {3, 0}}; 
+            case 1 -> new int[][]{{0, 0}, {0, 1}, {1, 1}, {2, 1}}; 
+            case 2 -> new int[][]{{2, 0}, {0, 1}, {1, 1}, {2, 1}}; 
+            case 3 -> new int[][]{{0, 0}, {1, 0}, {0, 1}, {1, 1}}; 
+            case 4 -> new int[][]{{1, 0}, {2, 0}, {0, 1}, {1, 1}}; 
+            case 5 -> new int[][]{{1, 0}, {0, 1}, {1, 1}, {2, 1}}; 
+            case 6 -> new int[][]{{0, 0}, {1, 0}, {1, 1}, {2, 1}}; 
             default -> new int[][]{{0, 0}};
         };
     }
@@ -170,7 +167,7 @@ public class BackgroundAnimator {
         }
 
         boolean isOffScreen() {
-            return node.getTranslateY() > 800; // Assuming height is 600
+            return node.getTranslateY() > 800; 
         }
     }
 
@@ -195,3 +192,4 @@ public class BackgroundAnimator {
         }
     }
 }
+

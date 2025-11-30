@@ -5,11 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
-/**
- * Registry for available Brick types. Generators can query this registry to
- * obtain brick suppliers instead of hardcoding knowledge of all brick classes.
- * New bricks can be added via without modifying existing generator code (OCP).
- */
+
 public final class BrickRegistry {
 
     private static final BrickRegistry INSTANCE = new BrickRegistry();
@@ -30,7 +26,7 @@ public final class BrickRegistry {
         return INSTANCE;
     }
 
-    // Register a new brick type.
+    
     public static void register(Supplier<Brick> supplier) {
         INSTANCE.registerInternal(supplier);
     }
@@ -45,8 +41,9 @@ public final class BrickRegistry {
         return Collections.unmodifiableList(suppliers);
     }
 
-    // Returns an unmodifiable view of the registered brick suppliers.
+    
     public static List<Supplier<Brick>> getSuppliers() {
         return INSTANCE.suppliers();
     }
 }
+

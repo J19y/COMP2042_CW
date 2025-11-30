@@ -3,9 +3,7 @@ package com.comp2042.tetris.app;
 import com.comp2042.tetris.mechanics.board.GameView;
 import com.comp2042.tetris.services.audio.MusicManager;
 
-/**
- * Classic game mode: uses the base controller behavior unchanged.
- */
+
 public class ClassicGameController extends BaseGameController {
     public ClassicGameController(GameView view) {
         super(view);
@@ -18,3 +16,4 @@ public class ClassicGameController extends BaseGameController {
         } catch (Exception ignored) {}
     }
 }
+

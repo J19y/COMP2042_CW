@@ -6,8 +6,9 @@ import com.comp2042.tetris.ui.input.MovementInput;
 
 import javafx.beans.property.IntegerProperty;
 
-// Facade interface combining all gameplay-related inputs and actions
+
 public interface GameplayFacade extends InputActionHandler, MovementInput, DropInput, CreateNewGame {
 
     IntegerProperty scoreProperty();
 }
+

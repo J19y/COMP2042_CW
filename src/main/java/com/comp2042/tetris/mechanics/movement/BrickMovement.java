@@ -6,3 +6,4 @@ public interface BrickMovement {
     boolean moveBrickRight();
     boolean rotateLeftBrick();
 }
+

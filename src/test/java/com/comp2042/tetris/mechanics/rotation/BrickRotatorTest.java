@@ -24,7 +24,7 @@ class BrickRotatorTest {
 
         rotator.setBrick(brick);
 
-        // After assigning a brick we should start at the first rotation
+        
         assertEquals(0, rotator.getCurrentShapeIndex());
         assertMatrixEquals(new int[][]{{1, 0}, {0, 1}}, rotator.getCurrentShape());
     }
@@ -41,10 +41,10 @@ class BrickRotatorTest {
 
         RotationInfo next = rotator.getNextShape();
 
-        // When we are at the last rotation, asking for the next should wrap to index 0
+        
         assertEquals(0, next.getPosition());
         assertMatrixEquals(new int[][]{{1, 1}, {0, 0}}, next.getShape());
-        // Calling getNextShape should not mutate the current index internally
+        
         assertEquals(1, rotator.getCurrentShapeIndex());
     }
 
@@ -52,10 +52,10 @@ class BrickRotatorTest {
     void setBrickRejectsNullOrEmptyBricks() {
         BrickRotator rotator = new BrickRotator();
 
-        // Null bricks should be rejected up front
+        
         assertThrows(IllegalArgumentException.class, () -> rotator.setBrick(null));
 
-        // Bricks without rotations are also invalid
+        
         Brick emptyBrick = () -> Collections.emptyList();
         assertThrows(IllegalArgumentException.class, () -> rotator.setBrick(emptyBrick));
     }
@@ -72,3 +72,4 @@ class BrickRotatorTest {
         }
     }
 }
+

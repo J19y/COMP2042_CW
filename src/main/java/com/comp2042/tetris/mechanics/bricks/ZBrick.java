@@ -29,3 +29,4 @@ final class ZBrick implements Brick {
         return MatrixOperations.deepCopyList(brickMatrix);
     }
 }
+

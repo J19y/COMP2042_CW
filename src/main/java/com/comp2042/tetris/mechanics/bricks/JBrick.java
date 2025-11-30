@@ -41,3 +41,4 @@ final class JBrick implements Brick {
                 return MatrixOperations.deepCopyList(brickMatrix);
         }
 }
+

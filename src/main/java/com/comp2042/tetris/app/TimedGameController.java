@@ -8,11 +8,9 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.util.Duration;
 
-/**
- * Timed game mode: players must finish before the countdown expires.
- */
+
 public class TimedGameController extends BaseGameController {
-    private static final int DEFAULT_SECONDS = 120; // 2 minutes
+    private static final int DEFAULT_SECONDS = 120; 
     private int remainingSeconds = DEFAULT_SECONDS;
     private Timeline countdown;
 
@@ -25,10 +23,10 @@ public class TimedGameController extends BaseGameController {
         try {
             MusicManager.getInstance().playTrack(MusicManager.Track.RUSH, 900);
         } catch (Exception ignored) {}
-        // reset timer
+        
         stopCountdownIfRunning();
         remainingSeconds = DEFAULT_SECONDS;
-        // push initial remaining time to view
+        
         try {
             Platform.runLater(() -> view.setRemainingTime(remainingSeconds));
         } catch (Exception ignored) {}
@@ -39,7 +37,7 @@ public class TimedGameController extends BaseGameController {
             } catch (Exception ignored) {}
             if (remainingSeconds <= 0) {
                 stopCountdownIfRunning();
-                // ensure view shows 00:00 then trigger game over on FX thread
+                
                 try {
                     Platform.runLater(() -> view.setRemainingTime(0));
                 } catch (Exception ignored) {}
@@ -53,7 +51,7 @@ public class TimedGameController extends BaseGameController {
     @Override
     public void createNewGame() {
         super.createNewGame();
-        // timer will be started when the UI countdown finishes (startMode is invoked)
+        
     }
 
     private void stopCountdownIfRunning() {
@@ -83,3 +81,4 @@ public class TimedGameController extends BaseGameController {
         }
     }
 }
+

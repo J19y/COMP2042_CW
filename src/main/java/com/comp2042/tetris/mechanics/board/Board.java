@@ -4,11 +4,7 @@ import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.domain.model.SpawnResult;
 import com.comp2042.tetris.domain.model.ViewData;
 
-/**
- * Interface defining the core game board operations.
- * This interface encapsulates all the essential game mechanics like brick movement,
- * rotation, and board state management.
- */
+
 public interface Board {
 
     boolean moveBrickDown();
@@ -20,7 +16,7 @@ public interface Board {
     boolean rotateLeftBrick();
 
     
-    // Spawns a new active brick at its initial position.
+    
     SpawnResult spawnBrick();
 
     int[][] getBoardMatrix();
@@ -33,3 +29,4 @@ public interface Board {
 
     void newGame();
 }
+

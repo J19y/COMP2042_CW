@@ -7,3 +7,4 @@ public interface MovementInput {
     ShowResult onRight(MoveEvent event);
     ShowResult onRotate(MoveEvent event);
 }
+

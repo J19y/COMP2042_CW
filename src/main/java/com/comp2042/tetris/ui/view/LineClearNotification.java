@@ -13,9 +13,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-/**
- * Modern animated notification used for line-clear rewards (SINGLE, DOUBLE, TRIPLE, TETRIS).
- */
+
 public class LineClearNotification extends StackPane {
 
     private final Text title;
@@ -54,7 +52,7 @@ public class LineClearNotification extends StackPane {
         content.setAlignment(Pos.CENTER);
         content.getChildren().addAll(title, subtitle);
 
-        // Backdrop sizes itself to content with padding
+        
         backdrop.widthProperty().bind(content.widthProperty().add(32));
         backdrop.heightProperty().bind(content.heightProperty().add(18));
         backdrop.setMouseTransparent(true);
@@ -67,7 +65,7 @@ public class LineClearNotification extends StackPane {
     public void show(Group containerChildren) {
         if (containerChildren == null) return;
 
-        // If the Group contains a StackPane (as in our FXML), add to it so the notification is centered.
+        
         javafx.scene.Node target = null;
         for (javafx.scene.Node n : containerChildren.getChildren()) {
             if (n instanceof javafx.scene.layout.StackPane) {
@@ -79,15 +77,15 @@ public class LineClearNotification extends StackPane {
         if (target instanceof javafx.scene.layout.StackPane) {
             javafx.scene.layout.StackPane parentStack = (javafx.scene.layout.StackPane) target;
             parentStack.getChildren().add(this);
-            // Anchor to top-center so notifications are always visible above the main menu
+            
             javafx.scene.layout.StackPane.setAlignment(this, javafx.geometry.Pos.TOP_CENTER);
-            // small offset down from the top edge
+            
             setTranslateY(48);
         } else {
             containerChildren.getChildren().add(this);
         }
 
-        // Entrance: pop with slight overshoot
+        
         ScaleTransition pop = new ScaleTransition(Duration.millis(120), this);
         pop.setFromX(0.7);
         pop.setFromY(0.7);
@@ -105,7 +103,7 @@ public class LineClearNotification extends StackPane {
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
 
-        // Flashy pulsing glow during hold
+        
         DropShadow glowEffect = (DropShadow) backdrop.getEffect();
         Timeline pulseGlow = new Timeline(
             new KeyFrame(Duration.ZERO, new KeyValue(glowEffect.radiusProperty(), 18)),
@@ -117,7 +115,7 @@ public class LineClearNotification extends StackPane {
 
         PauseTransition hold = new PauseTransition(Duration.millis(240));
 
-        // Float up and fade out faster
+        
         TranslateTransition floatUp = new TranslateTransition(Duration.millis(500), this);
         floatUp.setByY(-50);
         FadeTransition fadeOut = new FadeTransition(Duration.millis(500), this);
@@ -128,7 +126,7 @@ public class LineClearNotification extends StackPane {
                 new ParallelTransition(hold, pulseGlow), new ParallelTransition(floatUp, fadeOut));
 
         seq.setOnFinished(e -> {
-            // remove from whichever parent we were added to
+            
             if (getParent() instanceof Group) {
                 ((Group) getParent()).getChildren().remove(this);
             } else if (getParent() instanceof javafx.scene.layout.StackPane) {
@@ -170,3 +168,4 @@ public class LineClearNotification extends StackPane {
         }
     }
 }
+

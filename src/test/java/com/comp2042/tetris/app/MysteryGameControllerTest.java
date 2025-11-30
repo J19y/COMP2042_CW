@@ -15,27 +15,27 @@ final class MysteryGameControllerTest {
 
         @Override
         public void initGameView(int[][] boardMatrix, com.comp2042.tetris.domain.model.ViewData activeBrickData) {
-            // no-op
+            
         }
 
         @Override
         public void refreshGameBackground(int[][] boardMatrix) {
-            // no-op
+            
         }
 
         @Override
         public void bindScore(IntegerProperty scoreProperty) {
-            // no-op
+            
         }
 
         @Override
         public void setInputHandlers(com.comp2042.tetris.ui.input.InputActionHandler inputActionHandler, com.comp2042.tetris.ui.input.DropInput dropInput, com.comp2042.tetris.app.CreateNewGame gameLifecycle) {
-            // no-op
+            
         }
 
         @Override
         public void gameOver() {
-            // no-op
+            
         }
 
         @Override
@@ -66,13 +66,14 @@ final class MysteryGameControllerTest {
         SpyGameView view = new SpyGameView();
         MysteryGameController controller = new MysteryGameController(view);
 
-        // Sanity: initial level is 1
+        
         assertEquals(1, view.boundLevel.get());
 
-        // Change speedMultiplier via reflection; displayed level should not change
+        
         java.lang.reflect.Field sm = MysteryGameController.class.getDeclaredField("speedMultiplier");
         sm.setAccessible(true);
         sm.setInt(controller, 20);
         assertEquals(1, view.boundLevel.get(), "Displayed level should remain unchanged when speed multiplier spikes");
     }
 }
+

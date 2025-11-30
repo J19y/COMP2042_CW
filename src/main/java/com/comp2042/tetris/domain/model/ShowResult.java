@@ -1,9 +1,6 @@
 package com.comp2042.tetris.domain.model;
 
-/**
- * Renamed from DownData to ShowResult to better show this is a data object
- * returned to the UI with the outcome of a downward move (cleared rows + view data).
- */
+
 public final class ShowResult {
     private final RowClearResult clearResult;
     private final ViewData viewData;
@@ -21,3 +18,4 @@ public final class ShowResult {
         return viewData;
     }
 }
+

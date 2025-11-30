@@ -19,7 +19,7 @@ class BrickRegistryTest {
         BrickRegistry first = BrickRegistry.getInstance();
         BrickRegistry second = BrickRegistry.getInstance();
 
-        // Registry follows a simple singleton pattern
+        
         assertSame(first, second);
     }
 
@@ -30,7 +30,7 @@ class BrickRegistryTest {
         BrickRegistry.register(supplier);
         List<Supplier<Brick>> suppliers = BrickRegistry.getInstance().suppliers();
 
-        // Once registered, our supplier should be discoverable via the registry view
+        
         assertTrue(suppliers.contains(supplier));
         assertNotNull(supplier.get().getRotationMatrix());
     }
@@ -39,7 +39,7 @@ class BrickRegistryTest {
     void suppliersListIsUnmodifiable() {
         List<Supplier<Brick>> suppliers = BrickRegistry.getInstance().suppliers();
 
-        // The returned collection should be read-only for callers
+        
         assertThrows(UnsupportedOperationException.class, () -> suppliers.add(TestBrick::new));
     }
 
@@ -48,7 +48,7 @@ class BrickRegistryTest {
         List<Supplier<Brick>> fromInstance = BrickRegistry.getInstance().suppliers();
         List<Supplier<Brick>> fromStatic = BrickRegistry.getSuppliers();
 
-        // Both access paths should expose the same snapshot
+        
         assertEquals(fromInstance, fromStatic);
     }
 
@@ -60,3 +60,4 @@ class BrickRegistryTest {
         }
     }
 }
+

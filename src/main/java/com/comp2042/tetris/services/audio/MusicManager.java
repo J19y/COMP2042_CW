@@ -27,18 +27,18 @@ public class MusicManager {
     private final Map<Track, String> trackMap = new HashMap<>();
     private MediaPlayer currentPlayer;
     private Track currentTrack;
-    // Remember the last track when music is muted so unmuting can resume it
+    
     private Track lastTrack = null;
-    // If we pause the media player because of a mute action we track that so we can resume instead of restarting
+    
     private boolean pausedByMute = false;
-    private double musicVolume = 1.0; // 0..1
-    private double sfxVolume = 1.0; // 0..1
+    private double musicVolume = 1.0; 
+    private double sfxVolume = 1.0; 
     private boolean musicEnabled = true;
-    // Cache AudioClip instances to avoid GC dropping playback and reduce load latency
+    
     private final Map<String, AudioClip> sfxCache = new HashMap<>();
 
     private MusicManager() {
-        // map tracks to resource paths
+        
         trackMap.put(Track.MAIN_MENU, "/audio/MainMenuSoundTrack.mp3");
         trackMap.put(Track.CLASSIC, "/audio/ClassicModeSoundTrack.mp3");
         trackMap.put(Track.RUSH, "/audio/RushModeSoundTrack.mp3");
@@ -50,9 +50,7 @@ public class MusicManager {
         playTrack(track, fadeInMillis, -1);
     }
 
-    /**
-     * Play a track with optional repeat count. If repeatCount &lt;= 0 the track will loop indefinitely.
-     */
+    
     public void playTrack(Track track, long fadeInMillis, int repeatCount) {
         if (!musicEnabled) return;
         if (track == currentTrack) return;
@@ -61,7 +59,7 @@ public class MusicManager {
         if (path == null) return;
 
         Platform.runLater(() -> {
-            // fade out current
+            
             if (currentPlayer != null) {
                 fadeOutAndStop(currentPlayer, 400);
             }
@@ -103,7 +101,7 @@ public class MusicManager {
         if (player == null) return new Timeline();
         Timeline t = new Timeline();
         t.getKeyFrames().add(new KeyFrame(Duration.millis(millis), new KeyValue(player.volumeProperty(), to)));
-        // set start value immediately
+        
         player.setVolume(from);
         t.play();
         return t;
@@ -139,7 +137,7 @@ public class MusicManager {
                 }
                 clip.setVolume(sfxVolume);
                 System.out.println("[MusicManager] playSfx: " + path + " volume=" + sfxVolume);
-                // Stop any previous instance of this clip to avoid overlap (useful for repeating ticks)
+                
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play();
             } catch (Throwable t) {
@@ -148,10 +146,7 @@ public class MusicManager {
         });
     }
 
-    /**
-     * Play an SFX with a per-call volume multiplier (relative to the configured sfxVolume).
-     * multiplier > 1.0 will increase loudness (clamped to 1.0).
-     */
+    
     public void playSfx(String resourcePath, double multiplier) {
         final double mult = clamp01(multiplier);
         String path = resourcePath;
@@ -171,7 +166,7 @@ public class MusicManager {
                 double vol = clamp01(sfxVolume * mult);
                 clip.setVolume(vol);
                 System.out.println("[MusicManager] playSfx: " + path + " multiplier=" + mult + " finalVol=" + vol);
-                // Stop previous instance to prevent overlapping sounds when playing the same SFX repeatedly
+                
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play();
             } catch (Throwable t) {
@@ -180,10 +175,7 @@ public class MusicManager {
         });
     }
 
-    /**
-     * Play an SFX immediately at the configured SFX volume (no stop-delay or fade).
-     * Useful for short UI/feedback sounds that must be heard instantly (e.g. GO countdown).
-     */
+    
     public void playSfxImmediate(String resourcePath) {
         String path = resourcePath;
         Platform.runLater(() -> {
@@ -202,7 +194,7 @@ public class MusicManager {
                 double vol = sfxVolume;
                 System.out.println("[MusicManager] playSfxImmediate: " + path + " vol=" + vol);
                 try { clip.stop(); } catch (Exception ignored) {}
-                // Use the overload that takes a volume to ensure immediate playback at the desired level
+                
                 clip.play(vol);
             } catch (Throwable t) {
                 t.printStackTrace();
@@ -210,9 +202,7 @@ public class MusicManager {
         });
     }
 
-    /**
-     * Play an SFX immediately with a per-call multiplier, useful to make GO louder.
-     */
+    
     public void playSfxImmediate(String resourcePath, double multiplier) {
         final double mult = clamp01(multiplier);
         String path = resourcePath;
@@ -239,10 +229,7 @@ public class MusicManager {
         });
     }
 
-    /**
-     * Play an SFX immediately at an absolute volume (0..1), ignoring the sfxVolume multiplier.
-     * Useful when a particular clip must be louder regardless of master SFX level.
-     */
+    
     public void playSfxAtVolume(String resourcePath, double absoluteVolume) {
         final double vol = clamp01(absoluteVolume);
         String path = resourcePath;
@@ -268,9 +255,7 @@ public class MusicManager {
         });
     }
 
-    /**
-     * Stop playback of a cached SFX clip if playing.
-     */
+    
     public void stopSfx(String resourcePath) {
         String path = resourcePath;
         Platform.runLater(() -> {
@@ -289,15 +274,13 @@ public class MusicManager {
         });
     }
 
-    /**
-     * Fade current music player volume to `toVol` over `millis` milliseconds.
-     */
+    
     public void fadeMusicTo(double toVol, long millis) {
         final double to = clamp01(toVol);
         Platform.runLater(() -> {
             if (currentPlayer == null) return;
             fadeVolume(currentPlayer, currentPlayer.getVolume(), to, Math.max(0, millis));
-            // Update stored musicVolume so subsequent playTrack/sets use the updated value
+            
             musicVolume = to;
         });
     }
@@ -313,15 +296,15 @@ public class MusicManager {
     }
 
     public void setMusicEnabled(boolean enabled) {
-        // If disabling: pause the current player (preserve position) and mark it pausedByMute.
+        
         if (!enabled) {
-            // remember which track was current so we can restore if the player is disposed
+            
             lastTrack = currentTrack;
             musicEnabled = false;
             pausedByMute = false;
             if (currentPlayer != null) {
                 try {
-                    // Only pause if it's currently playing; if already stopped, leave state alone
+                    
                     if (currentPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
                         currentPlayer.pause();
                         pausedByMute = true;
@@ -331,7 +314,7 @@ public class MusicManager {
             return;
         }
 
-        // Enabling: if we paused previously because of mute and the player still exists, resume it.
+        
         musicEnabled = true;
         if (pausedByMute && currentPlayer != null) {
             try {
@@ -343,7 +326,7 @@ public class MusicManager {
             return;
         }
 
-        // If there is no in-memory player but we have a remembered track, fall back to starting it again.
+        
         if (currentPlayer == null && lastTrack != null) {
             try {
                 playTrack(lastTrack, 600);
@@ -356,3 +339,4 @@ public class MusicManager {
 
     private double clamp01(double v) { return Math.max(0.0, Math.min(1.0, v)); }
 }
+

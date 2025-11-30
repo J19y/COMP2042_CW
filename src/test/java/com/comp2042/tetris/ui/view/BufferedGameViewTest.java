@@ -26,7 +26,7 @@ class BufferedGameViewTest {
 
         view.initGameView(board, DUMMY_VIEW_DATA);
 
-        // initGameView should immediately forward to the wrapped view
+        
         assertEquals(1, delegate.initCalls);
         assertSame(board, delegate.lastInitMatrix);
     }
@@ -41,7 +41,7 @@ class BufferedGameViewTest {
         view.initGameView(first, DUMMY_VIEW_DATA);
         view.refreshGameBackground(identical);
 
-        // Same data twice should not trigger the heavy UI refresh
+        
         assertEquals(0, delegate.refreshCalls);
     }
 
@@ -55,7 +55,7 @@ class BufferedGameViewTest {
         view.initGameView(first, DUMMY_VIEW_DATA);
         view.refreshGameBackground(updated);
 
-        // A different board must reach the underlying view
+        
         assertEquals(1, delegate.refreshCalls);
         assertSame(updated, delegate.lastRefreshMatrix);
     }
@@ -68,7 +68,7 @@ class BufferedGameViewTest {
         view.initGameView(new int[][]{{1}}, DUMMY_VIEW_DATA);
         view.refreshGameBackground(null);
 
-        // Passing null should flush the delegate so it can clear the UI
+        
         assertEquals(1, delegate.refreshCalls);
         assertSame(null, delegate.lastRefreshMatrix);
     }
@@ -93,28 +93,28 @@ class BufferedGameViewTest {
 
         @Override
         public void bindScore(IntegerProperty scoreProperty) {
-            // not required for these tests
+            
         }
 
         @Override
         public void setInputHandlers(InputActionHandler inputActionHandler, DropInput dropInput,
             CreateNewGame gameLifecycle) {
-            // not required for these tests
+            
         }
 
         @Override
         public void gameOver() {
-            // not required for these tests
+            
         }
 
         @Override
         public void setRemainingTime(int seconds) {
-            // not required for these tests
+            
         }
 
         @Override
         public void acceptShowResult(com.comp2042.tetris.domain.model.ShowResult result) {
-            // not required for these tests
+            
         }
 
         @Override
@@ -123,3 +123,4 @@ class BufferedGameViewTest {
         }
     }
 }
+

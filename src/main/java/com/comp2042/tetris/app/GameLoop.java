@@ -4,10 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 
-/**
- * Simple wrapper around a JavaFX Timeline to drive the game tick.
- * Extracted from GuiController to isolate timing concerns.
- */
+
 public final class GameLoop {
     private Timeline timeline;
     private final Runnable onTick;
@@ -46,3 +43,4 @@ public final class GameLoop {
         return timeline.getStatus() == Timeline.Status.RUNNING;
     }
 }
+

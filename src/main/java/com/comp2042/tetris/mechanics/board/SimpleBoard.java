@@ -18,10 +18,7 @@ import com.comp2042.tetris.mechanics.spawn.BrickSpawn;
 import com.comp2042.tetris.util.CollisionDetector;
 import com.comp2042.tetris.util.MatrixOperations;
 
-/**
- * Implementation of the Board interface that handles the core game mechanics.
- * This class manages the game matrix, brick movement, collision detection, and score tracking.
- */
+
 public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, BrickSpawn, BoardLifecycle {
 
     private final int rows;
@@ -29,7 +26,7 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
     private final BrickGenerator brickGenerator;
     private final BrickRotator brickRotator;
     private final BrickPositionManager positionManager;
-    // Renamed from `currentGameMatrix` -> `boardMatrix` to make it easier to understand the board's state.
+    
     private int[][] boardMatrix;
 
     public SimpleBoard(int rows, int cols) {
@@ -44,8 +41,8 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         Objects.requireNonNull(componentsFactory, "componentsFactory must not be null");
         this.rows = rows;
         this.cols = cols;
-        // Constructor parameters renamed to `rows`/`cols` to avoid confusion
-        // about matrix orientation (matrix[row][col]). Initialize the board accordingly.
+        
+        
         boardMatrix = new int[rows][cols];
         brickGenerator = componentsFactory.createGenerator();
         brickRotator = componentsFactory.createRotator();
@@ -100,20 +97,20 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         int currentX = positionManager.getX();
         int currentY = positionManager.getY();
 
-        // Try normal rotation
+        
         if (!CollisionDetector.isCollision(currentMatrix, shape, currentX, currentY)) {
             brickRotator.setCurrentShape(nextShape.getPosition());
             return true;
         }
 
-        // Wall Kick: Try moving right (if hitting left wall)
+        
         if (!CollisionDetector.isCollision(currentMatrix, shape, currentX + 1, currentY)) {
             positionManager.updatePosition(new Point(currentX + 1, currentY));
             brickRotator.setCurrentShape(nextShape.getPosition());
             return true;
         }
 
-        // Wall Kick: Try moving left (if hitting right wall)
+        
         if (!CollisionDetector.isCollision(currentMatrix, shape, currentX - 1, currentY)) {
             positionManager.updatePosition(new Point(currentX - 1, currentY));
             brickRotator.setCurrentShape(nextShape.getPosition());
@@ -124,11 +121,7 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
     }
 
     @Override
-    /**
-     * Spawns a new brick and places it at the initial active position.
-     * Renamed from createNewBrick() -> spawnBrick() to clarify this method
-     * both creates and places the brick (it 'spawns' it into the game world).
-     */
+    
     public SpawnResult spawnBrick() {
     Brick currentBrick = brickGenerator.getBrick();
     brickRotator.setBrick(currentBrick);
@@ -152,7 +145,7 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
             nextBrickMatrices.add(b.getRotationMatrix().get(0));
         }
         
-        // Calculate ghost piece position
+        
         int ghostY = positionManager.getY();
         int[][] currentShape = brickRotator.getCurrentShape();
         int currentX = positionManager.getX();
@@ -177,21 +170,18 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
     @Override
     public void newGame() {
         boardMatrix = new int[rows][cols];
-        // Ignore gameOver flag here; a fresh board should not be game over.
+        
         spawnBrick();
     }
 
-    /**
-     * Add a garbage line at the bottom and push everything up by one row.
-     * Ensures at least one empty cell in the bottom row so it's solvable.
-     */
+    
     public void addGarbageLine() {
         int[][] newMatrix = new int[rows][cols];
-        // shift up: row 0 becomes previous row 1 ... last-1 becomes previous last
+        
         for (int r = 0; r < rows - 1; r++) {
             System.arraycopy(boardMatrix[r + 1], 0, newMatrix[r], 0, cols);
         }
-        // create garbage bottom row with at least one hole
+        
         java.util.Random rnd = new java.util.Random();
         int[] bottom = new int[cols];
         int holeIndex = rnd.nextInt(cols);
@@ -202,13 +192,13 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
                 bottom[c] = rnd.nextBoolean() ? 1 : 0;
             }
         }
-        // ensure at least one filled cell if rnd produced all zero except hole
+        
         boolean anyBlock = false;
         for (int c = 0; c < cols; c++) {
             if (bottom[c] != 0) { anyBlock = true; break; }
         }
         if (!anyBlock) {
-            // set random cell (not hole) to a block
+            
             for (int c = 0; c < cols; c++) {
                 if (c != holeIndex) { bottom[c] = 1; break; }
             }
@@ -217,3 +207,4 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         boardMatrix = newMatrix;
     }
 }
+

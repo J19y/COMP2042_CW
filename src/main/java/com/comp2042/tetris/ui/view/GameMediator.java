@@ -19,7 +19,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
-// Mediates interactions between UI components and game state/rendering logic.
+
 final class GameMediator {
 
     private final BoardRenderer boardRenderer;
@@ -33,7 +33,7 @@ final class GameMediator {
     private ActiveBrickRenderer activeBrickRenderer;
     private NotificationManager notificationService;
     private GameLoopController gameLoopController;
-    // Keep a copy of the last known board matrix so we can animate diffs
+    
     private int[][] lastBoardMatrix;
 
     GameMediator(BoardRenderer boardRenderer,
@@ -57,9 +57,7 @@ final class GameMediator {
         this.notificationService = notificationService;
     }
 
-    /**
-     * Animate the active brick settling before the engine merges it to the board.
-     */
+    
     void settleActiveBrick(Runnable onFinished) {
         if (activeBrickRenderer == null) {
             if (onFinished != null) onFinished.run();
@@ -75,17 +73,17 @@ final class GameMediator {
     void refreshGameBackground(int[][] boardMatrix) {
         if (boardRenderer == null || displayMatrix == null) return;
 
-        // If we don't have a previous matrix, simply refresh and store
+        
         if (lastBoardMatrix == null) {
             boardRenderer.refreshBoard(boardMatrix, displayMatrix);
             lastBoardMatrix = copyMatrix(boardMatrix);
             return;
         }
 
-        // First update visuals so rectangles have the latest colors/effects
+        
         boardRenderer.refreshBoard(boardMatrix, displayMatrix);
 
-        // Find cells that transitioned from empty (0) -> filled (non-zero)
+        
         javafx.collections.ObservableList<javafx.animation.Animation> animations = javafx.collections.FXCollections.observableArrayList();
         for (int i = 0; i < boardMatrix.length; i++) {
             for (int j = 0; j < boardMatrix[i].length; j++) {
@@ -95,7 +93,7 @@ final class GameMediator {
                     Rectangle rect = displayMatrix[i][j];
                     if (rect == null) continue;
 
-                    // Pop + settle animation: small upward offset then drop into place
+                    
                     rect.setTranslateY(-10);
                     javafx.animation.TranslateTransition tt = new javafx.animation.TranslateTransition(javafx.util.Duration.millis(160), rect);
                     tt.setFromY(-10);
@@ -109,7 +107,7 @@ final class GameMediator {
                     st.setToY(1.0);
                     st.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
 
-                    // Neon pulse: animate DropShadow radius/spread if present
+                    
                     javafx.animation.Timeline effectPulse = null;
                     javafx.scene.effect.Effect eff = rect.getEffect();
                     if (eff instanceof javafx.scene.effect.DropShadow) {
@@ -133,7 +131,7 @@ final class GameMediator {
                         );
                     }
 
-                    // Stroke width pulse for extra neon pop
+                    
                     javafx.animation.Timeline strokePulse = new javafx.animation.Timeline(
                         new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
                             new javafx.animation.KeyValue(rect.strokeWidthProperty(), rect.getStrokeWidth())),
@@ -147,7 +145,7 @@ final class GameMediator {
                     if (effectPulse != null) pt.getChildren().add(effectPulse);
                     pt.getChildren().add(strokePulse);
 
-                    // Stagger by row so locks feel weighty (lower rows animate slightly sooner)
+                    
                     int rows = boardMatrix.length;
                     long delay = Math.max(0, (rows - i) * 10 + j * 8);
                     pt.setDelay(javafx.util.Duration.millis(delay));
@@ -156,7 +154,7 @@ final class GameMediator {
             }
         }
 
-        // Play a short board-wide neon bloom while blocks lock
+        
         javafx.animation.Timeline boardBloom = null;
         if (!animations.isEmpty() && gamePanel != null) {
             javafx.scene.effect.Effect prev = gamePanel.getEffect();
@@ -170,7 +168,7 @@ final class GameMediator {
             boardBloom.setOnFinished(e -> gamePanel.setEffect(prev));
         }
 
-        // Play all animations together for a cohesive lock effect
+        
         if (!animations.isEmpty()) {
             javafx.animation.ParallelTransition all = new javafx.animation.ParallelTransition();
             all.getChildren().addAll(animations);
@@ -180,7 +178,7 @@ final class GameMediator {
             all.play();
         }
 
-        // Update last known matrix
+        
         lastBoardMatrix = copyMatrix(boardMatrix);
     }
 
@@ -198,21 +196,21 @@ final class GameMediator {
         }
         RowClearResult clear = data.getClearRow();
         if (clear != null) {
-            // Show notifications immediately as soon as the clear is detected
+            
             if (clear.getLinesRemoved() > 0) {
                 if (notificationService != null) {
-                    // Show the descriptive row-clear message first (top-centered)
+                    
                     notificationService.showLineClearReward(clear.getLinesRemoved());
-                    // Show the +score slightly below the message so they feel connected
-                    // Offset chosen to sit just below the row-clear title when the title uses translateY=52
+                    
+                    
                     notificationService.showScoreBonus(clear.getScoreBonus(), 96.0);
                 }
             }
 
-            // Play lock effects and sweep/refresh the board
+            
             playLockEffects();
             if (clear.getLinesRemoved() > 0) {
-                // Play neon sweep across cleared rows for visual feedback
+                
                 playNeonSweep(clear.getClearedRows());
                 refreshGameBackground(clear.getNewMatrix());
             }
@@ -225,7 +223,7 @@ final class GameMediator {
     private void playLockEffects() {
         if (gamePanel == null) return;
 
-        // A. Squash and Stretch (The "Thud")
+        
         ScaleTransition squash = new ScaleTransition(Duration.millis(50), gamePanel);
         squash.setToY(0.98);
         squash.setToX(1.02);
@@ -233,7 +231,7 @@ final class GameMediator {
         squash.setAutoReverse(true);
         squash.play();
 
-        // B. Light Flash (Bloom)
+        
         Glow glow = new Glow(0.8);
         gamePanel.setEffect(glow);
         
@@ -250,13 +248,13 @@ final class GameMediator {
 
         javafx.animation.ParallelTransition all = new javafx.animation.ParallelTransition();
 
-        // Sweep each cleared row left->right
+        
         for (int rowIdx : clearedRows) {
             if (rowIdx < 0 || rowIdx >= displayMatrix.length) continue;
             Rectangle[] row = displayMatrix[rowIdx];
             if (row == null) continue;
 
-            // Slight offset so multi-row clears cascade visually
+            
             double rowOffset = (clearedRows.size() - clearedRows.indexOf(rowIdx)) * 30.0;
 
             for (int col = 0; col < row.length; col++) {
@@ -271,7 +269,7 @@ final class GameMediator {
 
                 javafx.animation.Timeline tl = new javafx.animation.Timeline();
 
-                // At start: apply neon drop shadow and change stroke color
+                
                 javafx.animation.KeyFrame kfStart = new javafx.animation.KeyFrame(javafx.util.Duration.millis(delayMs), e -> {
                     javafx.scene.effect.DropShadow ds = new javafx.scene.effect.DropShadow();
                     ds.setColor(javafx.scene.paint.Color.web("#6EE7B7"));
@@ -281,12 +279,12 @@ final class GameMediator {
                     rect.setStroke(javafx.scene.paint.Color.web("#E6FFFA"));
                 });
 
-                // Peak: increase stroke width
+                
                 javafx.animation.KeyFrame kfPeak = new javafx.animation.KeyFrame(javafx.util.Duration.millis(delayMs + 120),
                     new javafx.animation.KeyValue(rect.strokeWidthProperty(), originalStrokeWidth + 2.2)
                 );
 
-                // Fade back to original
+                
                 javafx.animation.KeyFrame kfEnd = new javafx.animation.KeyFrame(javafx.util.Duration.millis(delayMs + 300), e -> {
                     rect.setStroke(originalStroke);
                     rect.setStrokeWidth(originalStrokeWidth);
@@ -313,7 +311,7 @@ final class GameMediator {
         }
         stateManager.gameOver();
         
-        // Trigger the "Digital Fragmentation" sequence
+        
         if (gameOverAnimator != null) {
             gameOverAnimator.playDigitalFragmentationSequence(displayMatrix, finalScore, totalLines, gameTime);
         }
@@ -329,7 +327,7 @@ final class GameMediator {
         if (gameOverAnimator != null) {
             gameOverAnimator.resetBackdropEffects();
         }
-        // Reset board visibility
+        
         if (displayMatrix != null) {
             for (Rectangle[] row : displayMatrix) {
                 for (Rectangle rect : row) {
@@ -360,3 +358,4 @@ final class GameMediator {
         focusGamePanel();
     }
 }
+

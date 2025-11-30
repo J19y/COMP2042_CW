@@ -9,10 +9,7 @@ import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.scoring.ScoreManager;
 import com.comp2042.tetris.domain.scoring.ScoringPolicy;
 
-/**
- * Handles brick dropping logic including landing, row clearing, and scoring.
- * Depends only on minimal drop actions and read-only board access.
- */
+
 public final class BrickDrop {
 
     private final BrickDropActions dropActions;
@@ -29,13 +26,13 @@ public final class BrickDrop {
         this.scoringPolicy = scoringPolicy;
     }
 
-    // Handle a brick drop attempt.
+    
     public ShowResult handleDrop(EventSource source, Runnable onGameOver) {
         boolean canMove = dropActions.moveBrickDown();
         RowClearResult result = null;
 
         if (!canMove) {
-            // Brick has landed
+            
             dropActions.mergeBrickToBackground();
             result = dropActions.clearRows();
 
@@ -44,11 +41,11 @@ public final class BrickDrop {
                 if (scoreBonus > 0) {
                     scoreService.add(scoreBonus);
                 }
-                // Update result with calculated score for display (preserve cleared row indices)
+                
                 result = new RowClearResult(result.getLinesRemoved(), result.getNewMatrix(), scoreBonus, result.getClearedRows());
             }
 
-            // Notify via SpawnManager observers rather than direct callback
+            
             spawnManager.spawn();
         } else {
             int dropScore = scoringPolicy.scoreForDrop(source, true);
@@ -60,3 +57,4 @@ public final class BrickDrop {
         return new ShowResult(result, reader.getViewData());
     }
 }
+

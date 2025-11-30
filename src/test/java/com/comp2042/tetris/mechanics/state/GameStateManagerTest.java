@@ -19,7 +19,7 @@ class GameStateManagerTest {
 
     @Test
     void startsInMenuState() {
-        // Fresh manager should expose MENU state via getter and property.
+        
         assertEquals(GameStateManager.GameState.MENU, manager.getCurrentState());
         assertSame(manager.getCurrentState(), manager.stateProperty().get());
         assertFalse(manager.canAcceptInput());
@@ -28,7 +28,7 @@ class GameStateManagerTest {
 
     @Test
     void startGameMovesFromMenuToPlaying() {
-        // Starting from MENU should enter PLAYING and enable input/updates.
+        
         manager.startGame();
 
         assertEquals(GameStateManager.GameState.PLAYING, manager.getCurrentState());
@@ -40,7 +40,7 @@ class GameStateManagerTest {
 
     @Test
     void pauseAndResumeOnlyAffectPlayingState() {
-        // Pause from PLAYING should switch to PAUSED and resume back to PLAYING.
+        
         manager.startGame();
         manager.pauseGame();
 
@@ -55,7 +55,7 @@ class GameStateManagerTest {
 
     @Test
     void gameOverFromPlayingDisablesInput() {
-        // GAME_OVER should only be reachable from PLAYING and block gameplay.
+        
         manager.startGame();
         manager.gameOver();
 
@@ -67,7 +67,7 @@ class GameStateManagerTest {
 
     @Test
     void startGameFromGameOverRestartsPlay() {
-        // After GAME_OVER, starting again should go back to PLAYING.
+        
         manager.startGame();
         manager.gameOver();
         manager.startGame();
@@ -78,14 +78,14 @@ class GameStateManagerTest {
 
     @Test
     void illegalTransitionsLeaveStateUnchanged() {
-        // Calling pause/resume/gameOver in MENU should be ignored.
+        
         manager.pauseGame();
         manager.resumeGame();
         manager.gameOver();
 
         assertEquals(GameStateManager.GameState.MENU, manager.getCurrentState());
 
-        // From GAME_OVER, pause/resume should also be ignored.
+        
         manager.startGame();
         manager.gameOver();
         manager.pauseGame();
@@ -94,3 +94,4 @@ class GameStateManagerTest {
         assertEquals(GameStateManager.GameState.GAME_OVER, manager.getCurrentState());
     }
 }
+

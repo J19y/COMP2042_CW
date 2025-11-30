@@ -14,7 +14,7 @@ class RandomBrickGeneratorTest {
         Brick firstPeek = generator.peekNextBrick();
         Brick secondPeek = generator.peekNextBrick();
 
-        // Peeking twice should return the very same instance sitting at the head of the queue
+        
         assertNotNull(firstPeek);
         assertSame(firstPeek, secondPeek);
     }
@@ -26,7 +26,7 @@ class RandomBrickGeneratorTest {
         Brick peeked = generator.peekNextBrick();
         Brick fetched = generator.getBrick();
 
-        // Whatever we peek should be exactly what gets dequeued next
+        
         assertNotNull(peeked);
         assertSame(peeked, fetched);
     }
@@ -35,7 +35,7 @@ class RandomBrickGeneratorTest {
     void generatorKeepsQueueFilled() {
         RandomBrickGenerator generator = new RandomBrickGenerator();
 
-        // Grab several bricks to make sure the buffer keeps refilling itself
+        
         for (int i = 0; i < 10; i++) {
             Brick current = generator.getBrick();
             assertNotNull(current);
@@ -43,3 +43,4 @@ class RandomBrickGeneratorTest {
         }
     }
 }
+

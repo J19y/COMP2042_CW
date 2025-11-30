@@ -41,3 +41,4 @@ final class LBrick implements Brick {
                 return MatrixOperations.deepCopyList(brickMatrix);
         }
 }
+

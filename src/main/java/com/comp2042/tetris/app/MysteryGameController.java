@@ -10,11 +10,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.util.Duration;
 
-/**
- * Mystery game mode: increased difficulty with accelerated gravity.
- * Pieces fall faster, and the game difficulty increases progressively.
- * Every 30 seconds, the game becomes slightly harder.
- */
+
 public class MysteryGameController extends BaseGameController {
     private Timeline speedUpTimer;
     private Timeline eventTimer;
@@ -23,16 +19,12 @@ public class MysteryGameController extends BaseGameController {
     private Timeline gravityRestoreTimeline;
     private int elapsedSeconds;
     private int speedMultiplier;
-    /**
-     * Logical level number shown to the player. This is a monotonic counter incremented
-     * every 30 seconds and is separate from the speed multiplier (which may have
-     * temporary spikes for events).
-     */
+    
     private int levelNumber;
     private final javafx.beans.property.IntegerProperty levelProperty = new javafx.beans.property.SimpleIntegerProperty(1);
     private int eventCountdown;
     private final Random rnd = new Random();
-    // Last event id to avoid immediate repeats
+    
     private int lastEvent = -1;
     private boolean controlsInverted = false;
     private int originalSpeedMultiplier;
@@ -40,7 +32,7 @@ public class MysteryGameController extends BaseGameController {
 
     public MysteryGameController(GameView view) {
         super(view);
-        // Bind after construction so subclass fields are initialized (super() may call setupView earlier)
+        
         try { view.bindLevel(levelProperty); } catch (Exception ignored) {}
     }
 
@@ -49,25 +41,25 @@ public class MysteryGameController extends BaseGameController {
         try {
             com.comp2042.tetris.services.audio.MusicManager.getInstance().playTrack(com.comp2042.tetris.services.audio.MusicManager.Track.MYSTERY, 900);
         } catch (Exception ignored) {}
-        // Start timers: speed-up every 30s, and random events every 15-20s
+        
         stopSpeedUpTimerIfRunning();
         elapsedSeconds = 0;
         speedMultiplier = 1;
         levelNumber = 1;
         try { levelProperty.set(levelNumber); } catch (Exception ignored) {}
 
-        // Speed-up tick (1s) handles periodic difficulty increases
+        
         speedUpTimer = new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
             elapsedSeconds++;
             if (elapsedSeconds > 0 && elapsedSeconds % 30 == 0) {
-                // Increase both the speed used by mechanics and the logical player-visible level.
+                
                 speedMultiplier++;
                 levelNumber++;
                 try { levelProperty.set(levelNumber); } catch (Exception ignored) {}
                 try { view.animateLevelIncrement(); } catch (Exception ignored) {}
                 System.out.println("Mystery Mode: Difficulty increased! Speed multiplier: " + speedMultiplier);
             }
-            // ticking event timer
+            
             if (eventCountdown > 0) {
                 eventCountdown--;
             } else {
@@ -81,17 +73,12 @@ public class MysteryGameController extends BaseGameController {
         scheduleNextEvent();
     }
 
-    /**
-     * Get the current speed multiplier for this mystery mode.
-     * Can be used by game loop to accelerate piece dropping.
-     */
+    
     public int getSpeedMultiplier() {
         return speedMultiplier;
     }
 
-    /**
-     * Player-visible level number (monotonic) used by the UI.
-     */
+    
     public int getLevel() {
         return levelNumber;
     }
@@ -101,36 +88,36 @@ public class MysteryGameController extends BaseGameController {
     }
 
     private void scheduleNextEvent() {
-        // Random interval between 6 and 14 seconds to make timing less predictable
-        eventCountdown = 6 + rnd.nextInt(9); // 6..14
+        
+        eventCountdown = 6 + rnd.nextInt(9); 
     }
 
     private void triggerRandomEvent() {
-        // Weighted random selection so events feel varied but balanced.
-        // We'll avoid repeating the same event immediately.
+        
+        
         int pick = -1;
         int attempts = 0;
         while (attempts < 4) {
             attempts++;
             int r = rnd.nextInt(100);
             if (r < 22) {
-                pick = 0; // speed boost (22%)
+                pick = 0; 
             } else if (r < 44) {
-                pick = 1; // controls invert (22%)
+                pick = 1; 
             } else if (r < 66) {
-                pick = 2; // earthquake (22%)
+                pick = 2; 
             } else if (r < 88) {
-                pick = 3; // fog (22%)
+                pick = 3; 
             } else {
-                pick = 4; // heavy gravity (12%) rarer
+                pick = 4; 
             }
-            if (pick != lastEvent) break; // accept if different
+            if (pick != lastEvent) break; 
         }
 
         lastEvent = pick;
 
         if (pick == 0) {
-            // Speed-up (minor)
+            
             speedMultiplier++;
             System.out.println("Mystery Event: Speed Boost! multiplier=" + speedMultiplier);
             try { view.showEventMessage("Speed Boost!"); } catch (Exception ignored) {}
@@ -139,11 +126,11 @@ public class MysteryGameController extends BaseGameController {
         } else if (pick == 2) {
             triggerEarthquake();
         } else if (pick == 3) {
-            // Show fog visual and let controller manage restoring board visibility
+            
             try { view.showFogEffect(3); } catch (Exception ignored) {}
             triggerFog();
         } else if (pick == 4) {
-                // Show heavy-gravity visual and apply mechanics spike (short burst)
+                
                 try { view.showHeavyGravityEffect(3); } catch (Exception ignored) {}
             triggerHeavyGravity();
         }
@@ -152,7 +139,7 @@ public class MysteryGameController extends BaseGameController {
     private void toggleControls() {
         controlsInverted = !controlsInverted;
         if (controlsInverted) {
-            // Swap LEFT and RIGHT handlers
+            
             GameCommand leftCmd = commands.get(EventType.LEFT);
             GameCommand rightCmd = commands.get(EventType.RIGHT);
             if (leftCmd != null && rightCmd != null) {
@@ -161,7 +148,7 @@ public class MysteryGameController extends BaseGameController {
             }
             System.out.println("Mystery Event: Controls Inverted!");
             try { view.showEventMessage("Controls Inverted!"); } catch (Exception ignored) {}
-            // Revert after 8 seconds
+            
             controlsRevertTimeline = new Timeline(new KeyFrame(Duration.seconds(8), ev -> {
                 controlsInverted = false;
                 registerDefaultCommands();
@@ -178,20 +165,20 @@ public class MysteryGameController extends BaseGameController {
     }
 
     private void triggerEarthquake() {
-        // Add a garbage line; this will push rows up and change board state
+        
         try {
             if (boardLifecycle != null) {
-                // boardLifecycle is SimpleBoard which now implements addGarbageLine()
-                // run on FX thread just in case view updates are required
+                
+                
                 Platform.runLater(() -> {
                     try {
-                        // use reflection-safe cast by calling method if present
+                        
                             ((com.comp2042.tetris.mechanics.board.SimpleBoard) boardLifecycle).addGarbageLine();
                             view.refreshGameBackground(reader.getBoardMatrix());
-                            // Ask view to play a short earthquake animation so the event is obvious
+                            
                             try { view.playEarthquakeAnimation(); } catch (Exception ignored) {}
                     } catch (ClassCastException ex) {
-                        // If not SimpleBoard, ignore
+                        
                     }
                 });
             }
@@ -201,7 +188,7 @@ public class MysteryGameController extends BaseGameController {
     }
 
     private void triggerFog() {
-        // Hide board for 3 seconds
+        
         try {
             Platform.runLater(() -> view.setBoardVisibility(false));
             System.out.println("Mystery Event: Fog! Board hidden.");
@@ -216,14 +203,14 @@ public class MysteryGameController extends BaseGameController {
     }
 
     private void triggerHeavyGravity() {
-        // Temporarily increase gravity (speed multiplier) for 5 seconds
+        
         originalSpeedMultiplier = speedMultiplier;
-        // Make heavy gravity far more punishing: much larger multiplier for stronger effect
+        
         speedMultiplier = Math.max(30, speedMultiplier * 12);
         System.out.println("Mystery Event: HEAVY GRAVITY! multiplier=" + speedMultiplier);
         try { view.showEventMessage("Heavy Gravity!"); } catch (Exception ignored) {}
-        // Heavy gravity is a temporary multiplier spike for mechanics only; keep levelNumber unchanged.
-        // Keep the spike for a short but noticeable time (3s)
+        
+        
         gravityRestoreTimeline = new Timeline(new KeyFrame(Duration.seconds(3), ev -> {
             speedMultiplier = originalSpeedMultiplier;
             System.out.println("Mystery Event: Gravity Normalized. multiplier=" + speedMultiplier);
@@ -237,7 +224,7 @@ public class MysteryGameController extends BaseGameController {
     @Override
     public void createNewGame() {
         super.createNewGame();
-        onStart(); // restart speed-up timer
+        onStart(); 
     }
 
     private void stopSpeedUpTimerIfRunning() {
@@ -303,4 +290,5 @@ public class MysteryGameController extends BaseGameController {
         super.gameOver();
     }
 }
+
 

@@ -11,7 +11,7 @@ import com.comp2042.tetris.ui.input.InputActionHandler;
 
 import javafx.beans.property.IntegerProperty;
 
-// used as a base decorator for GameView implementations
+
 public class GameViewDecorator implements GameView {
 
     protected final GameView delegate;
@@ -95,3 +95,4 @@ public class GameViewDecorator implements GameView {
         delegate.showHeavyGravityEffect(seconds);
     }
 }
+

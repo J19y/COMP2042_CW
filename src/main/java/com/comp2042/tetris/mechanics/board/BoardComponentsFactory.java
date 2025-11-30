@@ -5,7 +5,7 @@ import com.comp2042.tetris.mechanics.movement.BrickPositionManager;
 import com.comp2042.tetris.mechanics.rotation.BrickRotator;
 
 
-// Abstract factory that produces cohesive board collaborators.
+
 
 public interface BoardComponentsFactory {
     BrickGenerator createGenerator();
@@ -14,3 +14,4 @@ public interface BoardComponentsFactory {
 
     BrickPositionManager createPositionManager();
 }
+

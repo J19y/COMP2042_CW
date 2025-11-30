@@ -4,21 +4,17 @@ import com.comp2042.tetris.domain.model.RotationInfo;
 import com.comp2042.tetris.mechanics.bricks.Brick;
 
 
-// Handles brick rotation logic and maintains the current brick state.
+
 public class BrickRotator {
     private Brick brick;
     private int currentShape = 0;
     
-    // Returns the index of the current rotation shape
+    
     public int getCurrentShapeIndex() {
         return currentShape;
     }
 
-    /**
-     * Returns information about the next rotation for the current brick.
-     * Renamed from 'getShapeMatrix' -> 'getRotationMatrix' for clarity that this
-     * method returns all rotation matrices for a brick.
-     */
+    
     public RotationInfo getNextShape() {
         int nextShape = currentShape;
         nextShape = (++nextShape) % brick.getRotationMatrix().size();

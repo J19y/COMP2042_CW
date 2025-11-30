@@ -22,7 +22,7 @@ class SpawnManagerTest {
 
         boolean gameOver = manager.spawn(callbackHits::incrementAndGet);
 
-        // Regular spawns should not trigger callbacks or observers
+        
         assertFalse(gameOver);
         assertEquals(0, callbackHits.get());
     }
@@ -39,7 +39,7 @@ class SpawnManagerTest {
 
         boolean gameOver = manager.spawn(callbackHits::incrementAndGet);
 
-        // A game over should alert both the direct callback and all observers
+        
         assertTrue(gameOver);
         assertEquals(1, callbackHits.get());
         assertEquals(2, observerHits.get());
@@ -57,7 +57,7 @@ class SpawnManagerTest {
 
         manager.spawn();
 
-        // Once detached, the listener should stay silent
+        
         assertEquals(0, observerHits.get());
     }
 
@@ -75,7 +75,7 @@ class SpawnManagerTest {
 
         manager.spawn();
 
-        // Even if one observer blows up, the rest should still hear about it
+        
         assertEquals(List.of("flaky", "healthy"), notifications);
     }
 
@@ -92,3 +92,4 @@ class SpawnManagerTest {
         }
     }
 }
+

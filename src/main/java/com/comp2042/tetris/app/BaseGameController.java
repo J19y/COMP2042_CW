@@ -28,27 +28,24 @@ import com.comp2042.tetris.ui.input.MoveEvent;
 
 import javafx.beans.property.IntegerProperty;
 
-/**
- * Base game controller that encapsulates core game logic and input handling.
- * Specific game modes should extend this class and override hooks.
- */
+
 public class BaseGameController implements GameplayFacade, GameModeLifecycle {
     protected final BrickMovement movement;
     protected final BrickDropActions dropActions;
     protected final BoardRead reader;
     protected final BrickSpawn spawner;
     protected final BoardLifecycle boardLifecycle;
-    protected final GameView view; // Depends on abstraction, not concrete UI
+    protected final GameView view; 
     protected final SpawnManager spawnManager;
     protected final ScoreManager scoreService;
     protected final BrickMove moveHandler;
     protected final BrickDrop dropHandler;
     protected final ScoringPolicy scoringPolicy;
-    // mapping for event handling.
+    
     protected final java.util.Map<EventType, GameCommand> commands
         = new java.util.EnumMap<>(EventType.class);
 
-    // Indicates whether the game logic in this controller is active (not game over)
+    
     protected volatile boolean active = true;
     protected int totalLinesCleared = 0;
     protected long gameStartTime = 0;
@@ -79,18 +76,18 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
         this.moveHandler = new BrickMove(movement, reader);
         this.scoringPolicy = policy;
         this.dropHandler = new BrickDrop(dropActions, reader, scoreService, spawnManager, scoringPolicy);
-        // Register observer for game-over events so the controller is notified first
-        // and can perform internal cleanup before delegating to the view.
+        
+        
         spawnManager.addGameOverObserver(this::gameOver);
         spawnManager.spawn();
         registerDefaultCommands();
         setupView();
-        // Do not call onStart() here. Modes should be started explicitly via startMode()
+        
     }
 
-    // Hook for subclasses to start timers/effects when game constructed/started
+    
     protected void onStart() {
-        // default no-op
+        
     }
 
     @Override
@@ -101,15 +98,15 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     @Override
     public void pauseMode() {
-        // default no-op
+        
     }
 
     @Override
     public void resumeMode() {
-        // default no-op
+        
     }
 
-    // Registers default command handlers for each event type.
+    
     protected void registerDefaultCommands() {
         commands.put(EventType.LEFT, new MoveLeftCommand(movement, reader));
         commands.put(EventType.RIGHT, new MoveRightCommand(movement, reader));
@@ -122,14 +119,14 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
     protected void setupView() {
         view.initGameView(reader.getBoardMatrix(), reader.getViewData());
         view.bindScore(scoreService.scoreProperty());
-        // Ensure default behaviour: clear any previously bound level display unless a mode binds it.
+        
         try { view.bindLevel(null); } catch (Exception ignored) {}
         view.setInputHandlers(this, this, this);
     }
 
     @Override
     public ShowResult onDown(MoveEvent event) {
-        // Prevent processing if controller is no longer active (game over)
+        
         if (!active) return new ShowResult(null, reader.getViewData());
         ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
         if (result.getClearRow() != null) {
@@ -145,10 +142,10 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
         try {
             com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
             double original = mm.getMusicVolume();
-            // duck music briefly so the SFX is audible
+            
             try { mm.fadeMusicTo(Math.max(0.01, original * 0.45), 40); } catch (Exception ignored) {}
             mm.playSfxAtVolume("/audio/RotationSoundEffect.mp3", 0.95);
-            // restore a little after
+            
             try { mm.fadeMusicTo(original, 200); } catch (Exception ignored) {}
         } catch (Exception ignored) {}
         return new ShowResult(null, vd);
@@ -192,7 +189,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
         return handler.execute(event);
     }
 
-    // Allow external registration of new commands without modifying this class
+    
     public void registerCommand(EventType type, GameCommand handler) {
         if (type != null && handler != null) {
             commands.put(type, handler);
@@ -290,16 +287,16 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
         @Override
         public ShowResult execute(MoveEvent event) {
-            // Check whether moving down would collide — if so, animate a short settle
+            
             com.comp2042.tetris.domain.model.ViewData current = reader.getViewData();
             boolean wouldCollide = com.comp2042.tetris.util.CollisionDetector.isCollision(
                 reader.getBoardMatrix(), current.getBrickData(), current.getxPosition(), current.getyPosition() + 1);
 
             if (wouldCollide) {
-                // Ask the view to animate the active brick settling, then perform the merge
+                
                 view.settleActiveBrick(() -> {
                     ShowResult asyncResult = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
-                    // deliver the result to the view asynchronously so UI updates (next-brick, clears)
+                    
                     view.acceptShowResult(asyncResult);
                     if (asyncResult.getClearRow() != null) {
                         view.refreshGameBackground(reader.getBoardMatrix());
@@ -307,7 +304,7 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
                     }
                 });
                 try { MusicManager.getInstance().playSfx("/audio/BricksCollisionEffect.mp3"); } catch (Exception ignored) {}
-                // Return current view data immediately so UI remains responsive
+                
                 return new ShowResult(null, reader.getViewData());
             } else {
                 ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
@@ -369,14 +366,14 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
 
     @Override
     public void createNewGame() {
-        // Reactivate controller logic when a new game starts
+        
         active = true;
         totalLinesCleared = 0;
         boardLifecycle.newGame();
         scoreService.reset();
         view.refreshGameBackground(reader.getBoardMatrix());
-        // notify subclasses that a new game has started
-        // Do NOT call onStart() here; the UI countdown will call startMode() when ready.
+        
+        
     }
     
     @Override
@@ -384,9 +381,9 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
         return scoreService.scoreProperty();
     }
 
-    // Convenience hook that subclasses may call to trigger game over
+    
     protected void gameOver() {
-        // mark controller inactive so future input/ticks are ignored
+        
         active = false;
         view.gameOver();
     }
@@ -399,3 +396,4 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
         return gameStartTime;
     }
 }
+

@@ -17,7 +17,7 @@ class ScoreManagerTest {
         manager.add(7);
         manager.add(3);
 
-        // UI bindings should see the same total as the manager exposes
+        
         assertEquals(10, scoreProperty.get());
         assertEquals(10, manager.getValue());
     }
@@ -29,7 +29,7 @@ class ScoreManagerTest {
 
         manager.reset();
 
-        // reset() should zero both the manager API and the bound property
+        
         assertEquals(0, manager.getValue());
         assertEquals(0, manager.scoreProperty().get());
     }
@@ -38,7 +38,8 @@ class ScoreManagerTest {
     void scorePropertyIsStableInstance() {
         ScoreManager manager = new ScoreManager();
 
-        // Consumers expect the property reference to stay the same
+        
         assertSame(manager.scoreProperty(), manager.scoreProperty());
     }
 }
+

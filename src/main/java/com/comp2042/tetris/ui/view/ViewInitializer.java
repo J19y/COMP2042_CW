@@ -2,10 +2,7 @@ package com.comp2042.tetris.ui.view;
 
 import javafx.scene.layout.GridPane;
 
-/**
- * Extracted from GuiController to follow Single Responsibility Principle.
- * Responsible only for initial view configuration (fonts, focus, visibility).
- */
+
 public final class ViewInitializer {
 
     private String digitalFontFamily;
@@ -20,7 +17,7 @@ public final class ViewInitializer {
                 }
             }
         } catch (Exception ignored) {
-            // ignore font loading failures; fallbacks will be used
+            
         }
     }
 
@@ -50,3 +47,4 @@ public final class ViewInitializer {
         }
     }
 }
+

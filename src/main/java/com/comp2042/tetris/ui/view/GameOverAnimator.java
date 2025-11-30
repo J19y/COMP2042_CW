@@ -31,17 +31,17 @@ public class GameOverAnimator {
     }
 
     public void playDigitalFragmentationSequence(Rectangle[][] displayMatrix, int finalScore, int totalLines, long gameTime) {
-        // 1. The Glitch (Digital Crunch)
-        // TODO: Play digital crunch sound
         
-        // Visual Glitch: Shake and Chromatic Aberration simulation
+        
+        
+        
         Timeline glitch = new Timeline(
             new KeyFrame(Duration.ZERO, e -> {
                 gamePanel.setEffect(new BoxBlur(2, 2, 1));
                 gamePanel.setTranslateX(-5);
             }),
             new KeyFrame(Duration.millis(50), e -> {
-                gamePanel.setEffect(new ColorAdjust(0, 1.0, 0, 0)); // High saturation flash
+                gamePanel.setEffect(new ColorAdjust(0, 1.0, 0, 0)); 
                 gamePanel.setTranslateX(5);
             }),
             new KeyFrame(Duration.millis(100), e -> {
@@ -55,7 +55,7 @@ public class GameOverAnimator {
         );
         glitch.setCycleCount(2);
         
-        // 2. Data Dissolve starts after glitch
+        
         glitch.setOnFinished(e -> startDissolveCascade(displayMatrix, finalScore, totalLines, gameTime));
         glitch.play();
     }
@@ -63,9 +63,9 @@ public class GameOverAnimator {
     private void startDissolveCascade(Rectangle[][] displayMatrix, int finalScore, int totalLines, long gameTime) {
         if (displayMatrix == null) return;
 
-        // Process row by row from top to bottom
+        
         Timeline cascade = new Timeline();
-        double delayPerRow = 0.05; // seconds
+        double delayPerRow = 0.05; 
 
         for (int y = 0; y < displayMatrix.length; y++) {
             final int row = y;
@@ -85,7 +85,7 @@ public class GameOverAnimator {
         
         for (int x = 0; x < displayMatrix[row].length; x++) {
             Rectangle block = displayMatrix[row][x];
-            // Check if block is not empty (assuming 0 is transparent/black)
+            
             if (block != null && block.getFill() != null && 
                 !block.getFill().equals(com.comp2042.tetris.ui.theme.CellColor.fromValue(0))) {
                 
@@ -98,28 +98,28 @@ public class GameOverAnimator {
     private void spawnPixels(Rectangle block) {
         Bounds bounds = block.getBoundsInParent();
         double size = block.getWidth();
-        int split = 2; // 2x2 pixels
+        int split = 2; 
         double pixelSize = size / split;
         
-        // Capture the block's current appearance (fill and effects)
+        
         javafx.scene.paint.Paint originalFill = block.getFill();
         javafx.scene.effect.Effect originalEffect = block.getEffect();
         
         for(int i=0; i<split; i++) {
             for(int j=0; j<split; j++) {
                 Rectangle pixel = new Rectangle(pixelSize, pixelSize);
-                // Preserve original block's appearance
+                
                 pixel.setFill(originalFill != null ? originalFill : block.getFill());
                 pixel.setStroke(block.getStroke());
                 pixel.setStrokeWidth(block.getStrokeWidth());
                 pixel.setArcHeight(block.getArcHeight());
                 pixel.setArcWidth(block.getArcWidth());
                 
-                pixel.setManaged(false); // Important for manual positioning in GridPane
+                pixel.setManaged(false); 
                 pixel.setTranslateX(bounds.getMinX() + i * pixelSize);
                 pixel.setTranslateY(bounds.getMinY() + j * pixelSize);
                 
-                // Preserve neon glow effect if present
+                
                 if (originalEffect != null) {
                     pixel.setEffect(originalEffect);
                 } else {
@@ -134,8 +134,8 @@ public class GameOverAnimator {
     
     private void animatePixel(Rectangle pixel) {
         TranslateTransition fall = new TranslateTransition(Duration.seconds(0.8 + Math.random() * 0.5), pixel);
-        fall.setByY(600); // Fall off screen
-        fall.setByX((Math.random() - 0.5) * 40); // Scatter horizontally
+        fall.setByY(600); 
+        fall.setByX((Math.random() - 0.5) * 40); 
         fall.setInterpolator(javafx.animation.Interpolator.EASE_IN);
         
         FadeTransition fade = new FadeTransition(Duration.seconds(0.8), pixel);
@@ -185,3 +185,4 @@ public class GameOverAnimator {
         }
     }
 }
+

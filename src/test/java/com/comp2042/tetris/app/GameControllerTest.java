@@ -47,7 +47,7 @@ final class GameControllerTest {
 
     @Test
     void constructorInitializesViewAndBindings() {
-        // Constructor should prime the view and wire up handlers immediately.
+        
         assertTrue(view.initCalled);
         assertSame(boardPorts.reader.getBoardMatrix(), view.initMatrix);
         assertSame(boardPorts.reader.getViewData(), view.initViewData);
@@ -60,7 +60,7 @@ final class GameControllerTest {
 
     @Test
     void onLeftReturnsLatestViewData() {
-        // Moving left should trigger the movement stub and return board view data.
+        
         ViewData expected = new ViewData(new int[][] {{7}}, 1, 2, new int[][] {{4}});
         boardPorts.reader.setViewData(expected);
 
@@ -73,8 +73,8 @@ final class GameControllerTest {
 
     @Test
     void onDownLandingRefreshesViewAndAwardsScore() {
-        // Landing the brick should refresh the view and add line-clear points.
-        boardPorts.dropActions.setLandingResult(new RowClearResult(2, new int[][] {{1}}, 0));
+        
+        boardPorts.dropActions.setLandingResult(new RowClearResult(2, new int[][] {{1}}, 0, null));
 
         ShowResult result = controller.onDown(new MoveEvent(EventType.DOWN, EventSource.USER));
 
@@ -88,7 +88,7 @@ final class GameControllerTest {
 
     @Test
     void handleFallsBackToReaderWhenNoCommandRegistered() {
-        // Unknown events should simply echo the current board state.
+        
         ViewData expected = new ViewData(new int[][] {{3}}, 0, 0, new int[][] {{2}});
         boardPorts.reader.setViewData(expected);
 
@@ -100,7 +100,7 @@ final class GameControllerTest {
 
     @Test
     void registerCommandAllowsCustomHandler() {
-        // Registering a command should let us override how events are handled.
+        
         ViewData customView = new ViewData(new int[][] {{5}}, 4, 3, new int[][] {{1}});
         ShowResult expected = new ShowResult(null, customView);
         controller.registerCommand(EventType.PAUSE, event -> expected);
@@ -112,7 +112,7 @@ final class GameControllerTest {
 
     @Test
     void createNewGameResetsBoardAndScore() {
-        // Creating a new game should reset the board, score, and refresh the view.
+        
         scoreManager.add(99);
 
         controller.createNewGame();
@@ -125,7 +125,7 @@ final class GameControllerTest {
 
     @Test
     void scorePropertyExposesUnderlyingScoreManager() {
-        // scoreProperty should simply return the manager's property for binding.
+        
         IntegerProperty exposed = controller.scoreProperty();
 
         assertSame(scoreManager.scoreProperty(), exposed);
@@ -188,7 +188,7 @@ final class GameControllerTest {
 
     private static final class StubDropActions implements BrickDropActions {
         private boolean moveBrickDownReturn = true;
-        private RowClearResult clearResult = new RowClearResult(0, new int[][] {{0}}, 0);
+        private RowClearResult clearResult = new RowClearResult(0, new int[][] {{0}}, 0, null);
 
         @Override
         public boolean moveBrickDown() {
@@ -197,7 +197,7 @@ final class GameControllerTest {
 
         @Override
         public void mergeBrickToBackground() {
-            // No-op for tests.
+            
         }
 
         @Override
@@ -291,12 +291,12 @@ final class GameControllerTest {
 
         @Override
         public void gameOver() {
-            // Not needed for these tests.
+            
         }
 
         @Override
         public void acceptShowResult(com.comp2042.tetris.domain.model.ShowResult result) {
-            // Not needed for these tests.
+            
         }
 
         @Override
@@ -306,7 +306,7 @@ final class GameControllerTest {
 
         @Override
         public void setRemainingTime(int seconds) {
-            // Not needed for these tests.
+            
         }
     }
 
@@ -322,3 +322,4 @@ final class GameControllerTest {
         }
     }
 }
+

@@ -43,7 +43,7 @@ class SimpleBoardTest {
     @SuppressWarnings("unused")
     @BeforeEach
     void setUp() {
-        // Keep the same stubbed components for deterministic behavior in each test
+        
         positionManager = new BrickPositionManager(0, 0);
         FixedBrick fixedBrick = new FixedBrick(List.of(BLOCK_SHAPE, LINE_SHAPE));
         TestBoardComponentsFactory factory = new TestBoardComponentsFactory(
@@ -59,7 +59,7 @@ class SimpleBoardTest {
         board.spawnBrick();
         positionManager.reset(2, 1);
 
-        // Checks if the brick moves down when nothing is blocking it
+        
         boolean moved = board.moveBrickDown();
 
         assertTrue(moved);
@@ -72,12 +72,12 @@ class SimpleBoardTest {
         board.spawnBrick();
         positionManager.reset(0, 1);
         int[][] matrix = board.getBoardMatrix();
-        // Pretend the board already has a filled cell on the left
+        
         matrix[2][1] = 9;
 
         boolean moved = board.moveBrickLeft();
 
-        // Makes sure the brick does NOT move left if something is already there
+        
         assertFalse(moved);
         assertEquals(0, positionManager.getX());
     }
@@ -85,7 +85,7 @@ class SimpleBoardTest {
     @Test
     void rotateLeftBrick_returnsFalseWhenRotationWouldCollide() {
         board.spawnBrick();
-        // Checks that rotation fails if the brick is too close to the boundary
+        
         positionManager.reset(8, 1);
 
         boolean rotated = board.rotateLeftBrick();
@@ -93,7 +93,7 @@ class SimpleBoardTest {
         assertFalse(rotated, "Rotation should fail when the new shape collides");
     }
 
-    // When the pivot has room, rotation should swap to the next matrix.
+    
     @Test
     void rotateLeftBrick_updatesShapeWhenSpaceIsClear() {
         board.spawnBrick();
@@ -112,7 +112,7 @@ class SimpleBoardTest {
         positionManager.reset(1, 1);
         int before = countFilledCells(board.getBoardMatrix());
 
-        // Makes sure the falling brick gets permanently written into the board
+        
         board.mergeBrickToBackground();
         int[][] matrix = board.getBoardMatrix();
 
@@ -124,10 +124,10 @@ class SimpleBoardTest {
         int[][] matrix = board.getBoardMatrix();
         int lastRow = matrix.length - 1;
         for (int col = 0; col < matrix[0].length; col++) {
-            matrix[lastRow][col] = 7; // Fill the bottom row entirely
+            matrix[lastRow][col] = 7; 
         }
 
-        // Checks that full rows are actually removed
+        
         RowClearResult result = board.clearRows();
 
         assertEquals(1, result.getLinesRemoved());
@@ -138,7 +138,7 @@ class SimpleBoardTest {
     void spawnBrick_reportsGameOverWhenSpawnAreaBlocked() {
         int[][] matrix = board.getBoardMatrix();
         int spawnX = Math.max(0, (matrix[0].length - BLOCK_SHAPE[0].length) / 2);
-        // Block the spawn columns on the very top rows so the new brick collides immediately
+        
         for (int dx = 0; dx < BLOCK_SHAPE[0].length; dx++) {
             for (int dy = 0; dy < BLOCK_SHAPE.length; dy++) {
                 matrix[dy][spawnX + dx] = 5;
@@ -150,7 +150,7 @@ class SimpleBoardTest {
         assertTrue(result.isGameOver());
     }
 
-    // A clear spawn area should center the brick at the top without game over.
+    
     @Test
     void spawnBrick_placesBrickAtTopCenterWhenSpaceIsClear() {
         SpawnResult result = board.spawnBrick();
@@ -161,7 +161,7 @@ class SimpleBoardTest {
         assertEquals(0, positionManager.getY());
     }
 
-    // Right movement should advance when no cells block the path.
+    
     @Test
     void moveBrickRight_advancesPositionWhenSpaceIsClear() {
         board.spawnBrick();
@@ -174,7 +174,7 @@ class SimpleBoardTest {
         assertEquals(1, positionManager.getY());
     }
 
-    // Filled cells to the right must stop horizontal movement.
+    
     @Test
     void moveBrickRight_stopsWhenBoardCellIsFilled() {
         board.spawnBrick();
@@ -188,7 +188,7 @@ class SimpleBoardTest {
         assertEquals(1, positionManager.getX());
     }
 
-    // Occupied cells beneath the brick should halt downward moves.
+    
     @Test
     void moveBrickDown_stopsWhenSpaceBelowIsOccupied() {
         board.spawnBrick();
@@ -202,7 +202,7 @@ class SimpleBoardTest {
         assertEquals(1, positionManager.getY());
     }
 
-    // Starting a new game must clear the grid and spawn a fresh brick.
+    
     @Test
     void newGame_resetsBoardAndSpawnsFreshBrick() {
         board.spawnBrick();
@@ -217,7 +217,7 @@ class SimpleBoardTest {
         assertEquals(0, positionManager.getY());
     }
 
-    // View data should mirror the live position and return defensive copies.
+    
     @Test
     void getViewData_reflectsLatestPositionAndProvidesCopies() {
         board.spawnBrick();
@@ -321,3 +321,4 @@ class SimpleBoardTest {
         }
     }
 }
+

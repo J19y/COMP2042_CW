@@ -26,24 +26,20 @@ import com.comp2042.tetris.domain.scoring.ClassicScoringPolicy;
 import com.comp2042.tetris.domain.scoring.ScoreManager;
 import com.comp2042.tetris.domain.scoring.ScoringPolicy;
 
-/**
- * Main game controller that handles game logic and user input.
- * Acts as a bridge between the GUI controller and the game board,
- * processing game events and updating the view accordingly.
- */
+
 public class GameController implements GameplayFacade {
     private final BrickMovement movement;
     private final BrickDropActions dropActions;
     private final BoardRead reader;
     private final BrickSpawn spawner;
     private final BoardLifecycle boardLifecycle;
-    private final GameView view; // Depends on abstraction, not concrete UI
+    private final GameView view; 
     private final SpawnManager spawnManager;
     private final ScoreManager scoreService;
     private final BrickMove moveHandler;
     private final BrickDrop dropHandler;
     private final ScoringPolicy scoringPolicy;
-    // mapping for event handling.
+    
     private final java.util.Map<EventType, GameCommand> commands
         = new java.util.EnumMap<>(EventType.class);
 
@@ -51,7 +47,7 @@ public class GameController implements GameplayFacade {
         this(view, new ClassicScoringPolicy(), new ScoreManager());
     }
 
-    // Overloaded constructor to inject policy and score service (OCP-friendly)
+    
     public GameController(GameView view, ScoringPolicy policy, ScoreManager scoreManager) {
         this(view, policy, scoreManager, new SimpleBoardFactory());
     }
@@ -74,14 +70,14 @@ public class GameController implements GameplayFacade {
         this.moveHandler = new BrickMove(movement, reader);
         this.scoringPolicy = policy;
         this.dropHandler = new BrickDrop(dropActions, reader, scoreService, spawnManager, scoringPolicy);
-        // Register observer for game-over events (Observer pattern minimal integration)
+        
         spawnManager.addGameOverObserver(view::gameOver);
         spawnManager.spawn();
         registerDefaultCommands();
         setupView();
     }
 
-    // Registers default command handlers for each event type.
+    
     private void registerDefaultCommands() {
         commands.put(EventType.LEFT, new MoveCommand(moveHandler::handleLeftMove));
         commands.put(EventType.RIGHT, new MoveCommand(moveHandler::handleRightMove));
@@ -133,7 +129,7 @@ public class GameController implements GameplayFacade {
         return handler.execute(event);
     }
 
-    // Allow external registration of new commands without modifying this class
+    
     public void registerCommand(EventType type, GameCommand handler) {
         if (type != null && handler != null) {
             commands.put(type, handler);
@@ -166,22 +162,22 @@ public class GameController implements GameplayFacade {
 
         @Override
         public ShowResult execute(MoveEvent event) {
-            // Check whether moving down would collide — if so, animate a short settle
+            
             com.comp2042.tetris.domain.model.ViewData current = reader.getViewData();
             boolean wouldCollide = com.comp2042.tetris.util.CollisionDetector.isCollision(
                 reader.getBoardMatrix(), current.getBrickData(), current.getxPosition(), current.getyPosition() + 1);
 
             if (wouldCollide) {
-                // Ask the view to animate the active brick settling, then perform the merge
+                
                 view.settleActiveBrick(() -> {
                     ShowResult asyncResult = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
-                    // deliver the result to the view asynchronously so UI updates (next-brick, clears)
+                    
                     view.acceptShowResult(asyncResult);
                     if (asyncResult.getClearRow() != null) {
                         view.refreshGameBackground(reader.getBoardMatrix());
                     }
                 });
-                // Return current view data immediately so UI remains responsive
+                
                 return new ShowResult(null, reader.getViewData());
             } else {
                 ShowResult result = dropHandler.handleDrop(event.getEventSource(), () -> view.gameOver());
@@ -250,3 +246,4 @@ public class GameController implements GameplayFacade {
         return scoreService.scoreProperty();
     }
 }
+

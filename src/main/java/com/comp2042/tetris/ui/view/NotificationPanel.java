@@ -8,26 +8,17 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
-/**
- * NotificationPanel displays short floating notifications (combat-style text)
- * that pop, float up and fade out. Uses CSS classes `.floating-score` and
- * `.floating-score-high` for styling.
- */
+
 public class NotificationPanel extends StackPane {
 
     public NotificationPanel() {
         super();
-        setMouseTransparent(true); // don't block gameplay clicks
+        setMouseTransparent(true); 
         setPickOnBounds(false);
         setAlignment(Pos.CENTER);
     }
 
-    /**
-     * Show a short floating score/message. The label is added to this pane,
-     * animated, and removed when complete.
-     *
-     * @param text the message to display
-     */
+    
     public void showScore(String text) {
         if (text == null || text.isEmpty()) {
             return;
@@ -38,23 +29,23 @@ public class NotificationPanel extends StackPane {
         label.getStyleClass().add("floating-score");
 
         String upper = text.toUpperCase();
-        // If text contains high-impact keywords or is long, add high variant
+        
         if (upper.contains("SWEEP") || upper.contains("TETRIS") || upper.length() > 14) {
             label.getStyleClass().add("floating-score-high");
         }
 
-        // Start immediately visible
+        
         label.setScaleX(1.0);
         label.setScaleY(1.0);
         label.setOpacity(1.0);
 
         getChildren().add(label);
 
-        // Float animation: move up by 50px over 1000ms (keeps text visible longer)
+        
         TranslateTransition floatUp = new TranslateTransition(Duration.millis(1000), label);
         floatUp.setByY(-50);
 
-        // Fade animation: start halfway through float (delay 500ms), last 500ms
+        
         FadeTransition fade = new FadeTransition(Duration.millis(500), label);
         fade.setFromValue(1.0);
         fade.setToValue(0.0);
@@ -65,10 +56,7 @@ public class NotificationPanel extends StackPane {
         combined.play();
     }
 
-    /**
-     * Show a score/message at a vertical offset (translateY) within this panel.
-     * Positive values move the label down; negative move it up.
-     */
+    
     public void showScore(String text, double offsetY) {
         if (text == null || text.isEmpty()) {
             return;
@@ -104,3 +92,4 @@ public class NotificationPanel extends StackPane {
     }
 
 }
+

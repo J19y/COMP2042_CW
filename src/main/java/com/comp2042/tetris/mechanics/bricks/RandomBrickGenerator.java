@@ -12,7 +12,7 @@ public class RandomBrickGenerator implements BrickGenerator {
     private final Deque<Brick> nextBricks = new ArrayDeque<>();
     private static final int QUEUE_SIZE = 5;
 
-    // Creates a new RandomBrickGenerator and initializes the brick queue
+    
     public RandomBrickGenerator() {
         this.brickSuppliers = BrickRegistry.getInstance().suppliers();
         if (brickSuppliers.isEmpty()) {
@@ -21,14 +21,14 @@ public class RandomBrickGenerator implements BrickGenerator {
         initializeNextBricks();
     }
 
-    // Initializes the queue of next bricks
+    
     private void initializeNextBricks() {
         for (int i = 0; i < QUEUE_SIZE; i++) {
             addNextRandomBrick();
         }
     }
 
-    // Adds a new random brick instance to the queue
+    
     private void addNextRandomBrick() {
         Supplier<Brick> supplier = brickSuppliers.get(
             ThreadLocalRandom.current().nextInt(brickSuppliers.size()));
@@ -51,7 +51,7 @@ public class RandomBrickGenerator implements BrickGenerator {
     @Override
     public List<Brick> peekNextBricks(int count) {
         List<Brick> result = new java.util.ArrayList<>();
-        // Ensure we have enough bricks
+        
         while (nextBricks.size() < count) {
             addNextRandomBrick();
         }
@@ -65,3 +65,4 @@ public class RandomBrickGenerator implements BrickGenerator {
         return result;
     }
 }
+

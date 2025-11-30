@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.comp2042.tetris.mechanics.bricks.RandomBrickGeneratorFactory;
 
 
-// Default factory that creates standard SimpleBoard instances.
+
 
 public class SimpleBoardFactory implements BoardFactory {
 
@@ -24,3 +24,4 @@ public class SimpleBoardFactory implements BoardFactory {
         return new SimpleBoard(rows, cols, componentsFactory);
     }
 }
+

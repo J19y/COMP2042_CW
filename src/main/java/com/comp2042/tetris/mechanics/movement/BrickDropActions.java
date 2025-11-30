@@ -8,3 +8,4 @@ public interface BrickDropActions {
     void mergeBrickToBackground();
     RowClearResult clearRows();
 }
+

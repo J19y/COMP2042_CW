@@ -6,3 +6,4 @@ public interface BoardRead {
     int[][] getBoardMatrix();
     ViewData getViewData();
 }
+

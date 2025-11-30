@@ -2,11 +2,7 @@ package com.comp2042.tetris.app;
 
 import javafx.util.Duration;
 
-/**
- * Manages the game loop lifecycle.
- * Extracted from GuiController to follow Single Responsibility Principle.
- * Responsible only for starting, stopping, and checking the game loop state.
- */
+
 public final class GameLoopController {
     
     private final GameLoop gameLoop;
@@ -51,3 +47,4 @@ public final class GameLoopController {
         return gameLoop == null ? null : gameLoop.getInterval();
     }
 }
+

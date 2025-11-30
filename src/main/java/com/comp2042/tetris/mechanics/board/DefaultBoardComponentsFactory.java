@@ -8,7 +8,7 @@ import com.comp2042.tetris.mechanics.movement.BrickPositionManager;
 import com.comp2042.tetris.mechanics.rotation.BrickRotator;
 
 
-// Default implementation that wires existing board collaborators together.
+
 
 public class DefaultBoardComponentsFactory implements BoardComponentsFactory {
 
@@ -30,7 +30,8 @@ public class DefaultBoardComponentsFactory implements BoardComponentsFactory {
 
     @Override
     public BrickPositionManager createPositionManager() {
-        // Start coordinates set to (4,0) - y=0 is top of board (hidden rows handled elsewhere)
+        
         return new BrickPositionManager(4, 0);
     }
 }
+
