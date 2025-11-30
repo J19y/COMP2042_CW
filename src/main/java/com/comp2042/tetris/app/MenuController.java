@@ -96,6 +96,9 @@ public class MenuController {
     // Level Selection state
     private javafx.scene.layout.VBox levelSelectionContainer;
     private String selectedGameMode = null; // "CLASSIC", "RUSH", "MYSTERY"
+    // Hold a strong reference to the active controller/view so it isn't GC'd while the game scene is active
+    private BaseGameController activeControllerRef;
+    private com.comp2042.tetris.mechanics.board.GameView activeViewRef;
 
     private static final Color[] NEON_COLORS = {
             Color.CYAN, Color.YELLOW, Color.LIME, Color.RED, Color.MAGENTA, Color.ORANGE, Color.DODGERBLUE
@@ -1768,9 +1771,17 @@ public class MenuController {
                 gameController = new ClassicGameController(decoratedView);
             }
             
-            // Keep reference to prevent GC
-            @SuppressWarnings("unused")
-            BaseGameController activeController = gameController;
+            // Keep a strong reference to the active controller/view so it's not GC'd while the scene runs
+            activeControllerRef = gameController;
+            activeViewRef = decoratedView;
+            if (activeControllerRef instanceof com.comp2042.tetris.app.MysteryGameController) {
+                try {
+                    // bind level property on the decorated view now that controller is created
+                    ((com.comp2042.tetris.mechanics.board.GameView)decoratedView).bindLevel(
+                        ((com.comp2042.tetris.app.MysteryGameController) activeControllerRef).getLevelProperty()
+                    );
+                } catch (Exception ignored) {}
+            }
             
         } catch (IOException e) {
             System.err.println("Failed to load game scene: " + e.getMessage());

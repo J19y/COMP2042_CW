@@ -122,6 +122,8 @@ public class BaseGameController implements GameplayFacade, GameModeLifecycle {
     protected void setupView() {
         view.initGameView(reader.getBoardMatrix(), reader.getViewData());
         view.bindScore(scoreService.scoreProperty());
+        // Ensure default behaviour: clear any previously bound level display unless a mode binds it.
+        try { view.bindLevel(null); } catch (Exception ignored) {}
         view.setInputHandlers(this, this, this);
     }
 

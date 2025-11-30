@@ -23,14 +23,25 @@ public class MysteryGameController extends BaseGameController {
     private Timeline gravityRestoreTimeline;
     private int elapsedSeconds;
     private int speedMultiplier;
+    /**
+     * Logical level number shown to the player. This is a monotonic counter incremented
+     * every 30 seconds and is separate from the speed multiplier (which may have
+     * temporary spikes for events).
+     */
+    private int levelNumber;
+    private final javafx.beans.property.IntegerProperty levelProperty = new javafx.beans.property.SimpleIntegerProperty(1);
     private int eventCountdown;
     private final Random rnd = new Random();
+    // Last event id to avoid immediate repeats
+    private int lastEvent = -1;
     private boolean controlsInverted = false;
     private int originalSpeedMultiplier;
     private boolean paused = false;
 
     public MysteryGameController(GameView view) {
         super(view);
+        // Bind after construction so subclass fields are initialized (super() may call setupView earlier)
+        try { view.bindLevel(levelProperty); } catch (Exception ignored) {}
     }
 
     @Override
@@ -42,12 +53,18 @@ public class MysteryGameController extends BaseGameController {
         stopSpeedUpTimerIfRunning();
         elapsedSeconds = 0;
         speedMultiplier = 1;
+        levelNumber = 1;
+        try { levelProperty.set(levelNumber); } catch (Exception ignored) {}
 
         // Speed-up tick (1s) handles periodic difficulty increases
         speedUpTimer = new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
             elapsedSeconds++;
             if (elapsedSeconds > 0 && elapsedSeconds % 30 == 0) {
+                // Increase both the speed used by mechanics and the logical player-visible level.
                 speedMultiplier++;
+                levelNumber++;
+                try { levelProperty.set(levelNumber); } catch (Exception ignored) {}
+                try { view.animateLevelIncrement(); } catch (Exception ignored) {}
                 System.out.println("Mystery Mode: Difficulty increased! Speed multiplier: " + speedMultiplier);
             }
             // ticking event timer
@@ -72,34 +89,63 @@ public class MysteryGameController extends BaseGameController {
         return speedMultiplier;
     }
 
+    /**
+     * Player-visible level number (monotonic) used by the UI.
+     */
+    public int getLevel() {
+        return levelNumber;
+    }
+
+    public javafx.beans.property.IntegerProperty getLevelProperty() {
+        return levelProperty;
+    }
+
     private void scheduleNextEvent() {
-        // Random interval between 8 and 12 seconds (more frequent)
-        eventCountdown = 8 + rnd.nextInt(5); // 8..12
+        // Random interval between 6 and 14 seconds to make timing less predictable
+        eventCountdown = 6 + rnd.nextInt(9); // 6..14
     }
 
     private void triggerRandomEvent() {
-        int pick = rnd.nextInt(5);
-        switch (pick) {
-            case 0:
-                // Speed-up (minor)
-                speedMultiplier++;
-                System.out.println("Mystery Event: Speed Boost! multiplier=" + speedMultiplier);
-                try { view.showEventMessage("Speed Boost!"); } catch (Exception ignored) {}
-                break;
-            case 1:
-                toggleControls();
-                break;
-            case 2:
-                triggerEarthquake();
-                break;
-            case 3:
-                triggerFog();
-                break;
-            case 4:
-                triggerHeavyGravity();
-                break;
-            default:
-                break;
+        // Weighted random selection so events feel varied but balanced.
+        // We'll avoid repeating the same event immediately.
+        int pick = -1;
+        int attempts = 0;
+        while (attempts < 4) {
+            attempts++;
+            int r = rnd.nextInt(100);
+            if (r < 22) {
+                pick = 0; // speed boost (22%)
+            } else if (r < 44) {
+                pick = 1; // controls invert (22%)
+            } else if (r < 66) {
+                pick = 2; // earthquake (22%)
+            } else if (r < 88) {
+                pick = 3; // fog (22%)
+            } else {
+                pick = 4; // heavy gravity (12%) rarer
+            }
+            if (pick != lastEvent) break; // accept if different
+        }
+
+        lastEvent = pick;
+
+        if (pick == 0) {
+            // Speed-up (minor)
+            speedMultiplier++;
+            System.out.println("Mystery Event: Speed Boost! multiplier=" + speedMultiplier);
+            try { view.showEventMessage("Speed Boost!"); } catch (Exception ignored) {}
+        } else if (pick == 1) {
+            toggleControls();
+        } else if (pick == 2) {
+            triggerEarthquake();
+        } else if (pick == 3) {
+            // Show fog visual and let controller manage restoring board visibility
+            try { view.showFogEffect(3); } catch (Exception ignored) {}
+            triggerFog();
+        } else if (pick == 4) {
+                // Show heavy-gravity visual and apply mechanics spike (short burst)
+                try { view.showHeavyGravityEffect(3); } catch (Exception ignored) {}
+            triggerHeavyGravity();
         }
     }
 
@@ -172,10 +218,13 @@ public class MysteryGameController extends BaseGameController {
     private void triggerHeavyGravity() {
         // Temporarily increase gravity (speed multiplier) for 5 seconds
         originalSpeedMultiplier = speedMultiplier;
-        speedMultiplier = Math.max(10, speedMultiplier * 5);
+        // Make heavy gravity far more punishing: much larger multiplier for stronger effect
+        speedMultiplier = Math.max(30, speedMultiplier * 12);
         System.out.println("Mystery Event: HEAVY GRAVITY! multiplier=" + speedMultiplier);
         try { view.showEventMessage("Heavy Gravity!"); } catch (Exception ignored) {}
-        gravityRestoreTimeline = new Timeline(new KeyFrame(Duration.seconds(5), ev -> {
+        // Heavy gravity is a temporary multiplier spike for mechanics only; keep levelNumber unchanged.
+        // Keep the spike for a short but noticeable time (3s)
+        gravityRestoreTimeline = new Timeline(new KeyFrame(Duration.seconds(3), ev -> {
             speedMultiplier = originalSpeedMultiplier;
             System.out.println("Mystery Event: Gravity Normalized. multiplier=" + speedMultiplier);
             try { view.showEventMessage("Gravity Normalized"); } catch (Exception ignored) {}

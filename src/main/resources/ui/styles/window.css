@@ -175,6 +175,16 @@
     -fx-effect: none;
 }
 
+.game-over-level {
+    font-family: 'Press Start 2P', "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;
+    -fx-font-family: 'Press Start 2P', "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;
+    font-size: 16px;
+    -fx-font-size: 16px;
+    -fx-letter-spacing: 1px;
+    -fx-text-fill: #ffd966; /* soft yellow */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 4, 0.2, 0, 1);
+}
+
 .game-over-stats {
     font-family: 'Press Start 2P', "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;
     -fx-font-family: 'Press Start 2P', "Impact", "Bebas Neue", "Segoe UI Semibold", sans-serif;

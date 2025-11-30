@@ -27,6 +27,15 @@ public interface GameView {
 
     void bindScore(IntegerProperty scoreProperty);
 
+    /**
+     * Bind an integer property representing a visible "level" for modes that expose it
+     * (e.g. Mystery mode). Default implementation is no-op to keep non-GUI / legacy
+     * implementations unaffected.
+     */
+    default void bindLevel(IntegerProperty levelProperty) {
+        // default no-op
+    }
+
     void setInputHandlers(InputActionHandler inputActionHandler, DropInput dropInput, CreateNewGame gameLifecycle);
 
     void gameOver();
@@ -68,5 +77,30 @@ public interface GameView {
      */
     default void playEarthquakeAnimation() {
         // default implementation does nothing
+    }
+
+    /**
+     * Animate the level display when it increments (e.g. pulse effect).
+     * Default no-op for non-GUI implementations.
+     */
+    default void animateLevelIncrement() {
+        // default implementation does nothing
+    }
+
+    /**
+     * Show a fog effect over the board for a number of seconds. GUI implementations
+     * may choose to overlay a semi-opaque blurred rectangle or temporarily hide the board.
+     * @param seconds duration of the fog effect
+     */
+    default void showFogEffect(int seconds) {
+        // default no-op
+    }
+
+    /**
+     * Show a heavy-gravity visual effect (e.g. red flash/pulse) for a number of seconds.
+     * @param seconds duration of the heavy gravity effect
+     */
+    default void showHeavyGravityEffect(int seconds) {
+        // default no-op
     }
 }

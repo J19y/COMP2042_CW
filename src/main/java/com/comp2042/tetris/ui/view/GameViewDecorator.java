@@ -36,6 +36,11 @@ public class GameViewDecorator implements GameView {
     }
 
     @Override
+    public void bindLevel(IntegerProperty levelProperty) {
+        delegate.bindLevel(levelProperty);
+    }
+
+    @Override
     public void setInputHandlers(InputActionHandler inputActionHandler, DropInput dropInput,
         CreateNewGame gameLifecycle) {
         delegate.setInputHandlers(inputActionHandler, dropInput, gameLifecycle);
@@ -68,5 +73,25 @@ public class GameViewDecorator implements GameView {
     @Override
     public void showEventMessage(String message) {
         delegate.showEventMessage(message);
+    }
+
+    @Override
+    public void playEarthquakeAnimation() {
+        delegate.playEarthquakeAnimation();
+    }
+
+    @Override
+    public void animateLevelIncrement() {
+        delegate.animateLevelIncrement();
+    }
+
+    @Override
+    public void showFogEffect(int seconds) {
+        delegate.showFogEffect(seconds);
+    }
+
+    @Override
+    public void showHeavyGravityEffect(int seconds) {
+        delegate.showHeavyGravityEffect(seconds);
     }
 }

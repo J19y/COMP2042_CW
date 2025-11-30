@@ -19,6 +19,7 @@ public class GameOverPanel extends BorderPane {
 
     private final Label gameOverLabel;
     private final Label scoreLabel;
+    private final Label levelLabel;
     private final Label statsLabel;
     private final Button retryButton;
     private final Button menuButton;
@@ -32,6 +33,9 @@ public class GameOverPanel extends BorderPane {
         gameOverLabel.getStyleClass().add("game-over-text");
         scoreLabel = new Label("Final Score: 0");
         scoreLabel.getStyleClass().add("game-over-score");
+        levelLabel = new Label();
+        levelLabel.getStyleClass().add("game-over-level");
+        levelLabel.setVisible(false);
         statsLabel = new Label("Lines Cleared: 0\nTime Played: 00:00");
         statsLabel.getStyleClass().add("game-over-stats");
         
@@ -58,15 +62,18 @@ public class GameOverPanel extends BorderPane {
                 if (pressStartFont != null) {
                     scoreLabel.setFont(pressStartFont);
                     statsLabel.setFont(javafx.scene.text.Font.font(pressStartFont.getFamily(), 24));
+                    levelLabel.setFont(javafx.scene.text.Font.font(pressStartFont.getFamily(), 20));
                 } else if (arcadeFontSmall != null) {
                     scoreLabel.setFont(arcadeFontSmall);
                     statsLabel.setFont(javafx.scene.text.Font.font(arcadeFontSmall.getFamily(), 20));
+                    levelLabel.setFont(javafx.scene.text.Font.font(arcadeFontSmall.getFamily(), 18));
                 }
                 // Force an inline style so CSS won't accidentally override the family/size at runtime
                 String scoreFamily = (pressStartFont != null) ? pressStartFont.getFamily() : (arcadeFontSmall == null ? "Arial" : arcadeFontSmall.getFamily());
                 try {
                     scoreLabel.setStyle("-fx-font-family: '" + scoreFamily + "'; -fx-font-size: 18px;");
                     statsLabel.setStyle("-fx-font-family: '" + scoreFamily + "'; -fx-font-size: 14px;");
+                    levelLabel.setStyle("-fx-font-family: '" + scoreFamily + "'; -fx-font-size: 16px; -fx-text-fill: #ffd966;");
                 } catch (Exception ignored) {
                 }
             } catch (Exception e) {
@@ -113,7 +120,7 @@ public class GameOverPanel extends BorderPane {
         actions.setAlignment(Pos.CENTER);
         actions.getStyleClass().add("game-over-actions");
 
-        VBox content = new VBox(18, gameOverLabel, scoreLabel, statsLabel, actions);
+        VBox content = new VBox(18, gameOverLabel, scoreLabel, levelLabel, statsLabel, actions);
         content.setAlignment(Pos.CENTER);
         
         // Add the glow rectangle as background
@@ -152,6 +159,13 @@ public class GameOverPanel extends BorderPane {
         scoreLabel.setOpacity(0);
         scoreLabel.setTranslateY(20);
         
+        levelLabel.setOpacity(0);
+        levelLabel.setTranslateY(20);
+        // If a mystery level was set earlier, ensure the label is visible for the entrance animation
+        if (levelLabel.getText() != null && !levelLabel.getText().isEmpty()) {
+            levelLabel.setVisible(true);
+        }
+
         statsLabel.setOpacity(0);
         statsLabel.setTranslateY(20);
         
@@ -197,7 +211,17 @@ public class GameOverPanel extends BorderPane {
         TranslateTransition slideStats = new TranslateTransition(Duration.millis(400), statsLabel);
         slideStats.setToY(0);
         
+        // Fade and slide in the level label (explicit from/to values)
+        FadeTransition fadeLevel = new FadeTransition(Duration.millis(360), levelLabel);
+        fadeLevel.setFromValue(0);
+        fadeLevel.setToValue(1);
+        TranslateTransition slideLevel = new TranslateTransition(Duration.millis(360), levelLabel);
+        slideLevel.setToY(0);
+        ParallelTransition showLevel = new ParallelTransition(fadeLevel, slideLevel);
+        showLevel.setDelay(Duration.millis(360));
+
         ParallelTransition showStats = new ParallelTransition(fadeStats, slideStats);
+        showStats.setDelay(Duration.millis(420));
         showStats.setDelay(Duration.millis(400));
 
         // 4. Fade/Slide in Buttons (Delayed more)
@@ -212,7 +236,7 @@ public class GameOverPanel extends BorderPane {
         showButtons.setDelay(Duration.millis(500));
 
         // Play all
-        new ParallelTransition(slam, showScore, showStats, showButtons).play();
+        new ParallelTransition(slam, showScore, showLevel, showStats, showButtons).play();
         
         // Add a subtle pulsing glow animation
         Timeline glowPulse = new Timeline(
@@ -239,10 +263,26 @@ public class GameOverPanel extends BorderPane {
         gameOverLabel.setTranslateX(0);
         gameOverLabel.setText("GAME OVER");
         scoreLabel.setText("Final Score: 0");
+        levelLabel.setText("");
+        levelLabel.setVisible(false);
         statsLabel.setText("Lines Cleared: 0\nTime Played: 00:00");
         statsLabel.setOpacity(1);
         statsLabel.setTranslateY(0);
         glowRect.setOpacity(0);
+    }
+
+    /**
+     * If running a mystery game, this method sets the final level to display on the Game Over panel.
+     * Use a negative value or 0 to hide the level (default behaviour for non-mystery modes).
+     */
+    public void setMysteryLevel(int level) {
+        if (level <= 0) {
+            levelLabel.setVisible(false);
+            levelLabel.setText("");
+            return;
+        }
+        levelLabel.setText("Final Level: " + level);
+        levelLabel.setVisible(true);
     }
 
     public void setOnRetry(Runnable retryAction) {

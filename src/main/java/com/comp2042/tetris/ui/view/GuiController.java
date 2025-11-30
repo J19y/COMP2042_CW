@@ -58,6 +58,11 @@ public class GuiController implements Initializable, GameView {
     @FXML
     private Pane pauseDim;
 
+    // Fog overlay used by Mystery fog events
+    private javafx.scene.shape.Rectangle fogOverlay;
+    // Heavy gravity overlay (red tint) used by Mystery heavy-gravity events
+    private javafx.scene.shape.Rectangle gravityOverlay;
+
     @FXML
     private GridPane gamePanel;
 
@@ -81,6 +86,14 @@ public class GuiController implements Initializable, GameView {
     
     @FXML
     private Text timerText;
+
+    @FXML
+    private Text levelText;
+    @FXML
+    private javafx.scene.layout.VBox levelContainer;
+
+    // Keep a reference to the bound level property if bindLevel is called before FXML injection
+    private javafx.beans.property.IntegerProperty boundLevelProperty;
     
     private IntegerProperty scoreProperty;
     
@@ -117,6 +130,11 @@ public class GuiController implements Initializable, GameView {
     private final transient ViewInitializer viewInitializer = new ViewInitializer();
     private final transient GameStateManager stateManager = new GameStateManager();
     private transient GameMediator mediator;
+    // Keep a reference to the GameLoopController so UI can adjust tick interval for heavy gravity
+    private com.comp2042.tetris.app.GameLoopController gameLoopController;
+    private javafx.util.Duration baseTickInterval = Duration.millis(400);
+    private boolean gravityIntervalActive = false;
+    private javafx.util.Duration savedInterval = null;
 
     private InputActionHandler inputActionHandler;
     private DropInput dropInput;
@@ -146,6 +164,15 @@ public class GuiController implements Initializable, GameView {
         }
         viewInitializer.setupGamePanel(gamePanel);
         viewInitializer.setupGameOverPanel(gameOverPanel);
+        // If a Mystery controller bound a levelProperty earlier (before FXML injection), finalize binding now
+        if (boundLevelProperty != null && levelContainer != null && levelText != null) {
+            try {
+                levelText.textProperty().bind(boundLevelProperty.asString());
+                levelContainer.setVisible(true);
+            } catch (Exception ignored) {
+                levelContainer.setVisible(false);
+            }
+        }
         if (gameOverPanel != null) {
             gameOverPanel.setOnRetry(() -> newGame(new ActionEvent()));
             gameOverPanel.setOnReturnToMenu(this::returnToMenu);
@@ -565,6 +592,192 @@ public class GuiController implements Initializable, GameView {
         } catch (Exception ignored) {}
     }
 
+    @Override
+    public void animateLevelIncrement() {
+        try {
+            Platform.runLater(() -> {
+                if (levelText == null) return;
+                // Small pulse animation: scale up slightly and add glow
+                javafx.scene.effect.Glow glow = new javafx.scene.effect.Glow(0.0);
+                javafx.scene.effect.Effect prevEffect = levelText.getEffect();
+                levelText.setEffect(glow);
+                javafx.animation.Timeline pulse = new javafx.animation.Timeline(
+                    new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
+                        new javafx.animation.KeyValue(levelText.scaleXProperty(), 1.0),
+                        new javafx.animation.KeyValue(levelText.scaleYProperty(), 1.0),
+                        new javafx.animation.KeyValue(glow.levelProperty(), 0.0)
+                    ),
+                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(150),
+                        new javafx.animation.KeyValue(levelText.scaleXProperty(), 1.2),
+                        new javafx.animation.KeyValue(levelText.scaleYProperty(), 1.2),
+                        new javafx.animation.KeyValue(glow.levelProperty(), 0.8)
+                    ),
+                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(300),
+                        new javafx.animation.KeyValue(levelText.scaleXProperty(), 1.0),
+                        new javafx.animation.KeyValue(levelText.scaleYProperty(), 1.0),
+                        new javafx.animation.KeyValue(glow.levelProperty(), 0.0)
+                    )
+                );
+                pulse.setOnFinished(e -> levelText.setEffect(prevEffect));
+                pulse.play();
+            });
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    public void showFogEffect(int seconds) {
+        try {
+            Platform.runLater(() -> {
+                try {
+                    if (boardClipContainer == null) return;
+
+                    if (fogOverlay == null) {
+                        fogOverlay = new javafx.scene.shape.Rectangle();
+                        fogOverlay.setManaged(false);
+                        fogOverlay.setMouseTransparent(true);
+                        fogOverlay.setFill(javafx.scene.paint.Color.web("#ffffff", 0.85));
+                        javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(0);
+                        fogOverlay.setEffect(blur);
+                    }
+
+                    // Ensure proper sizing and add if not present
+                    fogOverlay.setWidth(boardClipContainer.getWidth());
+                    fogOverlay.setHeight(boardClipContainer.getHeight());
+                    fogOverlay.setTranslateX(boardClipContainer.getLayoutX());
+                    fogOverlay.setTranslateY(boardClipContainer.getLayoutY());
+                    if (!boardClipContainer.getChildren().contains(fogOverlay)) {
+                        boardClipContainer.getChildren().add(fogOverlay);
+                    }
+
+                    // Animate blur & fade-in, then fade-out after duration
+                    javafx.animation.Timeline in = new javafx.animation.Timeline(
+                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
+                            new javafx.animation.KeyValue(fogOverlay.opacityProperty(), 0.0),
+                            new javafx.animation.KeyValue(((javafx.scene.effect.GaussianBlur)fogOverlay.getEffect()).radiusProperty(), 0)
+                        ),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(300),
+                            new javafx.animation.KeyValue(fogOverlay.opacityProperty(), 1.0),
+                            new javafx.animation.KeyValue(((javafx.scene.effect.GaussianBlur)fogOverlay.getEffect()).radiusProperty(), 12)
+                        )
+                    );
+                    in.play();
+
+                    // Schedule fade-out
+                    javafx.animation.PauseTransition wait = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(seconds));
+                    wait.setOnFinished(ev -> {
+                        javafx.animation.Timeline out = new javafx.animation.Timeline(
+                            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
+                                new javafx.animation.KeyValue(fogOverlay.opacityProperty(), fogOverlay.getOpacity())
+                            ),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(400),
+                                new javafx.animation.KeyValue(fogOverlay.opacityProperty(), 0.0),
+                                new javafx.animation.KeyValue(((javafx.scene.effect.GaussianBlur)fogOverlay.getEffect()).radiusProperty(), 0)
+                            )
+                        );
+                        out.setOnFinished(e2 -> {
+                            try { boardClipContainer.getChildren().remove(fogOverlay); } catch (Exception ignored) {}
+                        });
+                        out.play();
+                    });
+                    wait.play();
+                } catch (Exception ignored) {}
+            });
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    public void showHeavyGravityEffect(int seconds) {
+        try {
+            Platform.runLater(() -> {
+                try {
+                    if (boardClipContainer == null) return;
+
+                    if (gravityOverlay == null) {
+                        gravityOverlay = new javafx.scene.shape.Rectangle();
+                        gravityOverlay.setManaged(false);
+                        gravityOverlay.setMouseTransparent(true);
+                        // Stronger base color; start fully transparent
+                        gravityOverlay.setFill(javafx.scene.paint.Color.web("#ff1a1a", 0.0));
+                    }
+
+                    gravityOverlay.setWidth(boardClipContainer.getWidth());
+                    gravityOverlay.setHeight(boardClipContainer.getHeight());
+                    gravityOverlay.setTranslateX(boardClipContainer.getLayoutX());
+                    gravityOverlay.setTranslateY(boardClipContainer.getLayoutY());
+                    if (!boardClipContainer.getChildren().contains(gravityOverlay)) {
+                        boardClipContainer.getChildren().add(gravityOverlay);
+                    }
+
+                    // Stronger pulse red tint to emphasize heavy gravity (faster cycle, higher peak)
+                    javafx.animation.Timeline pulse = new javafx.animation.Timeline(
+                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
+                            new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.0)
+                        ),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(60),
+                            new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.85)
+                        ),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(200),
+                            new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.6)
+                        ),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(360),
+                            new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.95)
+                        )
+                    );
+                    pulse.setCycleCount(javafx.animation.Animation.INDEFINITE);
+                    pulse.play();
+
+                    // Also accelerate the game loop so pieces actually fall faster
+                    try {
+                        if (!gravityIntervalActive && gameLoopController != null) {
+                            savedInterval = gameLoopController.getInterval();
+                            double baseMs = (savedInterval == null) ? baseTickInterval.toMillis() : savedInterval.toMillis();
+                            double newMs = Math.max(40.0, baseMs / 4.0); // make ticks ~4x faster (but not below 40ms)
+                            gameLoopController.setInterval(Duration.millis(newMs));
+                            gravityIntervalActive = true;
+                        }
+                    } catch (Exception ignored) {}
+
+                    // Add a subtle, continuous vertical shake to the game panel for the duration
+                    final javafx.animation.Timeline heavyShake = new javafx.animation.Timeline(
+                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new javafx.animation.KeyValue(gamePanel.translateYProperty(), 0)),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(80), new javafx.animation.KeyValue(gamePanel.translateYProperty(), 6)),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(160), new javafx.animation.KeyValue(gamePanel.translateYProperty(), -6)),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(240), new javafx.animation.KeyValue(gamePanel.translateYProperty(), 3)),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(320), new javafx.animation.KeyValue(gamePanel.translateYProperty(), 0))
+                    );
+                    heavyShake.setCycleCount(javafx.animation.Animation.INDEFINITE);
+                    heavyShake.play();
+
+                    // Stop pulsing after `seconds` and fade out
+                    javafx.animation.PauseTransition wait = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(seconds));
+                    wait.setOnFinished(ev -> {
+                        pulse.stop();
+                        try { heavyShake.stop(); gamePanel.setTranslateY(0); } catch (Exception ignored) {}
+                        // restore original tick interval
+                        try {
+                            if (gravityIntervalActive && gameLoopController != null && savedInterval != null) {
+                                gameLoopController.setInterval(savedInterval);
+                                gravityIntervalActive = false;
+                                savedInterval = null;
+                            }
+                        } catch (Exception ignored) {}
+                        javafx.animation.Timeline fade = new javafx.animation.Timeline(
+                            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
+                                new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), gravityOverlay.getOpacity())
+                            ),
+                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(360),
+                                new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.0)
+                            )
+                        );
+                        fade.setOnFinished(e2 -> { try { boardClipContainer.getChildren().remove(gravityOverlay); } catch (Exception ignored) {} });
+                        fade.play();
+                    });
+                    wait.play();
+                } catch (Exception ignored) {}
+            });
+        } catch (Exception ignored) {}
+    }
+
     private void pauseTimerTracking() {
         if (timerRunning) {
             accumulatedNanos += System.nanoTime() - startTime;
@@ -588,7 +801,8 @@ public class GuiController implements Initializable, GameView {
 
         notificationService = new NotificationManager(groupNotification);
 
-        GameLoopController gameLoopController = new GameLoopController(Duration.millis(400),
+        // Create and keep the GameLoopController reference so UI can tweak interval in special events
+        this.gameLoopController = new GameLoopController(baseTickInterval,
             () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)));
         
         // Do NOT start the loop immediately. Wait for countdown.
@@ -596,7 +810,8 @@ public class GuiController implements Initializable, GameView {
         
         if (mediator != null) {
             mediator.configureVisuals(displayMatrix, activeBrickRenderer, notificationService);
-            mediator.setGameLoop(gameLoopController);
+            // also register the UI-held game loop controller with the mediator
+            mediator.setGameLoop(this.gameLoopController);
         }
         stateManager.startGame();
         mediator.focusGamePanel();
@@ -676,6 +891,32 @@ public class GuiController implements Initializable, GameView {
                 }
             });
         }
+    }
+
+    @Override
+    public void bindLevel(IntegerProperty levelProperty) {
+        // Store the property so we can bind when the FXML nodes are ready.
+        boundLevelProperty = levelProperty;
+        Platform.runLater(() -> {
+            if (levelContainer == null || levelText == null) {
+                // FXML hasn't been injected yet — we'll bind later when initialize runs
+                return;
+            }
+
+            if (levelProperty == null) {
+                // Hide the entire container when no level is provided
+                try { levelText.textProperty().unbind(); } catch (Exception ignored) {}
+                levelContainer.setVisible(false);
+                return;
+            }
+
+            try {
+                levelText.textProperty().bind(levelProperty.asString());
+                levelContainer.setVisible(true);
+            } catch (Exception ignored) {
+                levelContainer.setVisible(false);
+            }
+        });
     }
 
     private void playScoreGlow() {
@@ -777,6 +1018,20 @@ public class GuiController implements Initializable, GameView {
         try {
             MusicManager.getInstance().playTrack(MusicManager.Track.GAME_OVER, 900, 1);
         } catch (Exception ignored) {}
+
+        // If this is a Mystery game, pass final level to the game-over panel for display
+        if (gameOverPanel != null) {
+            if (gameLifecycle instanceof com.comp2042.tetris.app.MysteryGameController) {
+                try {
+                    int lvl = ((com.comp2042.tetris.app.MysteryGameController) gameLifecycle).getLevel();
+                    gameOverPanel.setMysteryLevel(lvl);
+                } catch (Exception ignored) {
+                    gameOverPanel.setMysteryLevel(0);
+                }
+            } else {
+                gameOverPanel.setMysteryLevel(0);
+            }
+        }
 
         mediator.handleGameOver(finalScore, totalLines, gameTime);
     }

@@ -37,6 +37,10 @@
 
                     <!-- infoContainer: TIMER and SCORE labels above their values; score in white -->
                     <VBox fx:id="infoContainer" spacing="6" alignment="CENTER_LEFT" style="-fx-padding: 6 0 12 0;">
+                        <VBox fx:id="levelContainer" spacing="0" alignment="CENTER_LEFT" visible="false">
+                            <Text text="LEVEL:" styleClass="info-label"/>
+                            <Text fx:id="levelText" text="1" styleClass="info-value-score" />
+                        </VBox>
                         <VBox spacing="0" alignment="CENTER_LEFT">
                             <Text text="TIMER:" styleClass="info-label"/>
                             <Text fx:id="timerText" text="00:00" styleClass="info-value-timer" style="-fx-fill: white; -fx-font-weight: normal;"/>
