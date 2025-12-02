@@ -2,10 +2,10 @@ package com.comp2042.tetris.ui.view;
 
 import java.util.List;
 
-import com.comp2042.tetris.app.GameLoopController;
+import com.comp2042.tetris.application.session.GameLoopController;
 import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.domain.model.ShowResult;
-import com.comp2042.tetris.mechanics.state.GameStateManager;
+import com.comp2042.tetris.engine.state.GameStateManager;
 import com.comp2042.tetris.services.notify.NotificationManager;
 import com.comp2042.tetris.ui.render.ActiveBrickRenderer;
 import com.comp2042.tetris.ui.render.BoardRenderer;

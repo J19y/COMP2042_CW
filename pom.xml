@@ -72,14 +72,14 @@
                 <version>0.0.8</version>
                 <!-- Provide configuration directly so mvn javafx:run picks it up -->
                 <configuration>
-                    <mainClass>com.comp2042.tetris.app.Main</mainClass>
+                    <mainClass>com.comp2042.tetris.ui.controller.Main</mainClass>
                 </configuration>
                 <executions>
                     <execution>
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.comp2042.tetris.app.Main</mainClass>
+                            <mainClass>com.comp2042.tetris.ui.controller.Main</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>

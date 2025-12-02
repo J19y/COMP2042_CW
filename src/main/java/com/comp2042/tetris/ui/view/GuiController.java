@@ -6,14 +6,15 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.comp2042.tetris.app.BaseGameController;
-import com.comp2042.tetris.app.CreateNewGame;
-import com.comp2042.tetris.app.GameLoopController;
-import com.comp2042.tetris.app.GameModeLifecycle;
+import com.comp2042.tetris.application.session.BaseGameController;
+import com.comp2042.tetris.application.port.CreateNewGame;
+import com.comp2042.tetris.application.session.GameLoopController;
+import com.comp2042.tetris.application.port.GameModeLifecycle;
+import com.comp2042.tetris.application.session.MysteryGameController;
 import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.model.ViewData;
-import com.comp2042.tetris.mechanics.board.GameView;
-import com.comp2042.tetris.mechanics.state.GameStateManager;
+import com.comp2042.tetris.engine.board.GameView;
+import com.comp2042.tetris.engine.state.GameStateManager;
 import com.comp2042.tetris.services.audio.MusicManager;
 import com.comp2042.tetris.services.notify.NotificationManager;
 import com.comp2042.tetris.ui.input.DropInput;
@@ -497,9 +498,9 @@ public class GuiController implements Initializable, GameView {
         } catch (Exception ignored) {}
 
         if (gameOverPanel != null) {
-            if (gameLifecycle instanceof com.comp2042.tetris.app.MysteryGameController) {
+            if (gameLifecycle instanceof MysteryGameController) {
                 try {
-                    int lvl = ((com.comp2042.tetris.app.MysteryGameController) gameLifecycle).getLevel();
+                    int lvl = ((MysteryGameController) gameLifecycle).getLevel();
                     gameOverPanel.setMysteryLevel(lvl);
                 } catch (Exception ignored) {
                     gameOverPanel.setMysteryLevel(0);

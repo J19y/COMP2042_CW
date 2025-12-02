@@ -20,7 +20,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.control.Tooltip?>
 
-<StackPane fx:id="rootPane" prefWidth="700" prefHeight="600" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.comp2042.tetris.app.MenuController">
+<StackPane fx:id="rootPane" prefWidth="700" prefHeight="600" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.comp2042.tetris.ui.controller.MenuController">
     
     <!-- Background Animation Layer -->
     <Pane fx:id="backgroundPane" />

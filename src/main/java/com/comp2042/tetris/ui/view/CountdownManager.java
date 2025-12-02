@@ -1,9 +1,8 @@
 package com.comp2042.tetris.ui.view;
 
-import com.comp2042.tetris.app.CreateNewGame;
-import com.comp2042.tetris.app.GameLoopController;
-import com.comp2042.tetris.app.GameModeLifecycle;
-import com.comp2042.tetris.mechanics.state.GameStateManager;
+import com.comp2042.tetris.application.port.CreateNewGame;
+import com.comp2042.tetris.application.port.GameModeLifecycle;
+import com.comp2042.tetris.engine.state.GameStateManager;
 import com.comp2042.tetris.services.audio.MusicManager;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;

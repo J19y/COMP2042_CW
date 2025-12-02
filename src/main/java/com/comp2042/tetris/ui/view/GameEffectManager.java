@@ -1,6 +1,6 @@
 package com.comp2042.tetris.ui.view;
 
-import com.comp2042.tetris.app.GameLoopController;
+import com.comp2042.tetris.application.session.GameLoopController;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;

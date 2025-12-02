@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 import org.junit.jupiter.api.Test;
 
-import com.comp2042.tetris.app.CreateNewGame;
+import com.comp2042.tetris.application.port.CreateNewGame;
 import com.comp2042.tetris.domain.model.ViewData;
-import com.comp2042.tetris.mechanics.board.GameView;
+import com.comp2042.tetris.engine.board.GameView;
 import com.comp2042.tetris.ui.input.DropInput;
 import com.comp2042.tetris.ui.input.InputActionHandler;
 
