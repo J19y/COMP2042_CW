@@ -19,6 +19,7 @@ import com.comp2042.tetris.engine.board.GameView;
 import com.comp2042.tetris.engine.movement.BrickDropActions;
 import com.comp2042.tetris.engine.movement.BrickMovement;
 import com.comp2042.tetris.engine.spawn.BrickSpawn;
+import com.comp2042.tetris.application.port.CreateNewGame;
 import com.comp2042.tetris.ui.input.DropInput;
 import com.comp2042.tetris.ui.input.EventSource;
 import com.comp2042.tetris.ui.input.EventType;
