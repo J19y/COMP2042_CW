@@ -2,17 +2,19 @@ package com.comp2042.tetris.ui.view;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.comp2042.tetris.app.CreateNewGame;
-import com.comp2042.tetris.app.GameLoopController;
+import com.comp2042.tetris.application.port.CreateNewGame;
+import com.comp2042.tetris.application.port.GameModeLifecycle;
+import com.comp2042.tetris.application.session.BaseGameController;
+import com.comp2042.tetris.application.session.GameLoopController;
+import com.comp2042.tetris.application.session.MysteryGameController;
 import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.model.ViewData;
-import com.comp2042.tetris.mechanics.board.GameView;
-import com.comp2042.tetris.mechanics.state.GameStateManager;
+import com.comp2042.tetris.engine.board.GameView;
+import com.comp2042.tetris.engine.state.GameStateManager;
 import com.comp2042.tetris.services.audio.MusicManager;
 import com.comp2042.tetris.services.notify.NotificationManager;
 import com.comp2042.tetris.ui.input.DropInput;
@@ -25,25 +27,30 @@ import com.comp2042.tetris.ui.render.ActiveBrickRenderer;
 import com.comp2042.tetris.ui.render.BoardRenderer;
 
 import javafx.animation.FadeTransition;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class GuiController implements Initializable, GameView {
 
     private static final Logger LOGGER = Logger.getLogger(GuiController.class.getName());
-
     private static final int BRICK_SIZE = 20;
 
     @FXML
@@ -51,17 +58,12 @@ public class GuiController implements Initializable, GameView {
 
     @FXML
     private Pane boardClipContainer;
-    
+
     @FXML
     private StackPane rootPane;
-    
+
     @FXML
     private Pane pauseDim;
-
-    // Fog overlay used by Mystery fog events
-    private javafx.scene.shape.Rectangle fogOverlay;
-    // Heavy gravity overlay (red tint) used by Mystery heavy-gravity events
-    private javafx.scene.shape.Rectangle gravityOverlay;
 
     @FXML
     private GridPane gamePanel;
@@ -69,7 +71,6 @@ public class GuiController implements Initializable, GameView {
     @FXML
     private Group groupNotification;
 
-    // Notification manager used to display short event messages
     private NotificationManager notificationService;
 
     @FXML
@@ -83,88 +84,72 @@ public class GuiController implements Initializable, GameView {
 
     @FXML
     private Text scoreText;
-    
+
     @FXML
     private Text timerText;
 
     @FXML
     private Text levelText;
+
     @FXML
     private javafx.scene.layout.VBox levelContainer;
 
-    // Keep a reference to the bound level property if bindLevel is called before FXML injection
-    private javafx.beans.property.IntegerProperty boundLevelProperty;
-    
     private IntegerProperty scoreProperty;
-    
-    private javafx.animation.Timeline scoreGlowTimeline;
+    private javafx.beans.property.IntegerProperty boundLevelProperty;
 
     @FXML
     private GameOverPanel gameOverPanel;
-    
+
     @FXML
     private StackPane countdownOverlay;
-    
+
     @FXML
     private Text countdownText;
-    
+
     @FXML
     private StackPane settingsOverlay;
-    
+
     @FXML
     private Text volumeText;
-    
-    @FXML
-    private javafx.scene.control.Slider volumeSlider;
-    
-    @FXML
-    private javafx.scene.control.Button musicToggleButton;
 
     @FXML
-    private javafx.scene.layout.HBox helpContainer;
+    private Slider volumeSlider;
 
-    private boolean musicOn = true;
+    @FXML
+    private Button musicToggleButton;
+
+    @FXML
+    private HBox helpContainer;
 
     private final transient BoardRenderer boardRenderer = new BoardRenderer(BRICK_SIZE);
     private final transient InputHandler inputHandler = new InputHandler();
     private final transient ViewInitializer viewInitializer = new ViewInitializer();
     private final transient GameStateManager stateManager = new GameStateManager();
     private transient GameMediator mediator;
-    // Keep a reference to the GameLoopController so UI can adjust tick interval for heavy gravity
-    private com.comp2042.tetris.app.GameLoopController gameLoopController;
-    private javafx.util.Duration baseTickInterval = Duration.millis(400);
-    private boolean gravityIntervalActive = false;
-    private javafx.util.Duration savedInterval = null;
+
+    private GameLoopController gameLoopController;
+    private final Duration baseTickInterval = Duration.millis(400);
 
     private InputActionHandler inputActionHandler;
     private DropInput dropInput;
     private CreateNewGame gameLifecycle;
 
-    // Background Animation Fields
-    private BackgroundAnimator backgroundAnimator;
-    private long startTime;
-    private long accumulatedNanos;
-    private int volume = 100;
-    private boolean timerRunning;
-    private boolean manualPauseActive;
-    // If true, the view is showing a countdown (remaining time) rather than elapsed time
-    private volatile boolean countdownMode = false;
-    private FadeTransition pauseDimTransition;
-    // Low-time (<=10s) flicker timeline
-    private Timeline lowTimeFlicker;
-    private boolean lowTimeActive = false;
-    
+    private GameTimer gameTimer;
+    private AudioSettingsController audioSettingsController;
+    private PauseOverlayController pauseOverlayController;
+    private CountdownManager countdownManager;
+    private GameEffectManager effectManager;
+    private NextBrickRenderer nextBrickRenderer;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         viewInitializer.loadFonts(getClass());
-        // If the ViewInitializer loaded the digital font, apply it directly to timerText to ensure usage
         String digitalFamily = viewInitializer.getDigitalFontFamily();
         if (digitalFamily != null && timerText != null) {
             timerText.setFont(javafx.scene.text.Font.font(digitalFamily, 28));
         }
         viewInitializer.setupGamePanel(gamePanel);
         viewInitializer.setupGameOverPanel(gameOverPanel);
-        // If a Mystery controller bound a levelProperty earlier (before FXML injection), finalize binding now
         if (boundLevelProperty != null && levelContainer != null && levelText != null) {
             try {
                 levelText.textProperty().bind(boundLevelProperty.asString());
@@ -178,142 +163,38 @@ public class GuiController implements Initializable, GameView {
             gameOverPanel.setOnReturnToMenu(this::returnToMenu);
         }
         applyBoardClip();
-        bindPauseDim();
-        updatePauseDimVisibility();
-        bindHelpContainer();
+        pauseOverlayController = new PauseOverlayController(pauseDim, rootPane);
+        pauseOverlayController.bindHelpContainer(helpContainer, stateManager);
         mediator = new GameMediator(boardRenderer, viewInitializer, stateManager, gamePanel, gameOverPanel);
 
-        startAnimation();
+        gameTimer = new GameTimer(timerText, backgroundPane);
+        gameTimer.startAnimation();
 
-        // Initialize volume slider (if present in FXML)
-        if (volumeSlider != null) {
-            volumeSlider.setMin(0);
-            volumeSlider.setMax(100);
-            volumeSlider.setValue(volume);
-            volumeSlider.setBlockIncrement(1);
-            volumeSlider.valueProperty().addListener((obs, oldV, newV) -> {
-                volume = newV.intValue();
-                updateVolumeText();
-            });
-        }
+        effectManager = new GameEffectManager(gamePanel, boardClipContainer, levelText, scoreText, baseTickInterval);
+        nextBrickRenderer = new NextBrickRenderer(nextBrickPanel, BRICK_SIZE);
+        audioSettingsController = new AudioSettingsController(volumeSlider, volumeText, musicToggleButton);
+        audioSettingsController.initialize();
+        countdownManager = new CountdownManager(countdownOverlay, countdownText, stateManager, mediator, pauseOverlayController, gameTimer);
 
-        // Initialize music toggle (if present)
-        if (musicToggleButton != null) {
-            musicToggleButton.setText(musicOn ? "ON" : "OFF");
-            if (volumeSlider != null) {
-                volumeSlider.setDisable(!musicOn);
-            }
-        }
-
-        // Initialize MusicManager with current values
-        try {
-            MusicManager.getInstance().setMusicVolume(volume / 100.0);
-            MusicManager.getInstance().setMusicEnabled(musicOn);
-        } catch (Exception ignored) {}
-
-        // Fade-in will be triggered once the scene is ready
         Platform.runLater(() -> {
             if (backgroundPane != null && backgroundPane.getScene() != null) {
-                javafx.scene.Node root = backgroundPane.getScene().getRoot();
+                Node root = backgroundPane.getScene().getRoot();
                 root.setOpacity(0);
-                javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(Duration.millis(600), root);
+                FadeTransition ft = new FadeTransition(Duration.millis(600), root);
                 ft.setFromValue(0.0);
                 ft.setToValue(1.0);
                 ft.play();
             }
         });
     }
-    
+
     private void startCountdown() {
-        if (countdownOverlay == null) return;
-
-        manualPauseActive = false;
-        updatePauseDimVisibility();
-        pauseTimerTracking();
-        resetTimerTracking();
-
-        countdownOverlay.setVisible(true);
-        // Reset state
-        countdownText.setScaleX(0);
-        countdownText.setScaleY(0);
-        countdownText.setOpacity(0);
-
-        if (!stateManager.isPaused()) {
-            stateManager.pauseGame();
+        if (countdownManager != null) {
+            countdownManager.setGameLifecycle(gameLifecycle);
+            countdownManager.startCountdown();
         }
-
-        // Helper to animate a single number. We set the text when the animation starts
-        // (using a zero-duration PauseTransition) so the same Text node can be reused
-        // without being overwritten at creation time.
-        javafx.util.Callback<String, javafx.animation.ParallelTransition> animateNum = (text) -> {
-            // Zero-duration preparer to set the text at the moment this transition begins
-            javafx.animation.PauseTransition pre = new javafx.animation.PauseTransition(Duration.ZERO);
-                pre.setOnFinished(ev -> {
-                    countdownText.setText(text);
-                    try {
-                        // Play 321->GO effect at the start of the sequence so audio aligns with countdown visuals
-                                if ("3".equals(text)) {
-                                    com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfxImmediate("/audio/321GOEffect.mp3");
-                                }
-                    } catch (Exception ignored) {}
-                });
-
-            // Zoom In (Overshoot)
-            javafx.animation.ScaleTransition scale = new javafx.animation.ScaleTransition(Duration.millis(400), countdownText);
-            scale.setFromX(0.0);
-            scale.setFromY(0.0);
-            scale.setToX(1.5);
-            scale.setToY(1.5);
-            scale.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
-
-            // Fade In
-            javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.millis(200), countdownText);
-            fade.setFromValue(0.0);
-            fade.setToValue(1.0);
-
-            // Fade Out at the end of the second
-            javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(Duration.millis(300), countdownText);
-            fadeOut.setFromValue(1.0);
-            fadeOut.setToValue(0.0);
-            fadeOut.setDelay(Duration.millis(600)); // Wait a bit before fading out
-
-            return new javafx.animation.ParallelTransition(pre, scale, fade, fadeOut);
-        };
-
-        // Chain the animations sequence
-        // Duck the music during the countdown and restore after the sequence finishes
-        final com.comp2042.tetris.services.audio.MusicManager mm = com.comp2042.tetris.services.audio.MusicManager.getInstance();
-        final double originalMusicVol = mm.getMusicVolume();
-        final double duckedVol = Math.max(0.05, originalMusicVol * 0.25);
-        try { mm.fadeMusicTo(duckedVol, 160); } catch (Exception ignored) {}
-
-        javafx.animation.SequentialTransition sequence = new javafx.animation.SequentialTransition(
-            animateNum.call("3"),
-            new javafx.animation.PauseTransition(Duration.millis(100)), // slight pause
-            animateNum.call("2"),
-            new javafx.animation.PauseTransition(Duration.millis(100)),
-            animateNum.call("1"),
-            new javafx.animation.PauseTransition(Duration.millis(100)),
-            animateNum.call("GO")
-        );
-
-        sequence.setOnFinished(e -> {
-            // Restore music volume slowly while resuming the game
-            try { mm.fadeMusicTo(originalMusicVol, 1200); } catch (Exception ignored) {}
-            countdownOverlay.setVisible(false);
-            stateManager.resumeGame();
-            mediator.ensureLoopRunning();
-            resumeTimerTracking();
-            if (gameLifecycle instanceof com.comp2042.tetris.app.GameModeLifecycle) {
-                try {
-                    ((com.comp2042.tetris.app.GameModeLifecycle) gameLifecycle).startMode();
-                } catch (Exception ignored) {}
-            }
-        });
-
-        sequence.play();
     }
-    
+
     @FXML
     public void openSettings() {
         if (settingsOverlay == null) {
@@ -322,12 +203,11 @@ public class GuiController implements Initializable, GameView {
         settingsOverlay.setVisible(true);
         if (!stateManager.isPaused()) {
             togglePause();
-        } else {
-            manualPauseActive = true;
-            updatePauseDimVisibility();
+        } else if (pauseOverlayController != null) {
+            pauseOverlayController.setManualPauseActive(true);
         }
     }
-    
+
     @FXML
     public void resumeGame() {
         if (settingsOverlay == null) {
@@ -337,188 +217,69 @@ public class GuiController implements Initializable, GameView {
         if (stateManager.isPaused()) {
             togglePause();
         }
-        mediator.ensureLoopRunning();
-        mediator.focusGamePanel();
+        if (mediator != null) {
+            mediator.ensureLoopRunning();
+            mediator.focusGamePanel();
+        }
     }
-    
+
     @FXML
     public void returnToMenu() {
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/ui/layout/menu.fxml"));
-            javafx.scene.Parent root = loader.load();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root);
-            
-            javafx.stage.Stage stage = (javafx.stage.Stage) gamePanel.getScene().getWindow();
-            pauseTimerTracking();
-
-            // Fade out
-            javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(Duration.millis(500), gamePanel.getScene().getRoot());
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/layout/menu.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) gamePanel.getScene().getWindow();
+            if (gameTimer != null) {
+                gameTimer.pauseTimerTracking();
+            }
+            FadeTransition ft = new FadeTransition(Duration.millis(500), gamePanel.getScene().getRoot());
             ft.setFromValue(1.0);
             ft.setToValue(0.0);
             ft.setOnFinished(e -> {
                 root.setOpacity(0);
                 stage.setScene(scene);
-                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(Duration.millis(600), root);
-                fadeIn.setFromValue(0.0);
-                fadeIn.setToValue(1.0);
-                fadeIn.play();
-            });
-            ft.setOnFinished(e2 -> {
-                // Ensure the 10s tick won't keep playing if we go back to menu
-                try { com.comp2042.tetris.services.audio.MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3"); } catch (Exception ignored) {}
-                root.setOpacity(0);
-                stage.setScene(scene);
-                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(Duration.millis(600), root);
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(600), root);
                 fadeIn.setFromValue(0.0);
                 fadeIn.setToValue(1.0);
                 fadeIn.play();
             });
             ft.play();
-            
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Unable to load menu view", e);
         }
     }
-    
+
     @FXML
     public void increaseVolume() {
-        if (volume < 100) {
-            volume += 10;
-            updateVolumeText();
-            try { com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {}
+        if (audioSettingsController != null) {
+            audioSettingsController.increaseVolume();
         }
-    }
-    
-    @FXML
-    public void decreaseVolume() {
-        if (volume > 0) {
-            volume -= 10;
-            updateVolumeText();
-            try { com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3"); } catch (Exception ignored) {}
-        }
-    }
-    
-    private void updateVolumeText() {
-        if (volumeText != null) {
-            volumeText.setText(volume + "%");
-        }
-        try {
-            MusicManager.getInstance().setMusicVolume(volume / 100.0);
-        } catch (Exception ignored) {}
-    }
-    
-    private void startAnimation() {
-        resetTimerTracking();
-        backgroundAnimator = new BackgroundAnimator(backgroundPane, () -> updateTimer(System.nanoTime()));
-        backgroundAnimator.start();
-    }
-    
-    private void updateTimer(long now) {
-        if (timerText == null) {
-            return;
-        }
-        if (countdownMode) {
-            // countdown updates are pushed from controller via setRemainingTime()
-            return;
-        }
-        long totalNanos = accumulatedNanos;
-        if (timerRunning) {
-            totalNanos += now - startTime;
-        }
-        updateTimerDisplay(totalNanos);
     }
 
-    private void updateTimerDisplay(long totalNanos) {
-        long elapsedSeconds = totalNanos / 1_000_000_000L;
-        long minutes = elapsedSeconds / 60;
-        long seconds = elapsedSeconds % 60;
-        timerText.setText(String.format("%02d:%02d", minutes, seconds));
+    @FXML
+    public void decreaseVolume() {
+        if (audioSettingsController != null) {
+            audioSettingsController.decreaseVolume();
+        }
     }
 
     @FXML
     public void toggleMusic(ActionEvent event) {
-        musicOn = !musicOn;
-        if (musicToggleButton != null) {
-            musicToggleButton.setText(musicOn ? "ON" : "OFF");
-        }
-        if (volumeSlider != null) {
-            volumeSlider.setDisable(!musicOn);
-        }
-        if (!musicOn && volumeText != null) {
-            volumeText.setText("OFF");
-        } else {
-            updateVolumeText();
-        }
-        try { MusicManager.getInstance().setMusicEnabled(musicOn); } catch (Exception ignored) {}
-    }
-
-    private void resetTimerTracking() {
-        accumulatedNanos = 0L;
-        startTime = System.nanoTime();
-        timerRunning = false;
-        // Reset countdown mode so elapsed timer display is used by default
-        countdownMode = false;
-        if (timerText != null) {
-            updateTimerDisplay(0L);
+        if (audioSettingsController != null) {
+            audioSettingsController.toggleMusic();
         }
     }
 
     @Override
     public void setRemainingTime(int seconds) {
-        // Called by timed controllers to update the remaining countdown.
-        countdownMode = true;
-        if (timerText == null) return;
-        int minutes = Math.max(0, seconds / 60);
-        int secs = Math.max(0, seconds % 60);
-        final String text = String.format("%02d:%02d", minutes, secs);
-        Platform.runLater(() -> {
-            timerText.setText(text);
-            // Last 10 seconds: turn red and flicker
-            if (seconds <= 10 && seconds > 0) {
-                if (!lowTimeActive) {
-                    lowTimeActive = true;
-                    timerText.setFill(javafx.scene.paint.Color.RED);
-                    // start a simple flicker (toggle visibility)
-                    lowTimeFlicker = new Timeline(
-                        new KeyFrame(javafx.util.Duration.millis(450), ev -> timerText.setVisible(false)),
-                        new KeyFrame(javafx.util.Duration.millis(900), ev -> timerText.setVisible(true))
-                    );
-                    lowTimeFlicker.setCycleCount(Timeline.INDEFINITE);
-                    lowTimeFlicker.play();
-                }
-                try {
-                    // Play the 10-second countdown tick each second louder (absolute volume)
-                    com.comp2042.tetris.services.audio.MusicManager.getInstance().playSfxAtVolume("/audio/10SecondsTimer.mp3", 0.95);
-                } catch (Exception ignored) {}
-            } else if (seconds <= 0) {
-                // If the timer reached zero, immediately stop any ticking sound so it doesn't linger
-                try { com.comp2042.tetris.services.audio.MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3"); } catch (Exception ignored) {}
-                if (lowTimeActive) {
-                    lowTimeActive = false;
-                    if (lowTimeFlicker != null) {
-                        lowTimeFlicker.stop();
-                        lowTimeFlicker = null;
-                    }
-                    timerText.setVisible(true);
-                    timerText.setFill(javafx.scene.paint.Color.WHITE);
-                }
-            } else {
-                if (lowTimeActive) {
-                    lowTimeActive = false;
-                    if (lowTimeFlicker != null) {
-                        lowTimeFlicker.stop();
-                        lowTimeFlicker = null;
-                    }
-                    timerText.setVisible(true);
-                    timerText.setFill(javafx.scene.paint.Color.WHITE);
-                }
-            }
-        });
+        if (gameTimer != null) {
+            gameTimer.setRemainingTime(seconds);
+        }
     }
 
     @Override
     public void setBoardVisibility(boolean visible) {
-        // Toggle main game panels and active-piece layers
         Platform.runLater(() -> {
             try {
                 if (gamePanel != null) {
@@ -549,7 +310,6 @@ public class GuiController implements Initializable, GameView {
     @Override
     public void showEventMessage(String message) {
         try {
-            System.out.println("GuiController: showEventMessage -> " + message);
             if (notificationService != null && message != null && !message.isEmpty()) {
                 notificationService.showEventMessage(message);
             }
@@ -558,270 +318,66 @@ public class GuiController implements Initializable, GameView {
 
     @Override
     public void playEarthquakeAnimation() {
-        try {
-            Platform.runLater(() -> {
-                try {
-                    // Short shake timeline on the main game panel
-                    if (gamePanel != null) {
-                        javafx.animation.Timeline shake = new javafx.animation.Timeline(
-                            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new javafx.animation.KeyValue(gamePanel.translateXProperty(), 0)),
-                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(40), new javafx.animation.KeyValue(gamePanel.translateXProperty(), -10)),
-                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(80), new javafx.animation.KeyValue(gamePanel.translateXProperty(), 10)),
-                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(120), new javafx.animation.KeyValue(gamePanel.translateXProperty(), -6)),
-                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(160), new javafx.animation.KeyValue(gamePanel.translateXProperty(), 6)),
-                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(200), new javafx.animation.KeyValue(gamePanel.translateXProperty(), 0))
-                        );
-                        shake.play();
-                    }
-
-                    // Neon flash on the board (temporary Glow) to emphasize the event
-                    if (gamePanel != null) {
-                        javafx.scene.effect.Glow g = new javafx.scene.effect.Glow(0.0);
-                        javafx.scene.effect.Effect prev = gamePanel.getEffect();
-                        gamePanel.setEffect(g);
-                        javafx.animation.Timeline glow = new javafx.animation.Timeline(
-                            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new javafx.animation.KeyValue(g.levelProperty(), 0.0)),
-                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(60), new javafx.animation.KeyValue(g.levelProperty(), 0.9)),
-                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(260), new javafx.animation.KeyValue(g.levelProperty(), 0.0))
-                        );
-                        glow.setOnFinished(e -> gamePanel.setEffect(prev));
-                        glow.play();
-                    }
-                } catch (Exception ignored) {}
-            });
-        } catch (Exception ignored) {}
+        if (effectManager != null) {
+            effectManager.playEarthquakeAnimation();
+        }
     }
 
     @Override
     public void animateLevelIncrement() {
-        try {
-            Platform.runLater(() -> {
-                if (levelText == null) return;
-                // Small pulse animation: scale up slightly and add glow
-                javafx.scene.effect.Glow glow = new javafx.scene.effect.Glow(0.0);
-                javafx.scene.effect.Effect prevEffect = levelText.getEffect();
-                levelText.setEffect(glow);
-                javafx.animation.Timeline pulse = new javafx.animation.Timeline(
-                    new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
-                        new javafx.animation.KeyValue(levelText.scaleXProperty(), 1.0),
-                        new javafx.animation.KeyValue(levelText.scaleYProperty(), 1.0),
-                        new javafx.animation.KeyValue(glow.levelProperty(), 0.0)
-                    ),
-                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(150),
-                        new javafx.animation.KeyValue(levelText.scaleXProperty(), 1.2),
-                        new javafx.animation.KeyValue(levelText.scaleYProperty(), 1.2),
-                        new javafx.animation.KeyValue(glow.levelProperty(), 0.8)
-                    ),
-                    new javafx.animation.KeyFrame(javafx.util.Duration.millis(300),
-                        new javafx.animation.KeyValue(levelText.scaleXProperty(), 1.0),
-                        new javafx.animation.KeyValue(levelText.scaleYProperty(), 1.0),
-                        new javafx.animation.KeyValue(glow.levelProperty(), 0.0)
-                    )
-                );
-                pulse.setOnFinished(e -> levelText.setEffect(prevEffect));
-                pulse.play();
-            });
-        } catch (Exception ignored) {}
+        if (effectManager != null) {
+            effectManager.animateLevelIncrement();
+        }
     }
 
     @Override
     public void showFogEffect(int seconds) {
-        try {
-            Platform.runLater(() -> {
-                try {
-                    if (boardClipContainer == null) return;
-
-                    if (fogOverlay == null) {
-                        fogOverlay = new javafx.scene.shape.Rectangle();
-                        fogOverlay.setManaged(false);
-                        fogOverlay.setMouseTransparent(true);
-                        fogOverlay.setFill(javafx.scene.paint.Color.web("#ffffff", 0.85));
-                        javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(0);
-                        fogOverlay.setEffect(blur);
-                    }
-
-                    // Ensure proper sizing and add if not present
-                    fogOverlay.setWidth(boardClipContainer.getWidth());
-                    fogOverlay.setHeight(boardClipContainer.getHeight());
-                    fogOverlay.setTranslateX(boardClipContainer.getLayoutX());
-                    fogOverlay.setTranslateY(boardClipContainer.getLayoutY());
-                    if (!boardClipContainer.getChildren().contains(fogOverlay)) {
-                        boardClipContainer.getChildren().add(fogOverlay);
-                    }
-
-                    // Animate blur & fade-in, then fade-out after duration
-                    javafx.animation.Timeline in = new javafx.animation.Timeline(
-                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
-                            new javafx.animation.KeyValue(fogOverlay.opacityProperty(), 0.0),
-                            new javafx.animation.KeyValue(((javafx.scene.effect.GaussianBlur)fogOverlay.getEffect()).radiusProperty(), 0)
-                        ),
-                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(300),
-                            new javafx.animation.KeyValue(fogOverlay.opacityProperty(), 1.0),
-                            new javafx.animation.KeyValue(((javafx.scene.effect.GaussianBlur)fogOverlay.getEffect()).radiusProperty(), 12)
-                        )
-                    );
-                    in.play();
-
-                    // Schedule fade-out
-                    javafx.animation.PauseTransition wait = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(seconds));
-                    wait.setOnFinished(ev -> {
-                        javafx.animation.Timeline out = new javafx.animation.Timeline(
-                            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
-                                new javafx.animation.KeyValue(fogOverlay.opacityProperty(), fogOverlay.getOpacity())
-                            ),
-                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(400),
-                                new javafx.animation.KeyValue(fogOverlay.opacityProperty(), 0.0),
-                                new javafx.animation.KeyValue(((javafx.scene.effect.GaussianBlur)fogOverlay.getEffect()).radiusProperty(), 0)
-                            )
-                        );
-                        out.setOnFinished(e2 -> {
-                            try { boardClipContainer.getChildren().remove(fogOverlay); } catch (Exception ignored) {}
-                        });
-                        out.play();
-                    });
-                    wait.play();
-                } catch (Exception ignored) {}
-            });
-        } catch (Exception ignored) {}
+        if (effectManager != null) {
+            effectManager.showFogEffect(seconds);
+        }
     }
 
     @Override
     public void showHeavyGravityEffect(int seconds) {
-        try {
-            Platform.runLater(() -> {
-                try {
-                    if (boardClipContainer == null) return;
-
-                    if (gravityOverlay == null) {
-                        gravityOverlay = new javafx.scene.shape.Rectangle();
-                        gravityOverlay.setManaged(false);
-                        gravityOverlay.setMouseTransparent(true);
-                        // Stronger base color; start fully transparent
-                        gravityOverlay.setFill(javafx.scene.paint.Color.web("#ff1a1a", 0.0));
-                    }
-
-                    gravityOverlay.setWidth(boardClipContainer.getWidth());
-                    gravityOverlay.setHeight(boardClipContainer.getHeight());
-                    gravityOverlay.setTranslateX(boardClipContainer.getLayoutX());
-                    gravityOverlay.setTranslateY(boardClipContainer.getLayoutY());
-                    if (!boardClipContainer.getChildren().contains(gravityOverlay)) {
-                        boardClipContainer.getChildren().add(gravityOverlay);
-                    }
-
-                    // Stronger pulse red tint to emphasize heavy gravity (faster cycle, higher peak)
-                    javafx.animation.Timeline pulse = new javafx.animation.Timeline(
-                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
-                            new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.0)
-                        ),
-                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(60),
-                            new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.85)
-                        ),
-                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(200),
-                            new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.6)
-                        ),
-                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(360),
-                            new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.95)
-                        )
-                    );
-                    pulse.setCycleCount(javafx.animation.Animation.INDEFINITE);
-                    pulse.play();
-
-                    // Also accelerate the game loop so pieces actually fall faster
-                    try {
-                        if (!gravityIntervalActive && gameLoopController != null) {
-                            savedInterval = gameLoopController.getInterval();
-                            double baseMs = (savedInterval == null) ? baseTickInterval.toMillis() : savedInterval.toMillis();
-                            double newMs = Math.max(40.0, baseMs / 4.0); // make ticks ~4x faster (but not below 40ms)
-                            gameLoopController.setInterval(Duration.millis(newMs));
-                            gravityIntervalActive = true;
-                        }
-                    } catch (Exception ignored) {}
-
-                    // Add a subtle, continuous vertical shake to the game panel for the duration
-                    final javafx.animation.Timeline heavyShake = new javafx.animation.Timeline(
-                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO, new javafx.animation.KeyValue(gamePanel.translateYProperty(), 0)),
-                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(80), new javafx.animation.KeyValue(gamePanel.translateYProperty(), 6)),
-                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(160), new javafx.animation.KeyValue(gamePanel.translateYProperty(), -6)),
-                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(240), new javafx.animation.KeyValue(gamePanel.translateYProperty(), 3)),
-                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(320), new javafx.animation.KeyValue(gamePanel.translateYProperty(), 0))
-                    );
-                    heavyShake.setCycleCount(javafx.animation.Animation.INDEFINITE);
-                    heavyShake.play();
-
-                    // Stop pulsing after `seconds` and fade out
-                    javafx.animation.PauseTransition wait = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(seconds));
-                    wait.setOnFinished(ev -> {
-                        pulse.stop();
-                        try { heavyShake.stop(); gamePanel.setTranslateY(0); } catch (Exception ignored) {}
-                        // restore original tick interval
-                        try {
-                            if (gravityIntervalActive && gameLoopController != null && savedInterval != null) {
-                                gameLoopController.setInterval(savedInterval);
-                                gravityIntervalActive = false;
-                                savedInterval = null;
-                            }
-                        } catch (Exception ignored) {}
-                        javafx.animation.Timeline fade = new javafx.animation.Timeline(
-                            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
-                                new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), gravityOverlay.getOpacity())
-                            ),
-                            new javafx.animation.KeyFrame(javafx.util.Duration.millis(360),
-                                new javafx.animation.KeyValue(gravityOverlay.opacityProperty(), 0.0)
-                            )
-                        );
-                        fade.setOnFinished(e2 -> { try { boardClipContainer.getChildren().remove(gravityOverlay); } catch (Exception ignored) {} });
-                        fade.play();
-                    });
-                    wait.play();
-                } catch (Exception ignored) {}
-            });
-        } catch (Exception ignored) {}
-    }
-
-    private void pauseTimerTracking() {
-        if (timerRunning) {
-            accumulatedNanos += System.nanoTime() - startTime;
-            timerRunning = false;
+        if (effectManager != null) {
+            effectManager.showHeavyGravityEffect(seconds);
         }
     }
 
-    private void resumeTimerTracking() {
-        startTime = System.nanoTime();
-        timerRunning = true;
-    }
-    
     @FXML
     @Override
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         Rectangle[][] displayMatrix = boardRenderer.initBoard(gamePanel, boardMatrix);
-
         ActiveBrickRenderer activeBrickRenderer = new ActiveBrickRenderer(BRICK_SIZE, ghostPanel, brickPanel);
         activeBrickRenderer.initialize(brick);
-        renderNextBrick(brick.getNextBrickData());
-
+        if (nextBrickRenderer != null) {
+            nextBrickRenderer.render(brick.getNextBrickData());
+        }
         notificationService = new NotificationManager(groupNotification);
 
-        // Create and keep the GameLoopController reference so UI can tweak interval in special events
         this.gameLoopController = new GameLoopController(baseTickInterval,
             () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)));
-        
-        // Do NOT start the loop immediately. Wait for countdown.
-        // gameLoopController.start(); 
-        
+
         if (mediator != null) {
             mediator.configureVisuals(displayMatrix, activeBrickRenderer, notificationService);
-            // also register the UI-held game loop controller with the mediator
-            mediator.setGameLoop(this.gameLoopController);
+            mediator.setGameLoop(gameLoopController);
+        }
+        if (effectManager != null) {
+            effectManager.setGameLoopController(gameLoopController);
         }
         stateManager.startGame();
-        mediator.focusGamePanel();
+        if (mediator != null) {
+            mediator.focusGamePanel();
+        }
         startCountdown();
     }
 
     @FXML
     @Override
     public void refreshGameBackground(int[][] board) {
-        mediator.refreshGameBackground(board);
+        if (mediator != null) {
+            mediator.refreshGameBackground(board);
+        }
     }
 
     private void moveDown(MoveEvent event) {
@@ -829,13 +385,17 @@ public class GuiController implements Initializable, GameView {
             ShowResult result = dropInput.onDown(event);
             handleResult(result);
         }
-        mediator.focusGamePanel();
+        if (mediator != null) {
+            mediator.focusGamePanel();
+        }
     }
 
     private void handleResult(ShowResult data) {
-        mediator.handleResult(data);
-        if (data != null && data.getViewData() != null) {
-            renderNextBrick(data.getViewData().getNextBrickData());
+        if (mediator != null) {
+            mediator.handleResult(data);
+        }
+        if (data != null && data.getViewData() != null && nextBrickRenderer != null) {
+            nextBrickRenderer.render(data.getViewData().getNextBrickData());
         }
     }
 
@@ -858,12 +418,12 @@ public class GuiController implements Initializable, GameView {
         this.inputActionHandler = inputActionHandler;
         this.dropInput = dropInput;
         this.gameLifecycle = gameLifecycle;
-        // Bind the Pause key to opening settings — but only when input is accepted
-        // and the game-over panel is not currently visible. This prevents opening
-        // the pause/settings overlay after the game-over screen is shown.
+        if (countdownManager != null) {
+            countdownManager.setGameLifecycle(gameLifecycle);
+        }
         inputHandler.setPauseAction(() -> {
-            boolean canAccept = stateManager == null ? true : stateManager.canAcceptInput();
-            boolean gameOverVisible = gameOverPanel == null ? false : gameOverPanel.isVisible();
+            boolean canAccept = stateManager == null || stateManager.canAcceptInput();
+            boolean gameOverVisible = gameOverPanel != null && gameOverPanel.isVisible();
             if (canAccept && !gameOverVisible) {
                 openSettings();
             }
@@ -877,17 +437,14 @@ public class GuiController implements Initializable, GameView {
     @Override
     public void bindScore(IntegerProperty integerProperty) {
         this.scoreProperty = integerProperty;
-        if (scoreText != null) {
+        if (scoreText != null && integerProperty != null) {
             scoreText.textProperty().bind(integerProperty.asString());
-            // initialize last hundred bucket (not used directly)
-
-            // listen for score changes and trigger glow every time we cross a 100-point boundary
             integerProperty.addListener((obs, oldV, newV) -> {
                 if (newV == null) return;
                 int oldHundred = (oldV == null) ? 0 : oldV.intValue() / 100;
                 int newHundred = newV.intValue() / 100;
-                if (newHundred > oldHundred) {
-                    playScoreGlow();
+                if (newHundred > oldHundred && effectManager != null) {
+                    effectManager.playScoreGlow();
                 }
             });
         }
@@ -895,21 +452,18 @@ public class GuiController implements Initializable, GameView {
 
     @Override
     public void bindLevel(IntegerProperty levelProperty) {
-        // Store the property so we can bind when the FXML nodes are ready.
         boundLevelProperty = levelProperty;
         Platform.runLater(() -> {
             if (levelContainer == null || levelText == null) {
-                // FXML hasn't been injected yet — we'll bind later when initialize runs
                 return;
             }
-
             if (levelProperty == null) {
-                // Hide the entire container when no level is provided
-                try { levelText.textProperty().unbind(); } catch (Exception ignored) {}
+                try {
+                    levelText.textProperty().unbind();
+                } catch (Exception ignored) {}
                 levelContainer.setVisible(false);
                 return;
             }
-
             try {
                 levelText.textProperty().bind(levelProperty.asString());
                 levelContainer.setVisible(true);
@@ -919,111 +473,33 @@ public class GuiController implements Initializable, GameView {
         });
     }
 
-    private void playScoreGlow() {
-        if (scoreText == null) return;
-
-        // stop previous animation if still running
-        if (scoreGlowTimeline != null) {
-            scoreGlowTimeline.stop();
-        }
-
-        javafx.scene.effect.DropShadow ds = new javafx.scene.effect.DropShadow();
-        ds.setColor(javafx.scene.paint.Color.CYAN);
-        ds.setRadius(0);
-        ds.setSpread(0.6);
-        scoreText.setEffect(ds);
-
-        scoreGlowTimeline = new javafx.animation.Timeline(
-            new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
-                new javafx.animation.KeyValue(ds.radiusProperty(), 0),
-                new javafx.animation.KeyValue(scoreText.scaleXProperty(), 1.0),
-                new javafx.animation.KeyValue(scoreText.scaleYProperty(), 1.0)
-            ),
-            new javafx.animation.KeyFrame(javafx.util.Duration.millis(120),
-                new javafx.animation.KeyValue(ds.radiusProperty(), 18),
-                new javafx.animation.KeyValue(scoreText.scaleXProperty(), 1.12),
-                new javafx.animation.KeyValue(scoreText.scaleYProperty(), 1.12)
-            ),
-            new javafx.animation.KeyFrame(javafx.util.Duration.millis(360),
-                new javafx.animation.KeyValue(ds.radiusProperty(), 0),
-                new javafx.animation.KeyValue(scoreText.scaleXProperty(), 1.0),
-                new javafx.animation.KeyValue(scoreText.scaleYProperty(), 1.0)
-            )
-        );
-
-        scoreGlowTimeline.setOnFinished(e -> scoreText.setEffect(null));
-        scoreGlowTimeline.play();
-    }
-
-    private void renderNextBrick(List<int[][]> nextBricks) {
-        nextBrickPanel.getChildren().clear();
-        if (nextBricks == null || nextBricks.isEmpty()) return;
-        int limit = Math.min(2, nextBricks.size());
-        for (int idx = 0; idx < limit; idx++) {
-            int[][] nextBrickData = nextBricks.get(idx);
-            GridPane brickGrid = new GridPane();
-            brickGrid.setHgap(1);
-            brickGrid.setVgap(1);
-            brickGrid.setAlignment(javafx.geometry.Pos.CENTER);
-            
-            for (int i = 0; i < nextBrickData.length; i++) {
-                for (int j = 0; j < nextBrickData[i].length; j++) {
-                    if (nextBrickData[i][j] != 0) {
-                        Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
-                        javafx.scene.paint.Paint paint = com.comp2042.tetris.ui.theme.CellColor.fromValue(nextBrickData[i][j]);
-                        rectangle.setFill(paint);
-                        rectangle.setArcHeight(9);
-                        rectangle.setArcWidth(9);
-
-                        // Make next-brick preview follow the inside-black placed style
-                        javafx.scene.paint.Paint p = paint;
-                        javafx.scene.paint.Color baseColor = javafx.scene.paint.Color.WHITE;
-                        if (p instanceof javafx.scene.paint.Color) {
-                            baseColor = (javafx.scene.paint.Color) p;
-                        }
-                        com.comp2042.tetris.ui.theme.NeonGlowStyle.applyPlacedStyle(rectangle, baseColor);
-                        brickGrid.add(rectangle, j, i);
-                    }
-                }
-            }
-            nextBrickPanel.getChildren().add(brickGrid);
-        }
-    }
-
     @Override
     public void gameOver() {
         int finalScore = getCurrentScore();
         int totalLines = 0;
         long gameTime = 0;
-        if (gameLifecycle instanceof com.comp2042.tetris.app.BaseGameController) {
-            com.comp2042.tetris.app.BaseGameController controller = (com.comp2042.tetris.app.BaseGameController) gameLifecycle;
+        if (gameLifecycle instanceof BaseGameController controller) {
             totalLines = controller.getTotalLinesCleared();
             gameTime = System.currentTimeMillis() - controller.getGameStartTime();
         }
-        manualPauseActive = false;
-        updatePauseDimVisibility();
-        pauseTimerTracking();
-        // stop any low-time flicker
-        if (lowTimeFlicker != null) {
-            lowTimeFlicker.stop();
-            lowTimeFlicker = null;
+        if (pauseOverlayController != null) {
+            pauseOverlayController.setManualPauseActive(false);
         }
-        lowTimeActive = false;
-        if (timerText != null) timerText.setFill(javafx.scene.paint.Color.WHITE);
-
-        // Stop the 10-seconds tick if it is playing, then fade into the game-over soundtrack
+        if (gameTimer != null) {
+            gameTimer.pauseTimerTracking();
+            gameTimer.clearLowTimeEffects();
+        }
         try {
-            com.comp2042.tetris.services.audio.MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3");
+            MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3");
         } catch (Exception ignored) {}
         try {
             MusicManager.getInstance().playTrack(MusicManager.Track.GAME_OVER, 900, 1);
         } catch (Exception ignored) {}
 
-        // If this is a Mystery game, pass final level to the game-over panel for display
         if (gameOverPanel != null) {
-            if (gameLifecycle instanceof com.comp2042.tetris.app.MysteryGameController) {
+            if (gameLifecycle instanceof MysteryGameController mysteryController) {
                 try {
-                    int lvl = ((com.comp2042.tetris.app.MysteryGameController) gameLifecycle).getLevel();
+                    int lvl = mysteryController.getLevel();
                     gameOverPanel.setMysteryLevel(lvl);
                 } catch (Exception ignored) {
                     gameOverPanel.setMysteryLevel(0);
@@ -1033,18 +509,24 @@ public class GuiController implements Initializable, GameView {
             }
         }
 
-        mediator.handleGameOver(finalScore, totalLines, gameTime);
+        if (mediator != null) {
+            mediator.handleGameOver(finalScore, totalLines, gameTime);
+        }
     }
 
     @FXML
     public void newGame(ActionEvent actionEvent) {
-        mediator.prepareNewGame();
+        if (mediator != null) {
+            mediator.prepareNewGame();
+            mediator.focusGamePanel();
+        }
         if (gameLifecycle != null) {
             gameLifecycle.createNewGame();
         }
-        mediator.focusGamePanel();
         stateManager.startGame();
-        resetTimerTracking();
+        if (gameTimer != null) {
+            gameTimer.resetTimerTracking();
+        }
         startCountdown();
     }
 
@@ -1054,42 +536,54 @@ public class GuiController implements Initializable, GameView {
         if (settingsOverlay != null) {
             settingsOverlay.setVisible(false);
         }
-        // Stop the 10s ticking if it was playing when the user retried
-        try { com.comp2042.tetris.services.audio.MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3"); } catch (Exception ignored) {}
+        try {
+            MusicManager.getInstance().stopSfx("/audio/10SecondsTimer.mp3");
+        } catch (Exception ignored) {}
     }
 
     @FXML
     public void pauseGame(ActionEvent actionEvent) {
-        // Make the pause button behave like the P key: open the settings overlay
-        // but only when input is accepted and the game-over panel isn't visible.
-        boolean canAccept = stateManager == null ? true : stateManager.canAcceptInput();
-        boolean gameOverVisible = gameOverPanel == null ? false : gameOverPanel.isVisible();
+        boolean canAccept = stateManager == null || stateManager.canAcceptInput();
+        boolean gameOverVisible = gameOverPanel != null && gameOverPanel.isVisible();
         if (canAccept && !gameOverVisible) {
             openSettings();
         }
     }
 
     private void togglePause() {
+        if (mediator == null) {
+            return;
+        }
         mediator.togglePause();
-        manualPauseActive = stateManager.isPaused();
-        updatePauseDimVisibility();
-        if (manualPauseActive) {
-            pauseTimerTracking();
-            if (gameLifecycle instanceof com.comp2042.tetris.app.GameModeLifecycle) {
-                try { ((com.comp2042.tetris.app.GameModeLifecycle) gameLifecycle).pauseMode(); } catch (Exception ignored) {}
+        boolean paused = stateManager.isPaused();
+        if (pauseOverlayController != null) {
+            pauseOverlayController.setManualPauseActive(paused);
+        }
+        if (paused) {
+            if (gameTimer != null) {
+                gameTimer.pauseTimerTracking();
+            }
+            if (gameLifecycle instanceof GameModeLifecycle gameModeLifecycle) {
+                try {
+                    gameModeLifecycle.pauseMode();
+                } catch (Exception ignored) {}
             }
         } else if (countdownOverlay == null || !countdownOverlay.isVisible()) {
-            resumeTimerTracking();
-            if (gameLifecycle instanceof com.comp2042.tetris.app.GameModeLifecycle) {
-                try { ((com.comp2042.tetris.app.GameModeLifecycle) gameLifecycle).resumeMode(); } catch (Exception ignored) {}
+            if (gameTimer != null) {
+                gameTimer.resumeTimerTracking();
+            }
+            if (gameLifecycle instanceof GameModeLifecycle gameModeLifecycle) {
+                try {
+                    gameModeLifecycle.resumeMode();
+                } catch (Exception ignored) {}
             }
         }
     }
-    
+
     private int getCurrentScore() {
         return scoreProperty == null ? 0 : scoreProperty.get();
     }
-    
+
     private void applyBoardClip() {
         if (boardClipContainer != null) {
             Rectangle clip = new Rectangle();
@@ -1098,50 +592,5 @@ public class GuiController implements Initializable, GameView {
             boardClipContainer.setClip(clip);
         }
     }
-
-    private void bindPauseDim() {
-        if (pauseDim == null || rootPane == null) {
-            return;
-        }
-        pauseDim.prefWidthProperty().bind(rootPane.widthProperty());
-        pauseDim.prefHeightProperty().bind(rootPane.heightProperty());
-        pauseDim.setOpacity(0);
-        pauseDim.setVisible(false);
-    }
-
-    private void updatePauseDimVisibility() {
-        if (pauseDim == null) {
-            return;
-        }
-        if (pauseDimTransition != null) {
-            pauseDimTransition.stop();
-        }
-        pauseDimTransition = new FadeTransition(Duration.millis(220), pauseDim);
-        pauseDimTransition.setFromValue(pauseDim.getOpacity());
-        if (manualPauseActive) {
-            pauseDim.setVisible(true);
-            pauseDimTransition.setToValue(0.55);
-            pauseDimTransition.setOnFinished(null);
-        } else {
-            if (!pauseDim.isVisible()) {
-                pauseDim.setVisible(true);
-            }
-            pauseDimTransition.setToValue(0);
-            pauseDimTransition.setOnFinished(e -> pauseDim.setVisible(false));
-        }
-        pauseDimTransition.play();
-    }
-
-    private void bindHelpContainer() {
-        if (helpContainer == null) {
-            return;
-        }
-        // Set initial visibility based on current state
-        helpContainer.setVisible(stateManager.getCurrentState() == GameStateManager.GameState.MENU);
-        
-        // Listen for state changes and update visibility
-        stateManager.stateProperty().addListener((obs, oldVal, newVal) -> {
-            helpContainer.setVisible(newVal == GameStateManager.GameState.MENU);
-        });
-    }
 }
+

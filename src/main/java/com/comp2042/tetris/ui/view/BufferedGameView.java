@@ -1,10 +1,10 @@
 package com.comp2042.tetris.ui.view;
 
 import com.comp2042.tetris.domain.model.ViewData;
-import com.comp2042.tetris.mechanics.board.GameView;
+import com.comp2042.tetris.engine.board.GameView;
 import com.comp2042.tetris.util.MatrixOperations;
 
-// used to reduce unnecessary UI updates by buffering the last known board state
+
 public final class BufferedGameView extends GameViewDecorator {
 
     private int[][] lastMatrix;
@@ -55,3 +55,4 @@ public final class BufferedGameView extends GameViewDecorator {
         }
     }
 }
+

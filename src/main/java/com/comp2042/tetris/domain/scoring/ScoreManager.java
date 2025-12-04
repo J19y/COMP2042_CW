@@ -4,11 +4,7 @@ import com.comp2042.tetris.domain.model.Score;
 
 import javafx.beans.property.IntegerProperty;
 
-/**
- * It manages the player's score during the game.
- * This service provides methods to add points, reset the score,
- * and retrieve the current score value.
- */
+
 public final class ScoreManager {
     private final Score score = new Score();
 
@@ -28,3 +24,4 @@ public final class ScoreManager {
         score.reset();
     }
 }
+

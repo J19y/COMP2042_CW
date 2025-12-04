@@ -2,11 +2,7 @@ package com.comp2042.tetris.domain.model;
 
 import com.comp2042.tetris.util.MatrixOperations;
 
-/**
- * Renamed from NextShapeInfo to RotationInfo to show that this holds a single
- * rotation matrix for the next shape and its rotation index. Kept the getter
- * names (getShape/getPosition)
- */
+
 public final class RotationInfo {
 
     private final int[][] shape;
@@ -25,3 +21,4 @@ public final class RotationInfo {
         return position;
     }
 }
+

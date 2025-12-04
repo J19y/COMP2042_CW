@@ -1,9 +1,6 @@
 package com.comp2042.tetris.util;
 
-/**
- * Created collisionDetector class to just handle collision detection logic.
- * Removed collision detection logic from Matrix operation to support the SRP.
- */
+
 public final class CollisionDetector {
     private CollisionDetector() {}
 
@@ -29,3 +26,4 @@ public final class CollisionDetector {
         return targetX < 0 || targetX >= matrix[targetY].length;
     }
 }
+

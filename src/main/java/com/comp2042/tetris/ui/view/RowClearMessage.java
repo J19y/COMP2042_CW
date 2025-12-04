@@ -13,16 +13,11 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-/**
- * RowClearMessage - simplified neon floating text variant.
- * Replaces the previous boxed backdrop and pulsing bars with a single
- * floating, glowing text that uses the `.floating-score` / `.floating-score-high`
- * CSS rules defined in `window.css`.
- */
+
 public final class RowClearMessage extends StackPane {
 
     private static final Font TITLE_FONT = Font.font("AXR ArcadeMachine", 22);
-    // Total duration increased so the message remains readable and aligned with effects
+    
     private static final Duration TOTAL_DURATION = Duration.millis(1000);
 
     private final Text titleText;
@@ -36,14 +31,14 @@ public final class RowClearMessage extends StackPane {
         String title = titleForLines(lines);
         titleText = new Text(title);
         titleText.setFont(TITLE_FONT);
-        // Apply CSS class for neon styling; large combos get the high variant
+        
         titleText.getStyleClass().add("floating-score");
         String upper = title.toUpperCase();
         if (upper.contains("SWEEP") || upper.contains("TETRA") || upper.contains("TRIPLE") || title.length() > 14) {
             titleText.getStyleClass().add("floating-score-high");
         }
 
-        // Ensure the base text color uses black for readability
+        
         titleText.setFill(Color.BLACK);
 
         getChildren().add(titleText);
@@ -57,10 +52,7 @@ public final class RowClearMessage extends StackPane {
         message.play(container);
     }
 
-    /**
-     * Show a custom message using the same visual style as the row-clear message.
-     * This is used for Mystery Mode events (e.g. "Earthquake!", "The Fog").
-     */
+    
     public static void showCustom(Group container, String message) {
         if (container == null || message == null || message.isEmpty()) return;
         System.out.println("RowClearMessage: showCustom -> " + message);
@@ -76,18 +68,18 @@ public final class RowClearMessage extends StackPane {
 
         titleText = new Text(message);
 
-        // Do not hard-set the font size here; let the CSS classes (floating-score-event) control
-        // the font-family and font-size. The font is already registered via @font-face in CSS.
+        
+        
 
-        // Use distinct CSS for event messages so they don't look like row-clear messages
+        
         titleText.getStyleClass().add("floating-score-event");
         String upper = message.toUpperCase();
         if (upper.contains("SWEEP") || upper.contains("TETRA") || upper.contains("TRIPLE") || message.length() > 14) {
             titleText.getStyleClass().add("floating-score-event-high");
         }
 
-        // Ensure the inner fill uses the neon event colour so the text is not black.
-        // Prefer Press Start 2P for the event messages (smaller, arcade-like).
+        
+        
         try {
             javafx.scene.text.Font press = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/PressStart2P-vaV7.ttf"), 26);
             if (press != null) {
@@ -95,7 +87,7 @@ public final class RowClearMessage extends StackPane {
             }
         } catch (Exception ignored) {}
 
-        // Set explicit fill colour to be sure Text nodes don't fall back to black
+        
         if (titleText.getStyleClass().contains("floating-score-event-high")) {
             titleText.setFill(Color.web("#FF6BE0"));
         } else {
@@ -115,22 +107,22 @@ public final class RowClearMessage extends StackPane {
             setTranslateY(-100);
         }
 
-        // Start immediately visible, then float and fade
+        
         setScaleX(1.0);
         setScaleY(1.0);
         setOpacity(1.0);
 
-        // Float up by -50px over TOTAL_DURATION (1000ms)
+        
         TranslateTransition floatUp = new TranslateTransition(TOTAL_DURATION, this);
         floatUp.setByY(-50);
 
-        // Fade: start at halfway (delay 500ms) and last 500ms so text is readable
+        
         FadeTransition fade = new FadeTransition(Duration.millis(500), this);
         fade.setFromValue(1.0);
         fade.setToValue(0.0);
         fade.setDelay(Duration.millis(500));
 
-        // Play float and fade immediately
+        
         floatUp.play();
         fade.setOnFinished(e -> cleanup());
         fade.play();
@@ -138,12 +130,11 @@ public final class RowClearMessage extends StackPane {
 
     private void cleanup() {
         Parent parent = getParent();
-        if (parent instanceof Group groupParent) {
-            groupParent.getChildren().remove(this);
-        } else if (parent instanceof StackPane stack) {
-            stack.getChildren().remove(this);
-        } else if (parent instanceof Pane pane) {
-            pane.getChildren().remove(this);
+        switch (parent) {
+            case Group groupParent -> groupParent.getChildren().remove(this);
+            case StackPane stack -> stack.getChildren().remove(this);
+            case Pane pane -> pane.getChildren().remove(this);
+            default -> {}
         }
     }
 
@@ -157,16 +148,13 @@ public final class RowClearMessage extends StackPane {
     }
 
     private static String titleForLines(int lines) {
-        switch (lines) {
-            case 4:
-                return "TETRA-CORE";
-            case 3:
-                return "TRIPLE CASCADE";
-            case 2:
-                return "DOUBLE PULSE";
-            default:
-                return "SINGLE SWEEP";
-        }
+        return switch (lines) {
+            case 4 -> "TETRA-CORE";
+            case 3 -> "TRIPLE CASCADE";
+            case 2 -> "DOUBLE PULSE";
+            default -> "SINGLE SWEEP";
+        };
     }
 
 }
+

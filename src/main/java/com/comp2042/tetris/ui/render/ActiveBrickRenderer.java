@@ -8,11 +8,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-/**
- * Renders the currently falling Tetromino and its ghost aligned with the landing row.
- * Applies neon-glow effects to all active bricks for a cohesive visual style.
- * Ghost bricks match the neon style but with reduced opacity for clear distinction.
- */
+
 public final class ActiveBrickRenderer {
     private final int brickSize;
     private final GridPane ghostPanel;
@@ -63,9 +59,7 @@ public final class ActiveBrickRenderer {
         updatePosition(brick);
     }
 
-    /**
-     * Animate a short settle/pop on the active brick layer, then run the callback.
-     */
+    
     public void animateSettle(Runnable onFinished) {
         if (brickPanel == null) {
             if (onFinished != null) onFinished.run();
@@ -101,7 +95,7 @@ public final class ActiveBrickRenderer {
         double cellWidth = brickSize + brickPanel.getHgap();
         double cellHeight = brickSize + brickPanel.getVgap();
         double x = brick.getxPosition() * cellWidth;
-        // Snap translations to integer pixels to avoid sub-pixel gaps at container borders
+        
         double tx = Math.round(x);
         brickPanel.setTranslateX(tx);
         if (ghostPanel != null) ghostPanel.setTranslateX(tx);
@@ -109,14 +103,14 @@ public final class ActiveBrickRenderer {
         double freeTranslateY = (brick.getyPosition() - 2) * cellHeight;
         brickPanel.setTranslateY(Math.round(freeTranslateY));
 
-        // Position ghost panel using ghostY
+        
         int ghostY = brick.getGhostY();
         double ghostTranslateY = (ghostY - 2) * cellHeight;
         if (ghostPanel != null) {
             ghostPanel.setTranslateY(Math.round(ghostTranslateY));
         }
         brickPanel.setSnapToPixel(true);
-        // Ghost is intentionally disabled: do not translate or show ghostPanel
+        
     }
 
     private void updateColors(int[][] brickData) {
@@ -127,7 +121,7 @@ public final class ActiveBrickRenderer {
 
                 if (rect != null) {
                     if (brickData[i][j] != 0) {
-                        // Active brick styling
+                        
                         Color baseColor = ColorPalette.getInstance().getColor(brickData[i][j]) instanceof Color
                                 ? (Color) ColorPalette.getInstance().getColor(brickData[i][j])
                                 : Color.WHITE;
@@ -135,11 +129,11 @@ public final class ActiveBrickRenderer {
                         if (neonColor == null) {
                             neonColor = baseColor;
                         }
-                        // Use the original active neon style for the falling brick (brighter glow)
+                        
                         NeonGlowStyle.applyNeonGlow(rect, baseColor, neonColor);
                         rect.setVisible(true);
 
-                        // Ghost brick: use muted neon styling so it reads like the active brick
+                        
                         if (gRect != null) {
                             NeonGlowStyle.applyGhostNeon(gRect, baseColor, neonColor);
                             gRect.setVisible(true);
@@ -158,5 +152,5 @@ public final class ActiveBrickRenderer {
         }
     }
     
-    // Ghost-related methods removed — ghost intentionally disabled
+    
 }

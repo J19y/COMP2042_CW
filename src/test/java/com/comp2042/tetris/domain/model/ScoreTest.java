@@ -11,7 +11,7 @@ class ScoreTest {
     void scoreStartsAtZero() {
         Score score = new Score();
 
-        // Fresh games should have no points on the board
+        
         assertEquals(0, score.getValue());
         assertEquals(0, score.scoreProperty().get());
     }
@@ -23,7 +23,7 @@ class ScoreTest {
         score.add(5);
         score.add(3);
 
-        // Each add should stack on top of the existing score
+        
         assertEquals(8, score.getValue());
     }
 
@@ -31,7 +31,7 @@ class ScoreTest {
     void addRejectsNegativeValues() {
         Score score = new Score();
 
-        // Guard against bugs that would subtract points through add()
+        
         assertThrows(IllegalArgumentException.class, () -> score.add(-1));
     }
 
@@ -42,8 +42,9 @@ class ScoreTest {
 
         score.reset();
 
-        // Reset should be a clean slate
+        
         assertEquals(0, score.getValue());
         assertEquals(0, score.scoreProperty().get());
     }
 }
+

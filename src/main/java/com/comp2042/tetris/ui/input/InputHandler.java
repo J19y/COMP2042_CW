@@ -8,7 +8,7 @@ import com.comp2042.tetris.domain.model.ShowResult;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 
-// Handles key input mapping and dispatches events via a generic handler.
+
 
 public final class InputHandler {
 
@@ -16,7 +16,7 @@ public final class InputHandler {
         void onResult(ShowResult result);
     }
 
-    // Key mapping to EventType to avoid if/else chains.
+    
     private static final Map<KeyCode, EventType> KEYMAP = new EnumMap<>(KeyCode.class);
     static {
         KEYMAP.put(KeyCode.LEFT, EventType.LEFT);
@@ -33,7 +33,7 @@ public final class InputHandler {
 
     private Runnable pauseAction;
 
-    // Allow external modules to register additional key bindings (OCP-friendly)
+    
     public static void registerKeyBinding(KeyCode key, EventType type) {
         if (key != null && type != null) {
             KEYMAP.put(key, type);
@@ -66,3 +66,4 @@ public final class InputHandler {
         this.pauseAction = pauseAction;
     }
 }
+

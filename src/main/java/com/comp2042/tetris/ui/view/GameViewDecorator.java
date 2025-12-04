@@ -2,16 +2,16 @@ package com.comp2042.tetris.ui.view;
 
 import java.util.Objects;
 
-import com.comp2042.tetris.app.CreateNewGame;
+import com.comp2042.tetris.application.port.CreateNewGame;
 import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.model.ViewData;
-import com.comp2042.tetris.mechanics.board.GameView;
+import com.comp2042.tetris.engine.board.GameView;
 import com.comp2042.tetris.ui.input.DropInput;
 import com.comp2042.tetris.ui.input.InputActionHandler;
 
 import javafx.beans.property.IntegerProperty;
 
-// used as a base decorator for GameView implementations
+
 public class GameViewDecorator implements GameView {
 
     protected final GameView delegate;
@@ -95,3 +95,4 @@ public class GameViewDecorator implements GameView {
         delegate.showHeavyGravityEffect(seconds);
     }
 }
+

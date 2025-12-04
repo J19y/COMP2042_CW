@@ -60,3 +60,4 @@ public final class ViewData {
         return copy;
     }
 }
+

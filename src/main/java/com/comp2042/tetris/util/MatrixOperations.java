@@ -1,9 +1,6 @@
 package com.comp2042.tetris.util;
 
-/**
- * Utility class providing matrix operations for the Tetris game.
- * Handles operations like matrix intersection checking, copying, merging and row clearing.
- */
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -13,11 +10,11 @@ import java.util.stream.Collectors;
 import com.comp2042.tetris.domain.model.RowClearResult;
 
 public class MatrixOperations {
-    //We don't want to instantiate this utility class
+    
     private MatrixOperations(){
     }
 
-    // Collision logic moved to CollisionDetector to achieve SRP.
+    
 
     public static int[][] copy(int[][] original) {
         int[][] myInt = new int[original.length][];
@@ -46,11 +43,7 @@ public class MatrixOperations {
         return copy;
     }
 
-    /**
-     * Clears completed rows from the board and calculates score bonus.
-     * Renamed from 'checkRemoving' to 'clearRows' to make it clearer that
-     * it both identifies full rows AND returns a new matrix with rows cleared.
-     */
+    
     public static RowClearResult clearRows(final int[][] matrix) {
         int[][] tmp = new int[matrix.length][matrix[0].length];
         Deque<int[]> newRows = new ArrayDeque<>();
@@ -79,7 +72,7 @@ public class MatrixOperations {
                 break;
             }
         }
-        // Scoring logic moved to ScoreService - MatrixOperations should only handle matrix operations
+        
         return new RowClearResult(clearedRows.size(), tmp, 0, clearedRows);
     }
 
