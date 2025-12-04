@@ -13,7 +13,7 @@ public class BoardLifecycleManager implements BoardLifecycle {
     public void newGame() {
         boardState.setBoardMatrix(new int[boardState.getRows()][boardState.getCols()]);
 
-        com.comp2042.tetris.domain.model.SpawnResult result = new com.comp2042.tetris.engine.spawn.BrickSpawn() {
+        new com.comp2042.tetris.engine.spawn.BrickSpawn() {
             @Override
             public com.comp2042.tetris.domain.model.SpawnResult spawnBrick() {
                 com.comp2042.tetris.engine.bricks.Brick currentBrick = boardState.getBrickGenerator().getBrick();

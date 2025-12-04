@@ -1,12 +1,10 @@
 package com.comp2042.tetris.engine.bricks;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 class BrickShapeTest {
@@ -408,7 +406,7 @@ class BrickShapeTest {
         for (Brick brick : bricks) {
             List<int[][]> rotations = brick.getRotationMatrix();
             assertNotNull(rotations, "Brick should have non-null rotation matrix");
-            assertTrue(rotations.size() > 0, "Brick should have at least 1 rotation");
+            assertTrue(!rotations.isEmpty(), "Brick should have at least 1 rotation");
 
             for (int[][] rotation : rotations) {
                 assertNotNull(rotation, "Each rotation should be non-null");

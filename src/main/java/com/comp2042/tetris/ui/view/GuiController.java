@@ -6,10 +6,10 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.comp2042.tetris.application.session.BaseGameController;
 import com.comp2042.tetris.application.port.CreateNewGame;
-import com.comp2042.tetris.application.session.GameLoopController;
 import com.comp2042.tetris.application.port.GameModeLifecycle;
+import com.comp2042.tetris.application.session.BaseGameController;
+import com.comp2042.tetris.application.session.GameLoopController;
 import com.comp2042.tetris.application.session.MysteryGameController;
 import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.model.ViewData;
@@ -128,7 +128,7 @@ public class GuiController implements Initializable, GameView {
     private transient GameMediator mediator;
 
     private GameLoopController gameLoopController;
-    private Duration baseTickInterval = Duration.millis(400);
+    private final Duration baseTickInterval = Duration.millis(400);
 
     private InputActionHandler inputActionHandler;
     private DropInput dropInput;
@@ -478,8 +478,7 @@ public class GuiController implements Initializable, GameView {
         int finalScore = getCurrentScore();
         int totalLines = 0;
         long gameTime = 0;
-        if (gameLifecycle instanceof BaseGameController) {
-            BaseGameController controller = (BaseGameController) gameLifecycle;
+        if (gameLifecycle instanceof BaseGameController controller) {
             totalLines = controller.getTotalLinesCleared();
             gameTime = System.currentTimeMillis() - controller.getGameStartTime();
         }
@@ -498,9 +497,9 @@ public class GuiController implements Initializable, GameView {
         } catch (Exception ignored) {}
 
         if (gameOverPanel != null) {
-            if (gameLifecycle instanceof MysteryGameController) {
+            if (gameLifecycle instanceof MysteryGameController mysteryController) {
                 try {
-                    int lvl = ((MysteryGameController) gameLifecycle).getLevel();
+                    int lvl = mysteryController.getLevel();
                     gameOverPanel.setMysteryLevel(lvl);
                 } catch (Exception ignored) {
                     gameOverPanel.setMysteryLevel(0);
@@ -564,18 +563,18 @@ public class GuiController implements Initializable, GameView {
             if (gameTimer != null) {
                 gameTimer.pauseTimerTracking();
             }
-            if (gameLifecycle instanceof GameModeLifecycle) {
+            if (gameLifecycle instanceof GameModeLifecycle gameModeLifecycle) {
                 try {
-                    ((GameModeLifecycle) gameLifecycle).pauseMode();
+                    gameModeLifecycle.pauseMode();
                 } catch (Exception ignored) {}
             }
         } else if (countdownOverlay == null || !countdownOverlay.isVisible()) {
             if (gameTimer != null) {
                 gameTimer.resumeTimerTracking();
             }
-            if (gameLifecycle instanceof GameModeLifecycle) {
+            if (gameLifecycle instanceof GameModeLifecycle gameModeLifecycle) {
                 try {
-                    ((GameModeLifecycle) gameLifecycle).resumeMode();
+                    gameModeLifecycle.resumeMode();
                 } catch (Exception ignored) {}
             }
         }

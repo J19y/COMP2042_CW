@@ -1,22 +1,23 @@
 package com.comp2042.tetris.ui.controller;
 
+import com.comp2042.tetris.services.audio.MusicManager;
+
 import javafx.animation.FadeTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.Node;
-import javafx.scene.effect.DropShadow;
-import com.comp2042.tetris.services.audio.MusicManager;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -197,33 +198,34 @@ public class LevelSelectionManager {
         String shadowColor;
 
         switch (mode) {
-            case "CLASSIC":
+            case "CLASSIC" -> {
                 borderColor = "rgba(100,180,255,0.95)";
                 textColor = "#e3f2ff";
                 gradientColor1 = "rgba(100,180,255,0.12)";
                 gradientColor2 = "rgba(70,140,220,0.06)";
                 shadowColor = "rgba(100,180,255,0.25)";
-                break;
-            case "RUSH":
+            }
+            case "RUSH" -> {
                 borderColor = "rgba(100,230,150,0.95)";
                 textColor = "#e7ffde";
                 gradientColor1 = "rgba(100,230,150,0.12)";
                 gradientColor2 = "rgba(70,190,120,0.06)";
                 shadowColor = "rgba(100,230,150,0.25)";
-                break;
-            case "MYSTERY":
+            }
+            case "MYSTERY" -> {
                 borderColor = "rgba(200,120,255,0.95)";
                 textColor = "#f3e5ff";
                 gradientColor1 = "rgba(200,120,255,0.12)";
                 gradientColor2 = "rgba(170,90,220,0.06)";
                 shadowColor = "rgba(200,120,255,0.25)";
-                break;
-            default:
+            }
+            default -> {
                 borderColor = "rgba(100,180,255,0.95)";
                 textColor = "#e3f2ff";
                 gradientColor1 = "rgba(100,180,255,0.12)";
                 gradientColor2 = "rgba(70,140,220,0.06)";
                 shadowColor = "rgba(100,180,255,0.25)";
+            }
         }
 
         button.setStyle(
@@ -245,20 +247,12 @@ public class LevelSelectionManager {
         button.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
         
-        String tipText;
-        switch (mode) {
-            case "CLASSIC":
-                tipText = "Standard rules with steady progression and traditional scoring â€” focus on precise stacking to build high scores.";
-                break;
-            case "RUSH":
-                tipText = "A timed challenge: clear as many lines as you can before the clock runs out. Faster gravity increases the pressure.";
-                break;
-            case "MYSTERY":
-                tipText = "Unpredictable piece sequences and increased speed create a chaotic, high-intensity experience for skilled players.";
-                break;
-            default:
-                tipText = "Standard rules with steady progression and traditional scoring.";
-        }
+        String tipText = switch (mode) {
+            case "CLASSIC" -> "Standard rules with steady progression and traditional scoring – focus on precise stacking to build high scores.";
+            case "RUSH" -> "A timed challenge: clear as many lines as you can before the clock runs out. Faster gravity increases the pressure.";
+            case "MYSTERY" -> "Unpredictable piece sequences and increased speed create a chaotic, high-intensity experience for skilled players.";
+            default -> "Standard rules with steady progression and traditional scoring.";
+        };
 
         Tooltip tooltip = new Tooltip(tipText);
         tooltip.setWrapText(true);

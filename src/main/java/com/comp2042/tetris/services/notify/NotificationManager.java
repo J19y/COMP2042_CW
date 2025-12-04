@@ -10,7 +10,7 @@ import javafx.scene.Group;
 public final class NotificationManager {
     
     private final Group notificationContainer;
-    private final NotificationPanel notificationPanel;
+    private NotificationPanel notificationPanel;
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(NotificationManager.class.getName());
 
     
@@ -18,7 +18,7 @@ public final class NotificationManager {
         this.notificationContainer = notificationContainer;
         
         if (this.notificationContainer != null) {
-            notificationPanel = new NotificationPanel();
+            this.notificationPanel = new NotificationPanel();
             
             
             if (Platform.isFxApplicationThread()) {

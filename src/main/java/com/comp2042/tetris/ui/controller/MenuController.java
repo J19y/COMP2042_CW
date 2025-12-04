@@ -2,6 +2,7 @@ package com.comp2042.tetris.ui.controller;
 
 import com.comp2042.tetris.services.audio.MusicManager;
 import com.comp2042.tetris.ui.animation.BackgroundEffectsManager;
+
 import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -95,9 +96,19 @@ public class MenuController {
         Rectangle fadeOverlay = new Rectangle(700, 600, javafx.scene.paint.Color.BLACK);
         fadeOverlay.setMouseTransparent(true);
         rootPane.getChildren().add(fadeOverlay);
+       
+        if (mainMenuUI != null) {
+            mainMenuUI.setOpacity(0.0);
+            FadeTransition menuFade = new FadeTransition(Duration.seconds(1.8), mainMenuUI);
+            menuFade.setFromValue(0.0);
+            menuFade.setToValue(1.0);
+            menuFade.setDelay(Duration.millis(220));
+            menuFade.play();
+        }
 
         FadeTransition fade = new FadeTransition(Duration.seconds(3), fadeOverlay);
         fade.setFromValue(1);
+        fade.setToValue(0);
         fade.setOnFinished(e -> rootPane.getChildren().remove(fadeOverlay));
         fade.play();
 
@@ -122,6 +133,8 @@ public class MenuController {
         
         VBox levelSelectionContainer = new VBox();
         controlPanelManager = new ControlPanelManager(rootPane, backgroundPane, levelSelectionContainer);
+        
+        controlPanelManager.setNodesToBlur(titleContainer, playButton, quitButton, controlsButton, settingsButton, yearText);
         settingsPanelManager = new SettingsPanelManager(
                 rootPane, settingsOverlay, volumeSlider, musicToggleButton, volumeText, levelSelectionContainer
         );

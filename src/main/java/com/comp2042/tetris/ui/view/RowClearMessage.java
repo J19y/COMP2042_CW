@@ -130,12 +130,11 @@ public final class RowClearMessage extends StackPane {
 
     private void cleanup() {
         Parent parent = getParent();
-        if (parent instanceof Group groupParent) {
-            groupParent.getChildren().remove(this);
-        } else if (parent instanceof StackPane stack) {
-            stack.getChildren().remove(this);
-        } else if (parent instanceof Pane pane) {
-            pane.getChildren().remove(this);
+        switch (parent) {
+            case Group groupParent -> groupParent.getChildren().remove(this);
+            case StackPane stack -> stack.getChildren().remove(this);
+            case Pane pane -> pane.getChildren().remove(this);
+            default -> {}
         }
     }
 
@@ -149,16 +148,12 @@ public final class RowClearMessage extends StackPane {
     }
 
     private static String titleForLines(int lines) {
-        switch (lines) {
-            case 4:
-                return "TETRA-CORE";
-            case 3:
-                return "TRIPLE CASCADE";
-            case 2:
-                return "DOUBLE PULSE";
-            default:
-                return "SINGLE SWEEP";
-        }
+        return switch (lines) {
+            case 4 -> "TETRA-CORE";
+            case 3 -> "TRIPLE CASCADE";
+            case 2 -> "DOUBLE PULSE";
+            default -> "SINGLE SWEEP";
+        };
     }
 
 }

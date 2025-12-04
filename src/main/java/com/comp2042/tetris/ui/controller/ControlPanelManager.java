@@ -1,6 +1,7 @@
 package com.comp2042.tetris.ui.controller;
 
 import com.comp2042.tetris.ui.animation.NeonFlickerEffect;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
@@ -31,6 +32,8 @@ public class ControlPanelManager {
     private javafx.scene.layout.Pane controllerDim;
     private Rectangle controllerInnerDim;
     private Timeline controllerFlicker;
+   
+    private javafx.scene.Node[] nodesToBlur;
 
     public ControlPanelManager(
             StackPane rootPane,
@@ -39,6 +42,10 @@ public class ControlPanelManager {
         this.rootPane = rootPane;
         this.backgroundPane = backgroundPane;
         this.levelSelectionContainer = levelSelectionContainer;
+    }
+
+    public void setNodesToBlur(javafx.scene.Node... nodes) {
+        this.nodesToBlur = nodes == null ? new javafx.scene.Node[0] : nodes;
     }
 
     
@@ -86,6 +93,15 @@ public class ControlPanelManager {
         if (levelSelectionContainer != null && levelSelectionContainer.isVisible()) {
             levelSelectionContainer.setEffect(null);
             levelSelectionContainer.setOpacity(1.0);
+        }
+
+        if (nodesToBlur != null) {
+            for (javafx.scene.Node n : nodesToBlur) {
+                if (n != null) {
+                    n.setEffect(null);
+                    n.setOpacity(1.0);
+                }
+            }
         }
 
         ParallelTransition hide = new ParallelTransition();
@@ -183,6 +199,15 @@ public class ControlPanelManager {
             levelSelectionContainer.setOpacity(0.3);
             levelSelectionContainer.setEffect(new javafx.scene.effect.GaussianBlur(15));
         }
+
+        if (nodesToBlur != null) {
+            for (javafx.scene.Node n : nodesToBlur) {
+                if (n != null) {
+                    n.setOpacity(0.3);
+                    n.setEffect(new javafx.scene.effect.GaussianBlur(12));
+                }
+            }
+        }
     }
 
     
@@ -226,10 +251,10 @@ public class ControlPanelManager {
 
         
         String[][] controls = new String[][]{
-                {"W/â†‘", "Move Up"},
-                {"A/â†گ", "Move Left"},
-                {"S/â†“", "Move Down"},
-                {"D/â†’", "Move Right"},
+            {"W/\u2191", "Move Up"},    // ↑
+            {"A/\u2190", "Move Left"},  // ←
+            {"S/\u2193", "Move Down"},  // ↓
+            {"D/\u2192", "Move Right"}, // →
                 {"Space", "Hard Drop"},
                 {"P", "Pause"},
                 {"Mouse", "Alternative Movement"}
@@ -300,8 +325,7 @@ public class ControlPanelManager {
 
         
         for (Node child : controlsContainer.getChildren()) {
-            if (child instanceof HBox) {
-                HBox row = (HBox) child;
+            if (child instanceof HBox row) {
                 row.prefWidthProperty().bind(controlsContainer.widthProperty());
                 HBox.setHgrow(row, Priority.ALWAYS);
             }

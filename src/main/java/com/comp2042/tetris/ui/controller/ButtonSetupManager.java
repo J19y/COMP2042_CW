@@ -1,6 +1,7 @@
 package com.comp2042.tetris.ui.controller;
 
 import com.comp2042.tetris.services.audio.MusicManager;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.ScaleTransition;
@@ -320,11 +321,7 @@ public class ButtonSetupManager {
             speakerImage.setPreserveRatio(true);
             speakerImage.setTranslateX(-8);
 
-            DropShadow cyanGlow = new DropShadow();
-            cyanGlow.setColor(Color.web("#008B8B"));
-            cyanGlow.setRadius(8);
-            cyanGlow.setSpread(0.15);
-            speakerImage.setEffect(cyanGlow);
+            setupSpeakerButtonEffects(speakerImage);
             settingsButton.setGraphic(speakerImage);
         } catch (Exception e) {
             
@@ -336,6 +333,66 @@ public class ButtonSetupManager {
 
         settingsButton.setText("");
         settingsButton.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+    }
+
+    
+    private void setupSpeakerButtonEffects(javafx.scene.Node graphic) {
+        DropShadow dropShadow = new DropShadow();
+        dropShadow.setColor(Color.web("#005555"));
+        dropShadow.setRadius(5);
+        dropShadow.setSpread(0.2);
+        Glow glow = new Glow(0.2);
+        dropShadow.setInput(glow);
+        graphic.setEffect(dropShadow);
+
+        Timeline flickerTimeline = new Timeline(
+                new KeyFrame(Duration.millis(0),
+                        new KeyValue(glow.levelProperty(), 1.0),
+                        new KeyValue(dropShadow.radiusProperty(), 15)),
+                new KeyFrame(Duration.millis(100),
+                        new KeyValue(glow.levelProperty(), 0.8),
+                        new KeyValue(dropShadow.radiusProperty(), 12)),
+                new KeyFrame(Duration.millis(200),
+                        new KeyValue(glow.levelProperty(), 1.0),
+                        new KeyValue(dropShadow.radiusProperty(), 15)),
+                new KeyFrame(Duration.millis(300),
+                        new KeyValue(glow.levelProperty(), 0.9),
+                        new KeyValue(dropShadow.radiusProperty(), 13)),
+                new KeyFrame(Duration.millis(400),
+                        new KeyValue(glow.levelProperty(), 1.0),
+                        new KeyValue(dropShadow.radiusProperty(), 15))
+        );
+        flickerTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+
+        settingsButton.setOnMouseEntered(event -> {
+            try {
+                MusicManager.getInstance().playSfx("/audio/RotationSoundEffect.mp3", 1.4);
+            } catch (Exception ignored) {
+            }
+            glow.setLevel(1.0);
+            dropShadow.setRadius(15);
+            flickerTimeline.play();
+        });
+
+        settingsButton.setOnMouseExited(event -> {
+            flickerTimeline.stop();
+            Timeline glowOut = new Timeline(
+                    new KeyFrame(Duration.ZERO,
+                            new KeyValue(glow.levelProperty(), glow.getLevel()),
+                            new KeyValue(dropShadow.radiusProperty(), dropShadow.getRadius())),
+                    new KeyFrame(Duration.millis(250),
+                            new KeyValue(glow.levelProperty(), 0.2),
+                            new KeyValue(dropShadow.radiusProperty(), 5))
+            );
+            glowOut.play();
+        });
+
+        settingsButton.setOnMousePressed(ev -> {
+            try {
+                MusicManager.getInstance().playSfx("/audio/ButtonClickingEffect.mp3");
+            } catch (Exception ignored) {
+            }
+        });
     }
 
     
