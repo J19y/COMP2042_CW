@@ -2,14 +2,12 @@
 
 ---
 
-## Student Information
-
 | Field | Details |
 |-------|---------|
 | **Name** | Youssif Mahmoud Gomaa Sayed |
 | **Student ID** | 20612641 |
 | **Module** | COMP2042 - Developing Maintainable Software |
-| **Academic Year** | 2024/2025 |
+| **Academic Year** | 2025/2026 |
 
 ---
 
