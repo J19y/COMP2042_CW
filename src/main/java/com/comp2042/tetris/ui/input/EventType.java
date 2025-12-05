@@ -1,6 +1,27 @@
 package com.comp2042.tetris.ui.input;
 
+/**
+ * Enumeration of input event types for game control.
+ * <p>
+ * Defines all possible user input actions that can be performed
+ * during gameplay.
+ * </p>
+ *
+ * @author Youssif Mahmoud Gomaa Sayed
+ * @version 1.0
+ */
 public enum EventType {
-    DOWN, LEFT, RIGHT, ROTATE, HARD_DROP, PAUSE
+    /** Move brick down (soft drop) */
+    DOWN,
+    /** Move brick left */
+    LEFT,
+    /** Move brick right */
+    RIGHT,
+    /** Rotate brick clockwise */
+    ROTATE,
+    /** Instant drop to bottom (hard drop) */
+    HARD_DROP,
+    /** Pause/resume game */
+    PAUSE
 }
 

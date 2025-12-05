@@ -6,7 +6,16 @@ import java.util.Map;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
-
+/**
+ * Singleton color palette manager for brick and UI colors.
+ * <p>
+ * Maintains mappings from brick IDs to both standard and neon colors.
+ * Supports custom color registration for extensibility.
+ * </p>
+ *
+ * @author Youssif Mahmoud Gomaa Sayed
+ * @version 1.0
+ */
 public final class ColorPalette {
 
     private static final ColorPalette INSTANCE = new ColorPalette();
@@ -14,6 +23,9 @@ public final class ColorPalette {
     private final Map<Integer, Paint> colors = new HashMap<>();
     private final Map<Integer, Color> neonColors = new HashMap<>();
 
+    /**
+     * Private constructor initializes default brick colors.
+     */
     private ColorPalette() {
         
         registerInternal(0, Color.TRANSPARENT);
@@ -49,12 +61,21 @@ public final class ColorPalette {
         registerNeonInternal(7, Color.web("#FF00FF"));
     }
 
+    /**
+     * Returns the singleton instance.
+     *
+     * @return the ColorPalette instance
+     */
     public static ColorPalette getInstance() {
         return INSTANCE;
     }
 
-    
-    
+    /**
+     * Registers a custom color for a brick ID.
+     *
+     * @param id the brick ID
+     * @param paint the color to associate
+     */
     public static void register(int id, Paint paint) {
         INSTANCE.registerInternal(id, paint);
     }
@@ -65,16 +86,32 @@ public final class ColorPalette {
         }
     }
 
+    /**
+     * Gets the color for a brick ID.
+     *
+     * @param id the brick ID
+     * @return the associated color
+     */
     public Paint getColor(int id) {
         return colors.get(id);
     }
 
-    
+    /**
+     * Static convenience method to get a color.
+     *
+     * @param id the brick ID
+     * @return the associated color
+     */
     public static Paint get(int id) {
         return INSTANCE.getColor(id);
     }
 
-    
+    /**
+     * Registers a neon color for a brick ID.
+     *
+     * @param id the brick ID
+     * @param neonColor the neon color to associate
+     */
     public static void registerNeon(int id, Color neonColor) {
         INSTANCE.registerNeonInternal(id, neonColor);
     }
@@ -85,11 +122,22 @@ public final class ColorPalette {
         }
     }
 
+    /**
+     * Gets the neon color for a brick ID.
+     *
+     * @param id the brick ID
+     * @return the associated neon color
+     */
     public Color getNeonColor(int id) {
         return neonColors.get(id);
     }
 
-    
+    /**
+     * Static convenience method to get a neon color.
+     *
+     * @param id the brick ID
+     * @return the associated neon color
+     */
     public static Color getNeon(int id) {
         return INSTANCE.getNeonColor(id);
     }

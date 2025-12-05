@@ -3,16 +3,34 @@ package com.comp2042.tetris.ui.input;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
+
 import com.comp2042.tetris.domain.model.ShowResult;
 
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 
-
-
+/**
+ * Processes keyboard input and routes to appropriate handlers.
+ * <p>
+ * Supports custom key bindings and can be attached to any JavaFX node
+ * to receive keyboard events. Manages the mapping between key codes
+ * and game event types.
+ * </p>
+ *
+ * @author Youssif Mahmoud Gomaa Sayed
+ * @version 1.0
+ */
 public final class InputHandler {
 
+    /**
+     * Callback interface for receiving input results.
+     */
     public interface InputCallbacks {
+        /**
+         * Called when an input produces a result.
+         *
+         * @param result the result of the input action
+         */
         void onResult(ShowResult result);
     }
 
@@ -33,13 +51,26 @@ public final class InputHandler {
 
     private Runnable pauseAction;
 
-    
+    /**
+     * Registers a custom key binding.
+     *
+     * @param key the key code to bind
+     * @param type the event type to associate with the key
+     */
     public static void registerKeyBinding(KeyCode key, EventType type) {
         if (key != null && type != null) {
             KEYMAP.put(key, type);
         }
     }
 
+    /**
+     * Attaches this input handler to a JavaFX node.
+     *
+     * @param focusNode the node to receive keyboard events
+     * @param handler the handler to process input actions
+     * @param callbacks the callbacks for input results
+     * @param canAcceptInput supplier returning true if input should be processed
+     */
     public void attach(Node focusNode,
                        InputActionHandler handler,
                        InputCallbacks callbacks,
@@ -62,6 +93,11 @@ public final class InputHandler {
         });
     }
 
+    /**
+     * Sets the action to execute when pause is triggered.
+     *
+     * @param pauseAction the pause action runnable
+     */
     public void setPauseAction(Runnable pauseAction) {
         this.pauseAction = pauseAction;
     }
