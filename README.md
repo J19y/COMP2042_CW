@@ -13,31 +13,79 @@
 
 ## Table of Contents
 
-1. [GitHub Repository Link](#1-github-repository-link)
-2. [Compilation Instructions](#2-compilation-instructions)
-3. [Implemented and Working Properly](#3-implemented-and-working-properly)
-4. [Implemented but Not Working Properly](#4-implemented-but-not-working-properly)
-5. [Features Not Implemented](#5-features-not-implemented)
-6. [New Java Classes](#6-new-java-classes)
-7. [Modified Java Classes](#7-modified-java-classes)
-8. [Unexpected Problems](#8-unexpected-problems)
-9. [Testing](#9-testing)
-10. [Architecture Summary](#10-architecture-summary)
-11. [Summary](#11-summary)
+1. [Project Overview](#1-project-overview)
+2. [GitHub Repository Link](#2-github-repository-link)
+3. [Compilation Instructions](#3-compilation-instructions)
+   - [3.1 Prerequisites](#31-prerequisites)
+   - [3.2 Steps to Compile and Run](#32-steps-to-compile-and-run)
+   - [3.3 Running from an IDE](#33-running-from-an-ide)
+   - [3.4 Troubleshooting](#34-troubleshooting)
+4. [Maintenance Work (Refactoring)](#4-maintenance-work-refactoring)
+   - [4.1 Package Restructuring](#41-package-restructuring)
+   - [4.2 Basic Maintenance and Encapsulation](#42-basic-maintenance-and-encapsulation)
+   - [4.3 Single Responsibility Principle (SRP) Refactoring](#43-single-responsibility-principle-srp-refactoring)
+   - [4.4 Design Patterns for Extensibility](#44-design-patterns-for-extensibility)
+5. [Implemented and Working Properly](#5-implemented-and-working-properly)
+   - [5.1 Core Gameplay Features](#51-core-gameplay-features)
+   - [5.2 User Interface Features](#52-user-interface-features)
+   - [5.3 Audio System](#53-audio-system)
+   - [5.4 Visual Polish](#54-visual-polish)
+6. [Implemented but Not Working Properly](#6-implemented-but-not-working-properly)
+7. [Features Not Implemented](#7-features-not-implemented)
+8. [New Java Classes](#8-new-java-classes)
+   - [8.1 Application Layer](#81-application-layer-comcomp2042tetrisapplication)
+   - [8.2 Domain Layer](#82-domain-layer-comcomp2042tetrisdomain)
+   - [8.3 Engine Layer](#83-engine-layer-comcomp2042tetrisengine)
+   - [8.4 Services Layer](#84-services-layer-comcomp2042tetrisservices)
+   - [8.5 UI Layer](#85-ui-layer-comcomp2042tetrisui)
+   - [8.6 Utility Layer](#86-utility-layer-comcomp2042tetrisutil)
+9. [Modified Java Classes](#9-modified-java-classes)
+10. [Unexpected Problems](#10-unexpected-problems)
+11. [Testing](#11-testing)
+    - [11.1 Test Categories and Coverage](#111-test-categories-and-coverage)
+    - [11.2 Why These Tests Matter](#112-why-these-tests-matter)
+    - [11.3 Bugs Prevented by Tests](#113-bugs-prevented-by-tests)
+12. [Architecture Summary](#12-architecture-summary)
+    - [12.1 Final Architecture](#121-final-architecture)
+    - [12.2 Architecture Transformation](#122-architecture-transformation)
+    - [12.3 Why This Architecture Is More Maintainable](#123-why-this-architecture-is-more-maintainable)
+13. [Summary](#13-summary)
+    - [13.1 Key Achievements](#131-key-achievements)
+    - [13.2 Technical Highlights](#132-technical-highlights)
+    - [13.3 Personal Reflection & Lessons Learned](#133-personal-reflection--lessons-learned)
 
 ---
 
-## 1. GitHub Repository Link
+## 1. Project Overview
+
+**Tetris 2042** is a modern JavaFX implementation of the classic Tetris puzzle game, featuring a neon-themed visual style and multiple gameplay modes. Players arrange falling tetromino pieces to complete horizontal lines, which are then cleared from the board. The game ends when pieces stack to the top of the playing field.
+
+### Game Features
+
+- **Three Game Modes:** Classic (endless), Rush (2-minute time attack), and Mystery (random chaotic events)
+- **Ghost Piece Preview:** Shows where pieces will land for precise placement
+- **Next Piece Queue:** Displays upcoming 5 pieces for strategic planning
+- **Dynamic Soundtrack:** Mode-specific background music with smooth transitions
+- **Neon Visual Theme:** Retro-futuristic aesthetic with glow effects and animations
+
+
+### Coursework Scope
+
+This project involved **maintaining** an existing Tetris codebase by refactoring it into a clean, layered architecture with 110 classes and 8 design patterns applied. The game was **extended** with new game modes, audio system, and visual polish.
+
+---
+
+## 2. GitHub Repository Link
 
 [https://github.com/J19y/COMP2042_CW](https://github.com/J19y/COMP2042_CW)
 
 ---
 
-## 2. Compilation Instructions
+## 3. Compilation Instructions
 
-### 2.1 Prerequisites
+### 3.1 Prerequisites
 
-#### 2.1.1 Java Development Kit (JDK 23)
+#### 3.1.1 Java Development Kit (JDK 23)
 
 This project requires **JDK 23** or higher.
 
@@ -59,7 +107,7 @@ java --version
 ```
 Expected output: `java 23` or higher
 
-#### 2.1.2 Git (for cloning the repository)
+#### 3.1.2 Git (for cloning the repository)
 
 **Download and Install:**
 - **Windows:** Download and install from [Git for Windows](https://git-scm.com/download/win)
@@ -71,7 +119,7 @@ Expected output: `java 23` or higher
 git --version
 ```
 
-#### 2.1.3 Maven (Optional - Maven Wrapper included)
+#### 3.1.3 Maven (Optional - Maven Wrapper included)
 
 The project includes Maven Wrapper (`mvnw.cmd`), so Maven installation is **optional**. However, if you prefer a global Maven installation:
 
@@ -85,20 +133,20 @@ The project includes Maven Wrapper (`mvnw.cmd`), so Maven installation is **opti
 mvn --version
 ```
 
-#### 2.1.4 IDE (Optional but Recommended)
+#### 3.1.4 IDE (Optional but Recommended)
 
 Any of the following IDEs can be used:
 - [IntelliJ IDEA](https://www.jetbrains.com/idea/download/) (Community Edition is free)
 - [Eclipse IDE for Java Developers](https://www.eclipse.org/downloads/)
 - [VS Code](https://code.visualstudio.com/) with [Extension Pack for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack)
 
-#### 2.1.5 JavaFX (Automatically Managed)
+#### 3.1.5 JavaFX (Automatically Managed)
 
 JavaFX 21.0.6 dependencies are **automatically downloaded** by Maven. No manual installation required.
 
 ---
 
-### 2.2 Steps to Compile and Run
+### 3.2 Steps to Compile and Run
 
 #### Step 1: Clone the Repository
 
@@ -144,7 +192,7 @@ git clone https://github.com/J19y/COMP2042_CW.git && cd COMP2042_CW
 
 ---
 
-### 2.3 Running from an IDE
+### 3.3 Running from an IDE
 
 #### IntelliJ IDEA
 
@@ -172,7 +220,7 @@ If you encounter JavaFX errors:
 
 ---
 
-### 2.4 Troubleshooting
+### 3.4 Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -184,73 +232,216 @@ If you encounter JavaFX errors:
 
 ---
 
-## 3. Implemented and Working Properly
+## 4. Maintenance Work (Refactoring)
 
-### 3.1 Core Gameplay Features
+This section details the refactoring efforts undertaken to transform the original codebase into a maintainable, extensible architecture. The work progressed in logical phases: package restructuring, basic maintenance and encapsulation, applying Single Responsibility Principle, and finally implementing design patterns to enable future extensions.
+
+---
+
+### 4.1 Package Restructuring
+
+The original codebase had all classes in a flat package structure with no clear organization. Classes were reorganized into a **layered architecture** with six distinct packages:
+
+| Package | Purpose | Key Classes |
+|---------|---------|-------------|
+| `application/` | Use cases, commands, session management | `BaseGameController`, `GameCommand`, `GameLoop` |
+| `domain/` | Core business logic, value objects | `Score`, `ViewData`, `ScoringPolicy` |
+| `engine/` | Game mechanics, board logic | `SimpleBoard`, `BrickGenerator`, `CollisionDetector` |
+| `services/` | Cross-cutting concerns | `MusicManager`, `NotificationManager` |
+| `ui/` | JavaFX views, renderers, input handling | `GuiController`, `BoardRenderer`, `InputHandler` |
+| `util/` | Pure utility functions | `MatrixOperations`, `CollisionDetector` |
+
+**Why This Improves Maintainability:** Clear package boundaries make the codebase navigable. Developers can locate functionality by layer. Dependencies flow downward (UI → Application → Domain → Engine), preventing circular dependencies.
+
+---
+
+### 4.2 Basic Maintenance and Encapsulation
+
+Before applying major refactoring patterns, foundational cleanup was performed:
+
+| Change | Before | After | Benefit |
+|--------|--------|-------|---------|
+| **Field Visibility** | Public fields accessed directly (`board.matrix[i][j]`) | Private fields with getters (`board.getCell(i, j)`) | Encapsulation enables validation and future implementation changes |
+| **Magic Numbers** | Hardcoded values (`if (y > 22)`, `score += 100`) | Named constants (`BOARD_ROWS = 22`, `BASE_SCORE = 50`) | Self-documenting code, single point of change |
+| **Null Checks** | Direct field access causing NPEs | `Objects.requireNonNull()` in constructors, defensive null checks | Fail-fast behavior, clearer error messages |
+| **Method Extraction** | 200+ line methods with nested loops | Small focused methods (10-30 lines) | Readable, testable, reusable |
+| **Javadoc Comments** | No documentation | All public classes and methods documented | API clarity for future maintainers |
+
+---
+
+### 4.3 Single Responsibility Principle (SRP) Refactoring
+
+Large classes violating SRP were decomposed into focused, single-purpose classes:
+
+#### 4.3.1 Board Class Decomposition
+
+| Original Problem | The original `Board` class (800+ lines) handled: board state, collision detection, piece movement, row clearing, rendering, and piece generation. |
+|------------------|---|
+| **Extracted Classes** | |
+| `SimpleBoard` | Manages the 22×10 grid matrix and piece state |
+| `CollisionDetector` | Static utility for collision checks |
+| `MatrixOperations` | Static utility for row clearing, matrix merging |
+| `BrickPositionManager` | Tracks current piece X/Y coordinates |
+| `BrickRotator` | Manages rotation state and shape matrices |
+| `BoardReader` | Read-only queries for board state |
+| **Improvement** | Each class has one reason to change. Utilities are pure functions—easily unit tested. |
+
+#### 4.3.2 GUI Controller Decomposition
+
+| Original Problem | The original `GuiController` (1200+ lines) handled: board rendering, piece animation, score display, game over screen, pause overlay, notifications, and input binding. |
+|------------------|---|
+| **Extracted Classes** | |
+| `BoardRenderer` | Renders static board (locked pieces) |
+| `ActiveBrickRenderer` | Renders falling piece and ghost piece |
+| `GameOverPanel` | Game over screen with stats display |
+| `PauseOverlayController` | Pause dimming and state |
+| `CountdownManager` | 3-2-1-GO resume countdown |
+| `NotificationPanel` | Score popup notifications |
+| `GameMediator` | Coordinates between all view components |
+| **Improvement** | Each renderer is independently testable. New visual features require new classes, not modifications. |
+
+#### 4.3.3 Menu Controller Decomposition
+
+| Original Problem | The original `MenuController` handled: button setup, animations, settings panel, level selection, and background effects. |
+|------------------|---|
+| **Extracted Classes** | |
+| `ButtonSetupManager` | Configures menu buttons with hover effects |
+| `TitleSetupManager` | Animated title display |
+| `SettingsPanelManager` | Volume slider and music toggle |
+| `LevelSelectionManager` | Game mode card selection |
+| `BackgroundEffectsManager` | Falling tetromino animation |
+| `MenuAnimationController` | Screen transitions and blur effects |
+| **Improvement** | Menu features can be modified independently. Animation logic is isolated from UI setup. |
+
+---
+
+### 4.4 Design Patterns for Extensibility
+
+After SRP refactoring, design patterns were applied to enable future extensions without modifying existing code:
+
+#### 4.4.1 Strategy Pattern — Scoring System
+
+| Aspect | Details |
+|--------|---------|
+| **Problem Solved** | Different game modes needed different scoring rules. Hardcoded scoring prevented extension. |
+| **Implementation** | `ScoringPolicy` interface with `scoreForLineClear(int)` and `scoreForDrop(EventSource, boolean)`. `ClassicScoringPolicy` implements 50×lines² formula. |
+| **Extension Enabled** | New scoring modes (combo multipliers, time bonuses) require only a new `ScoringPolicy` implementation—no changes to game controllers. |
+
+#### 4.4.2 Command Pattern — Input Handling
+
+| Aspect | Details |
+|--------|---------|
+| **Problem Solved** | Input handling was a massive switch statement. Adding controls or remapping keys required invasive changes. |
+| **Implementation** | `GameCommand` interface with `execute(MoveEvent)`. Each action (left, right, rotate, drop) is a separate command. `CommandRegistrar` maps events to commands. |
+| **Extension Enabled** | New commands can be added without modifying existing code. Mystery Mode inverts controls by simply swapping command mappings. |
+
+#### 4.4.3 State Pattern — Game State Management
+
+| Aspect | Details |
+|--------|---------|
+| **Problem Solved** | Boolean flags (`isPaused`, `isGameOver`) led to impossible states and scattered if-else checks. |
+| **Implementation** | `GameStateManager` with `GameState` enum (`MENU`, `PLAYING`, `PAUSED`, `GAME_OVER`). Each state defines valid transitions and behavior (`canAcceptInput()`, `canUpdateGame()`). |
+| **Extension Enabled** | New states (e.g., COUNTDOWN, LEVEL_TRANSITION) require only enum extension. State-dependent logic is localized. |
+
+#### 4.4.4 Factory Pattern — Board and Brick Creation
+
+| Aspect | Details |
+|--------|---------|
+| **Problem Solved** | Direct instantiation (`new Board()`, `new IBrick()`) prevented testing with mocks and custom configurations. |
+| **Implementation** | `BoardFactory` interface with `SimpleBoardFactory` implementation. `BrickRegistry` singleton holds `Supplier<Brick>` for each shape. `BrickGeneratorFactory` creates generators. |
+| **Extension Enabled** | Custom bricks via `BrickRegistry.register(CustomBrick::new)`. Tests inject deterministic generators. Alternative board implementations possible. |
+
+#### 4.4.5 Template Method Pattern — Game Controllers
+
+| Aspect | Details |
+|--------|---------|
+| **Problem Solved** | Multiple game modes would require duplicating the entire game loop with minor variations. |
+| **Implementation** | `BaseGameController` abstract class with hooks: `onStart()`, `onPause()`, `onResume()`, `onGameOver()`. Subclasses (`ClassicGameController`, `TimedGameController`, `MysteryGameController`) override only mode-specific behavior. |
+| **Extension Enabled** | New game modes inherit all common logic. Bug fixes in base class apply to all modes automatically. |
+
+#### 4.4.6 Observer Pattern — Game Over Detection
+
+| Aspect | Details |
+|--------|---------|
+| **Problem Solved** | Game over detection was tightly coupled to a single handler. Multiple systems needed notification (audio, UI, stats). |
+| **Implementation** | `SpawnManager` maintains list of `GameOverCallback` observers. Calls all observers when spawn results in collision. |
+| **Extension Enabled** | New systems can subscribe to game over events without modifying spawn logic. |
+
+#### 4.4.7 Decorator Pattern — View Caching
+
+| Aspect | Details |
+|--------|---------|
+| **Problem Solved** | Board rendering was slow due to redrawing unchanged cells every frame. Optimization required invasive changes. |
+| **Implementation** | `BufferedGameView` decorates `GameView`, caching the last board state. Only redraws when matrix actually changes. |
+| **Extension Enabled** | Performance optimizations are transparent to callers. Additional decorators (logging, metrics) can be stacked. |
+
+#### 4.4.8 Mediator Pattern — View Coordination
+
+| Aspect | Details |
+|--------|---------|
+| **Problem Solved** | After SRP decomposition, view components needed to communicate (line clear triggers notification AND animation). Direct coupling would create N×N dependencies. |
+| **Implementation** | `GameMediator` coordinates between `BoardRenderer`, `ActiveBrickRenderer`, `NotificationPanel`, and animation triggers. Components communicate only through the mediator. |
+| **Extension Enabled** | New view components integrate by connecting to the mediator only. Existing components remain unchanged. |
+
+---
+
+## 5. Implemented and Working Properly
+
+### 5.1 Core Gameplay Features
 
 - **Classic Tetris Mechanics:** Full implementation of brick movement (left, right, down), rotation, and hard drop functionality. Pieces lock when they cannot move further down.
 
 - **Three Game Modes:**
-  - **Classic Mode:** Standard endless Tetris with progressive scoring.
-  - **Timed Mode (Rush):** 2-minute time-limited gameplay where the objective is to maximize score before time expires.
-  - **Mystery Mode:** Features random events (inverted controls, fog effect, gravity changes, speed boosts) that trigger periodically, with progressive difficulty scaling every 30 seconds.
+  - **Classic Mode:** Standard endless Tetris with progressive scoring. Difficulty increases over time with faster drop speeds. Plays a calm, classic-style soundtrack.
+  - **Timed Mode (Rush):** 2-minute time-limited gameplay where the objective is to maximize score before time expires. Features a prominent digital countdown timer and energetic soundtrack. Implemented via `TimedGameController` extending `BaseGameController`.
+  - **Mystery Mode:** Features random events (inverted controls, fog effect, gravity changes, speed boosts) that trigger every 8–15 seconds. Progressive difficulty scaling every 30 seconds increases speed multiplier. Implemented via `MysteryGameController` with dedicated event scheduling and `GameEffectManager` for visual effects.
 
-- **Scoring System:** Points awarded for line clears (50 × lines² formula) and soft drops (1 point per user-initiated drop). Hard drops award points based on distance fallen.
+- **Scoring System:** Points awarded for line clears (50 × lines² formula) and soft drops (1 point per user-initiated drop). Hard drops award points based on distance fallen. Implemented via `ScoringPolicy` strategy pattern allowing different scoring rules per mode.
 
-- **Ghost Piece Preview:** Shows where the current piece will land, rendered with subtle neon styling.
+- **Ghost Piece Preview:** Shows where the current piece will land, rendered with subtle neon styling and transparency. Calculated by `SimpleBoard` using `CollisionDetector` to simulate downward movement. Position included in `ViewData` for rendering by `ActiveBrickRenderer`.
 
-- **Next Brick Queue:** Displays up to 5 upcoming pieces with animated preview panels.
+- **Next Brick Queue:** Displays up to 5 upcoming pieces with animated preview panels. `RandomBrickGenerator` maintains internal queue via `peekNext(5)` method. Rendered by `NextBrickRenderer` with consistent neon styling.
 
-- **Line Clear Detection and Animation:** Cleared rows trigger visual feedback with score bonus notifications.
+- **Line Clear Detection and Animation:** Cleared rows trigger visual feedback with score bonus notifications. Flash effects on cleared rows, animated score popups via `NotificationPanel`, and level-up celebration effects.
 
-### 3.2 User Interface Features
+### 5.2 User Interface Features
 
-- **Animated Main Menu:** Features falling tetromino shapes in the background, neon glow effects, and smooth fade transitions.
+- **Animated Main Menu:** Features falling tetromino shapes in the background managed by `BackgroundEffectsManager`, neon glow effects via `NeonGlowStyle`, and smooth fade transitions controlled by `MenuAnimationController`.
 
-- **Level Selection Panel:** Interactive mode selection with animated card transitions and tooltips describing each game mode.
+- **Level Selection Panel:** Interactive mode selection with animated card transitions managed by `LevelSelectionManager`. Tooltips describe each game mode's unique mechanics.
 
-- **Pause System:** Press 'P' to pause. Displays a dimmed overlay with countdown timer (3-2-1-GO) when resuming.
+- **Pause System:** Press 'P' to pause. Displays a dimmed overlay via `PauseOverlayController` with countdown timer (3-2-1-GO) managed by `CountdownManager` when resuming. State managed by `GameStateManager` ensuring input is blocked during pause.
 
-- **Game Over Screen:** Shows final score, time played, lines cleared, and level reached. Includes Retry and Main Menu buttons with animated entrance effects.
+- **Game Over Screen:** Shows final score, time played, lines cleared, and level reached via `GameOverPanel`. Includes Retry and Main Menu buttons with animated entrance effects handled by `GameOverAnimator`.
 
-- **Settings Panel:** Volume slider and music toggle accessible from the main menu.
+- **Settings Panel:** Volume slider and music toggle accessible from the main menu, managed by `SettingsPanelManager` with direct binding to `MusicManager`.
 
-- **Control Help Panel:** Visual diagram showing keyboard controls (Arrow keys/WASD, Space for hard drop, P to pause).
+- **Control Help Panel:** Visual diagram showing keyboard controls (Arrow keys/WASD, Space for hard drop, P to pause) managed by `ControlPanelManager`.
 
-### 3.3 Audio System
+### 5.3 Audio System
 
-- **Dynamic Soundtrack:** Different background tracks for each game mode (Main Menu, Classic, Rush, Mystery, Game Over).
-- **Sound Effects:** Audio feedback for piece rotation and placement.
-- **Volume Control:** Adjustable music volume with fade transitions between tracks.
-- **Music Ducking:** Background music temporarily quiets during countdown sequences.
+- **Dynamic Soundtrack:** Different background tracks for each game mode (Main Menu, Classic, Rush, Mystery, Game Over) managed by `MusicManager` singleton with `Track` enum.
+- **Smooth Transitions:** Fade transitions between tracks prevent jarring audio cuts when switching modes.
+- **Volume Control:** Adjustable music volume with real-time slider in settings panel.
+- **Music Ducking:** Background music temporarily quiets during countdown sequences for clarity.
 
-### 3.4 Visual Polish
+### 5.4 Visual Polish
 
-- **Neon Theme:** All game elements use a cohesive neon aesthetic with glow effects and drop shadows.
-- **Smooth Animations:** Piece settling animation, level-up effects, line clear flash effects.
+- **Neon Theme:** All game elements use a cohesive neon aesthetic with glow effects and drop shadows via `NeonGlowStyle` and `ColorPalette` singletons.
+- **Smooth Animations:** Piece settling animation via `ActiveBrickRenderer.animateSettle()`, level-up effects, line clear flash effects—all using JavaFX `Timeline` and `Transition` APIs.
 - **Timer Display:** Digital-style font for countdown and game timer (Rush mode).
 
 ---
 
-## 4. Implemented but Not Working Properly
+## 6. Implemented but Not Working Properly
 
 - **Mystery Mode Heavy Gravity Event:** The visual indicator for heavy gravity appears, but the actual gravity multiplier does not consistently affect the drop speed during the effect duration. The fallback timer restores the state correctly, but the intermediate behavior is inconsistent.
 
-- **Fog Effect Persistence:** In Mystery Mode, the fog overlay occasionally persists briefly after the intended duration due to timing conflicts with other random events.
-
-- **Pause Button Hover Lag:** The pause button in gameplay sometimes experiences lag when hovering over it, causing delayed visual feedback on the hover state.
-
 - **Game Mode Transition Delays:** Transitions between game levels occasionally lag or get delayed, resulting in brief stutters during level progression.
-
-- **Game Mode Tooltip Inconsistency:** When hovering over the game mode selection cards, the descriptive tooltip message does not always appear consistently, requiring multiple hover attempts.
 
 ---
 
-## 5. Features Not Implemented
-
-- **High Score Persistence:** Scores are not saved between sessions. A leaderboard system was planned but not completed due to time constraints.
-
-- **Customizable Key Bindings:** The `InputHandler` supports registering custom key bindings programmatically, but no UI was built to allow players to remap controls.
+## 7. Features Not Implemented
 
 - **Additional Brick Types:** The `BrickRegistry` is designed for extensibility, but no custom tetromino shapes beyond the standard 7 were added.
 
@@ -260,9 +451,9 @@ If you encounter JavaFX errors:
 
 ---
 
-## 6. New Java Classes
+## 8. New Java Classes
 
-### 6.1 Application Layer (`com.comp2042.tetris.application`)
+### 8.1 Application Layer (`com.comp2042.tetris.application`)
 
 | Class | Location | Purpose |
 |-------|----------|---------|
@@ -280,7 +471,7 @@ If you encounter JavaFX errors:
 | `GameInitializer` | `application/session/` | Factory-style class that wires together board, movement, spawn, and score components. Simplifies controller construction. |
 | `GameController` | `application/session/` | Legacy interface for game controller contracts. Retained for compatibility. |
 
-### 6.2 Domain Layer (`com.comp2042.tetris.domain`)
+### 8.2 Domain Layer (`com.comp2042.tetris.domain`)
 
 | Class | Location | Purpose |
 |-------|----------|---------|
@@ -294,7 +485,7 @@ If you encounter JavaFX errors:
 | `ClassicScoringPolicy` | `domain/scoring/` | Default implementation: 50 × lines² for clears, 1 point per user soft drop. |
 | `ScoreManager` | `domain/scoring/` | Service managing score state. Wraps `Score` and exposes property for binding. |
 
-### 6.3 Engine Layer (`com.comp2042.tetris.engine`)
+### 8.3 Engine Layer (`com.comp2042.tetris.engine`)
 
 | Class | Location | Purpose |
 |-------|----------|---------|
@@ -332,14 +523,14 @@ If you encounter JavaFX errors:
 | `SpawnManager` | `engine/spawn/` | Manages spawn operations with observer pattern for game-over notification. |
 | `GameStateManager` | `engine/state/` | State machine managing game states (MENU, PLAYING, PAUSED, GAME_OVER). Uses State pattern with enum-based states. |
 
-### 6.4 Services Layer (`com.comp2042.tetris.services`)
+### 8.4 Services Layer (`com.comp2042.tetris.services`)
 
 | Class | Location | Purpose |
 |-------|----------|---------|
 | `MusicManager` | `services/audio/` | Singleton managing background music playback, volume control, fade transitions, and sound effects. |
 | `NotificationManager` | `services/notify/` | Manages in-game notifications (score bonuses, line clear messages, event announcements). |
 
-### 6.5 UI Layer (`com.comp2042.tetris.ui`)
+### 8.5 UI Layer (`com.comp2042.tetris.ui`)
 
 | Class | Location | Purpose |
 |-------|----------|---------|
@@ -388,7 +579,7 @@ If you encounter JavaFX errors:
 | `AudioSettingsController` | `ui/view/` | Controller for in-game audio settings. |
 | `TetrisMainMenu` | `ui/view/` | Alternative menu implementation (unused in final version). |
 
-### 6.6 Utility Layer (`com.comp2042.tetris.util`)
+### 8.6 Utility Layer (`com.comp2042.tetris.util`)
 
 | Class | Location | Purpose |
 |-------|----------|---------|
@@ -397,7 +588,7 @@ If you encounter JavaFX errors:
 
 ---
 
-## 7. Modified Java Classes
+## 9. Modified Java Classes
 
 The original codebase was a single-file or minimal Tetris implementation. The entire architecture was refactored to follow SOLID principles, clean architecture patterns, and proper separation of concerns. Key modifications include:
 
@@ -413,69 +604,69 @@ The original codebase was a single-file or minimal Tetris implementation. The en
 
 ---
 
-## 8. Unexpected Problems
+## 10. Unexpected Problems
 
-### 8.1 JavaFX Timeline Timing Issues in Mystery Mode
+### 10.1 JavaFX Timeline Timing Issues in Mystery Mode
 
 **Problem:** Random events in Mystery Mode (inverted controls, fog, gravity changes) occasionally overlapped or failed to revert properly due to concurrent `Timeline` instances modifying shared state.
 
 **Resolution:** Implemented explicit timeline cancellation before starting new events and added null checks before stopping timelines. Used `Platform.runLater()` consistently for UI updates to avoid race conditions.
 
-### 8.2 Ghost Piece Position Calculation
+### 10.2 Ghost Piece Position Calculation
 
 **Problem:** The ghost piece (drop preview) occasionally showed incorrect positions when the active piece was near the board edges or rotated.
 
 **Resolution:** Refactored `CollisionDetector` to properly handle edge cases and ensured `ViewData` always calculates ghost position using the actual board state rather than a stale cache.
 
-### 8.3 Audio Playback on Application Close
+### 10.3 Audio Playback on Application Close
 
 **Problem:** Closing the application while music was playing caused `MediaPlayer` disposal errors and occasional crashes.
 
 **Resolution:** Added proper cleanup in `MusicManager.fadeOutAndStop()` with try-catch around dispose calls and ensured `Platform.exit()` is called in `Main.start()` via stage close handler.
 
-### 8.4 Font Loading Failures
+### 10.4 Font Loading Failures
 
 **Problem:** Custom fonts (arcade-style fonts) failed to load on some systems, causing fallback to default fonts and inconsistent visuals.
 
 **Resolution:** Added fallback font chains in `ViewInitializer` and wrapped font loading in try-catch blocks with null checks before applying fonts to labels.
 
-### 8.5 Input During Pause State
+### 10.5 Input During Pause State
 
 **Problem:** Key presses were still being processed during the pause state, causing pieces to move while the game appeared paused.
 
 **Resolution:** Added `GameState.canAcceptInput()` check in `InputHandler` and ensured the state machine properly blocks input processing in non-PLAYING states.
 
-### 8.6 Memory Leak in Background Animation
+### 10.6 Memory Leak in Background Animation
 
 **Problem:** The `BackgroundEffectsManager` continued creating particles and falling shapes even after leaving the main menu, causing memory growth.
 
 **Resolution:** Added `stopAnimation()` method and ensured it is called when transitioning to the game scene. Particles and shapes are properly removed from the scene graph when off-screen.
 
-### 8.7 Music Files Not Loading
+### 10.7 Music Files Not Loading
 
 **Problem:** Audio files added to the resources folder were not loading into the game, resulting in silent gameplay despite the music tracks being present in the project.
 
 **Resolution:** Ensured audio files were placed in the correct `/resources/audio/` directory and used `getClass().getResource()` with the proper path format. Added null checks in `MusicManager` to gracefully handle missing audio resources and log warnings instead of crashing.
 
-### 8.8 Visual Regression After SRP Refactoring
+### 10.8 Visual Regression After SRP Refactoring
 
 **Problem:** After applying Single Responsibility Principle to large classes like `GuiController` and `MenuController`, the game visuals broke in multiple ways—misaligned elements, missing components, and incorrect rendering order.
 
 **Resolution:** Carefully traced dependencies between extracted classes and ensured proper initialization order. Created mediator classes (`GameMediator`, `ViewInitializer`) to coordinate between the newly separated components and maintain the same visual behavior as before refactoring.
 
-### 8.9 Animation Breaking After Code Changes
+### 10.9 Animation Breaking After Code Changes
 
 **Problem:** Various animations (menu transitions, piece settling, level-up effects) would break or behave unexpectedly after code modifications, sometimes freezing mid-animation or not triggering at all.
 
 **Resolution:** Standardized animation handling by ensuring all `Timeline` and `Transition` objects are properly stopped before starting new ones. Added `setOnFinished()` callbacks to clean up animation state and used `Platform.runLater()` for animations triggered from non-UI threads.
 
-### 8.10 Container Resizing Collision Problems
+### 10.10 Container Resizing Collision Problems
 
 **Problem:** When UI containers were resized (particularly during scene transitions or window focus changes), collision detection would malfunction, causing pieces to clip through walls or overlap with locked pieces.
 
 **Resolution:** Decoupled the visual rendering from the game logic collision calculations. Ensured `CollisionDetector` always operates on the logical grid coordinates rather than pixel positions, and added validation checks after any resize events.
 
-### 8.11 Game Mode Feature Overlap
+### 10.11 Game Mode Feature Overlap
 
 **Problem:** Features and soundtracks intended for specific game modes (e.g., Mystery Mode events, Rush Mode timer) would leak into other game modes, causing confusion and unintended behavior.
 
@@ -483,36 +674,62 @@ The original codebase was a single-file or minimal Tetris implementation. The en
 
 ---
 
-## 9. Testing
+## 11. Testing
 
-The project includes comprehensive unit tests covering:
+### 11.1 Test Categories and Coverage
 
-- **Utility classes:** `CollisionDetectorTest`, `MatrixOperationsTest`
-- **Domain logic:** `ScoreManagerTest`, `ClassicScoringPolicyTest`
-- **Engine components:** `SimpleBoardTest`, `BrickRegistryTest`, `RandomBrickGeneratorTest`, `BrickShapeTest`, `BrickMoveTest`, `BrickPositionManagerTest`, `SpawnManagerTest`, `GameStateManagerTest`
-- **Services:** `MusicManagerAPITest`, `NotificationManagerTest`
-- **UI components:** `InputSystemTest`, `UIRenderingTest`, `BufferedGameViewTest`
-- **Controllers:** `GameControllerTest`, `GameLoopControllerTest`, `MysteryGameControllerTest`
+| Category | Test Classes | Purpose |
+|----------|--------------|----------|
+| **Utility Classes** | `CollisionDetectorTest`, `MatrixOperationsTest` | Verify core algorithms for collision detection and row clearing work correctly at boundaries and edge cases |
+| **Domain Logic** | `ScoreManagerTest`, `ClassicScoringPolicyTest` | Ensure scoring calculations are accurate and property bindings update correctly |
+| **Engine Components** | `SimpleBoardTest`, `BrickRegistryTest`, `RandomBrickGeneratorTest`, `BrickShapeTest`, `BrickMoveTest`, `BrickPositionManagerTest`, `SpawnManagerTest`, `GameStateManagerTest` | Validate board operations, brick generation, movement mechanics, and state transitions |
+| **Services** | `MusicManagerAPITest`, `NotificationManagerTest` | Test audio playback API and notification lifecycle without requiring actual audio files |
+| **UI Components** | `InputSystemTest`, `UIRenderingTest`, `BufferedGameViewTest` | Verify input routing, rendering logic, and caching behavior |
+| **Controllers** | `GameControllerTest`, `GameLoopControllerTest`, `MysteryGameControllerTest` | Test game loop timing, mode-specific behavior, and controller lifecycle |
 
-Tests use JUnit 5 and Mockito for mocking dependencies. Run with `mvn test`.
+### 11.2 Why These Tests Matter
+
+- **Regression Prevention:** After SRP refactoring split large classes into 110 smaller ones, tests ensured existing functionality wasn't broken
+- **Edge Case Coverage:** `CollisionDetectorTest` catches boundary conditions (pieces at walls, floor, ceiling) that caused bugs during development
+- **State Machine Validation:** `GameStateManagerTest` ensures impossible state transitions (e.g., pausing during game over) are blocked
+- **Isolation Verification:** Tests confirm extracted classes work independently, validating the SRP decomposition
+
+### 11.3 Bugs Prevented by Tests
+
+| Test | Bug Prevented |
+|------|---------------|
+| `MatrixOperationsTest.clearRows()` | Rows not shifting down correctly after clearing, leaving gaps |
+| `CollisionDetectorTest.edgeCases()` | Pieces clipping through walls or floor at board boundaries |
+| `BrickRotatorTest.rotationCycle()` | Rotation index overflow causing array out-of-bounds exceptions |
+| `SpawnManagerTest.gameOverDetection()` | Game continuing after pieces stack to top (spawn collision not detected) |
+| `BufferedGameViewTest.caching()` | Performance degradation from unnecessary full-board redraws every frame |
+| `GameStateManagerTest.transitions()` | Input being processed during pause state, moving pieces while paused |
+
+**Run tests with:** `mvn test`
 
 ---
 
-## 10. Architecture Summary
+## 12. Architecture Summary
+
+### 12.1 Final Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                        UI Layer                             │
 │  (controller/, view/, input/, render/, theme/, animation/)  │
+│                     ↓ uses interfaces ↓                     │
 ├─────────────────────────────────────────────────────────────┤
 │                    Application Layer                        │
 │            (command/, port/, session/)                      │
+│                      ↓ orchestrates ↓                       │
 ├─────────────────────────────────────────────────────────────┤
 │                      Domain Layer                           │
 │                 (model/, scoring/)                          │
+│                         ↓ uses ↓                            │
 ├─────────────────────────────────────────────────────────────┤
 │                      Engine Layer                           │
 │    (board/, bricks/, movement/, rotation/, spawn/, state/)  │
+│                         ↓ uses ↓                            │
 ├─────────────────────────────────────────────────────────────┤
 │                     Services Layer                          │
 │                   (audio/, notify/)                         │
@@ -522,25 +739,46 @@ Tests use JUnit 5 and Mockito for mocking dependencies. Run with `mvn test`.
 └─────────────────────────────────────────────────────────────┘
 ```
 
-The architecture follows a layered approach with clear dependency rules: upper layers depend on lower layers, never the reverse. Interfaces define contracts between layers, enabling testability and flexibility.
+**Dependency Rule:** Upper layers depend on lower layers only. No upward or circular dependencies.
+
+### 12.2 Architecture Transformation
+
+| Aspect | Original Codebase | Refactored Architecture |
+|--------|-------------------|-------------------------|
+| **Structure** | 2–3 large files, flat package | 110 classes across 6 layers |
+| **Board Logic** | Single 800+ line class | 6 focused classes (`SimpleBoard`, `CollisionDetector`, `MatrixOperations`, etc.) |
+| **UI Code** | 1200+ line controller | 12+ specialized renderers and managers |
+| **Game Modes** | Would require copy-paste | Inheritance via `BaseGameController` + Template Method |
+| **Scoring** | Hardcoded inline | Pluggable `ScoringPolicy` strategy |
+| **Input** | Giant switch statement | Command pattern with `GameCommand` objects |
+| **State** | Boolean flags | `GameStateManager` with State pattern |
+| **Testing** | Untestable (tightly coupled) | 27 test classes with mocked dependencies |
+
+### 12.3 Why This Architecture Is More Maintainable
+
+| Principle | How It's Applied | Maintainability Benefit |
+|-----------|------------------|-------------------------|
+| **Single Responsibility** | Each class has one job (e.g., `CollisionDetector` only detects collisions) | Changes are localized; modifying collision logic doesn't risk breaking rendering |
+| **Open/Closed** | `ScoringPolicy`, `BrickRegistry`, `GameCommand` are extension points | New features (scoring modes, brick types, controls) don't require modifying existing code |
+| **Dependency Inversion** | Controllers depend on `BoardPorts` interface, not `SimpleBoard` | Board implementation can be swapped for testing or alternative rules |
+| **Separation of Concerns** | UI layer knows nothing about collision math; Engine knows nothing about JavaFX | Teams could work on UI and engine simultaneously without conflicts |
+| **Testability** | Pure utility classes, injectable dependencies, interface contracts | Bugs caught early; refactoring is safe with test coverage |
 
 ---
 
-## 11. Summary
+## 13. Summary
 
-This coursework involved the comprehensive refactoring and extension of a Tetris game application, transforming it from a minimal implementation into a well-architected, maintainable software system.
-
-### Key Achievements
+### 13.1 Key Achievements
 
 | Aspect | Details |
 |--------|---------|
-| **Total New Classes** | 80+ Java classes across 6 architectural layers |
+| **Total Classes** | 110 Java classes across 6 architectural layers |
 | **Design Patterns Applied** | 8 patterns (Strategy, Command, State, Factory, Observer, Decorator, Mediator, Template Method) |
 | **Game Modes Implemented** | 3 (Classic, Rush/Timed, Mystery) |
-| **Test Coverage** | 20+ test classes using JUnit 5 and Mockito |
+| **Test Coverage** | 27 test classes using JUnit 5 and Mockito |
 | **Audio Tracks** | 5 dynamic soundtracks with fade transitions |
 
-### Technical Highlights
+### 13.2 Technical Highlights
 
 - **Clean Architecture:** Separated concerns into UI, Application, Domain, Engine, Services, and Utility layers
 - **SOLID Principles:** Applied throughout—particularly SRP in controller extraction and OCP in scoring/brick systems
@@ -548,9 +786,16 @@ This coursework involved the comprehensive refactoring and extension of a Tetris
 - **Reactive UI:** JavaFX property bindings enable automatic UI updates from game state changes
 - **Robust Error Handling:** Graceful degradation for missing resources (fonts, audio) with fallback mechanisms
 
-### Lessons Learned
+### 13.3 Personal Reflection & Lessons Learned
 
-1. **Refactoring requires careful dependency tracking**—visual regressions after SRP application taught the importance of integration testing
-2. **JavaFX Timeline management is complex**—concurrent animations need explicit lifecycle management
-3. **Resource loading paths are platform-sensitive**—consistent use of `getClass().getResource()` is essential
-4. **Game mode isolation requires architectural discipline**—the Template Method pattern proved effective for mode-specific behavior
+#### What Went Well
+
+- **Incremental Refactoring Paid Off:** Breaking down the god classes step-by-step (first extract utilities, then apply SRP, then add patterns) made the transformation manageable and reduced risk of breaking everything at once.
+- **Design Patterns Simplified Extensions:** Once the Template Method pattern was in place for `BaseGameController`, adding Mystery Mode and Rush Mode was straightforward—I only needed to implement the hooks, not duplicate the entire game loop.
+- **Testing Caught Real Bugs:** Unit tests for `CollisionDetector` found edge cases where pieces could clip through walls at certain positions. Without tests, these would have been frustrating player-facing bugs.
+
+#### Challenges Faced
+
+- **Visual Regressions After SRP:** The biggest surprise was how often the game broke visually after extracting classes. Rendering order, initialization timing, and component coordination all had implicit dependencies that only became apparent after separation. The `GameMediator` pattern was the solution.
+- **JavaFX Timeline Complexity:** Managing multiple concurrent `Timeline` animations (Mystery Mode events, piece settling, countdown) led to race conditions. Learning to explicitly cancel timelines and use `Platform.runLater()` consistently was essential.
+- **Balancing Refactoring vs. Features:** Time pressure meant choosing between "more refactoring" and "more features." I prioritized architectural quality over feature quantity, which I believe was the right choice for a maintainability-focused coursework.
