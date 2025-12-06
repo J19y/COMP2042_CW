@@ -7,7 +7,6 @@ package com.comp2042.tetris.domain.model;
  * the game is over as no more moves are possible.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class SpawnResult {

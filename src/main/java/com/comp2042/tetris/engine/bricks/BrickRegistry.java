@@ -13,7 +13,6 @@ import java.util.function.Supplier;
  * registered by default.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class BrickRegistry {

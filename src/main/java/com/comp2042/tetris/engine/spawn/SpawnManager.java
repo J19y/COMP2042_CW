@@ -10,7 +10,6 @@ import java.util.List;
  * when a spawn results in game over (collision at spawn position).
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class SpawnManager {

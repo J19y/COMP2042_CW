@@ -10,7 +10,6 @@ import com.comp2042.tetris.ui.input.EventSource;
  * awarded for line clears and drops.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface ScoringPolicy {

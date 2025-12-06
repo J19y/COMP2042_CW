@@ -4,7 +4,12 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-
+/**
+ * Utility class for applying neon glow visual effects to rectangles.
+ * Creates a cyberpunk-style appearance with layered drop shadows
+ * and configurable glow colors. Used for brick rendering.
+ *
+ */
 public final class NeonGlowStyle {
 
     private static final int STROKE_WIDTH = 1;

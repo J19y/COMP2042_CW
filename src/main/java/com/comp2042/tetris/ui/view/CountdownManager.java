@@ -17,6 +17,10 @@ import javafx.util.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Manages the 3-2-1 countdown animation before game starts.
+ * Coordinates with game state and audio for synchronized start.
+ */
 public class CountdownManager {
 
     private static final Logger LOGGER = Logger.getLogger(CountdownManager.class.getName());

@@ -5,6 +5,15 @@ import com.comp2042.tetris.engine.board.GameView;
 import com.comp2042.tetris.domain.scoring.ScoreManager;
 import com.comp2042.tetris.application.port.GameplayPort;
 
+/**
+ * Utility class for initializing game view connections.
+ * <p>
+ * Wires up the game view with board state, score manager,
+ * and input handlers during game setup.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class ViewSetup {
     public void setupView(GameView view, BoardRead reader, ScoreManager scoreService, GameplayPort controller) {
         view.initGameView(reader.getBoardMatrix(), reader.getViewData());

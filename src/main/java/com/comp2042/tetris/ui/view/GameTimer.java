@@ -12,6 +12,12 @@ import javafx.util.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Manages game timer display with count-up and countdown modes.
+ * Integrates with BackgroundAnimator for visual effects.
+ * Supports low-time warnings with flicker effects for timed modes.
+ *
+ */
 public class GameTimer {
 
     private static final Logger LOGGER = Logger.getLogger(GameTimer.class.getName());

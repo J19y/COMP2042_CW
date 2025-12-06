@@ -3,8 +3,12 @@ package com.comp2042.tetris.engine.rotation;
 import com.comp2042.tetris.domain.model.RotationInfo;
 import com.comp2042.tetris.engine.bricks.Brick;
 
-
-
+/**
+ * Manages brick rotation by cycling through rotation matrices.
+ * Each brick type has multiple rotation states; this class tracks
+ * the current rotation index and provides the next rotation shape.
+ *
+ */
 public class BrickRotator {
     private Brick brick;
     private int currentShape = 0;

@@ -2,7 +2,12 @@ package com.comp2042.tetris.application.session;
 
 import javafx.util.Duration;
 
-
+/**
+ * High-level controller for the game loop.
+ * Wraps GameLoop to provide start/stop/restart operations
+ * and interval configuration for game tick timing.
+ *
+ */
 public final class GameLoopController {
     
     private final GameLoop gameLoop;

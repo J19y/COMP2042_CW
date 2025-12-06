@@ -7,7 +7,6 @@ package com.comp2042.tetris.ui.input;
  * during gameplay.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public enum EventType {

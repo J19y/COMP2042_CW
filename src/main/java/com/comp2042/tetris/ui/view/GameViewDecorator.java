@@ -11,7 +11,13 @@ import com.comp2042.tetris.ui.input.InputActionHandler;
 
 import javafx.beans.property.IntegerProperty;
 
-
+/**
+ * Base decorator class for GameView implementations.
+ * Implements the Decorator pattern to allow adding behavior
+ * to GameView objects dynamically. Subclasses override specific
+ * methods to add functionality like buffering or effects.
+ *
+ */
 public class GameViewDecorator implements GameView {
 
     protected final GameView delegate;

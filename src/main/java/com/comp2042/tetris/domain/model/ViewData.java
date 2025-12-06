@@ -12,7 +12,6 @@ import com.comp2042.tetris.util.MatrixOperations;
  * All matrix data is defensively copied to maintain immutability.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class ViewData {

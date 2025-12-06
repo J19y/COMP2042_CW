@@ -9,7 +9,6 @@ import java.util.List;
  * Standard Tetris has 7 brick types: I, J, L, O, S, T, and Z.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface Brick {

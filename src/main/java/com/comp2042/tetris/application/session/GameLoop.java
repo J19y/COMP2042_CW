@@ -12,7 +12,6 @@ import javafx.util.Duration;
  * on each tick.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class GameLoop {

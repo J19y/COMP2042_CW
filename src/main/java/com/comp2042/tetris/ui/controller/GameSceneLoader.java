@@ -18,7 +18,10 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
-
+/**
+ * Loads and transitions to game scenes for different modes.
+ * Handles Classic, Timed, and Mystery game mode initialization.
+ */
 public class GameSceneLoader {
     private final Button triggerButton;
     private final MenuAnimationController animationController;

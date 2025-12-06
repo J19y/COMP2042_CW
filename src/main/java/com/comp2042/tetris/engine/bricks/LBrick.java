@@ -5,6 +5,11 @@ import java.util.List;
 
 import com.comp2042.tetris.util.MatrixOperations;
 
+/**
+ * L-shaped tetromino.
+ * Has 4 rotation states. Color value is 3 (orange).
+ *
+ */
 final class LBrick implements Brick {
 
     private final List<int[][]> brickMatrix = new ArrayList<>();

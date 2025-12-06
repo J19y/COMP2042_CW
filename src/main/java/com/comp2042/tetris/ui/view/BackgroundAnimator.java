@@ -13,7 +13,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
+/**
+ * Animates the background with falling shapes and particles.
+ * Creates a dynamic visual effect during gameplay.
+ */
 public class BackgroundAnimator {
 
     private static final Color[] NEON_COLORS = {

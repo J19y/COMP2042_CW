@@ -17,7 +17,6 @@ import com.comp2042.tetris.domain.model.RowClearResult;
  * deep copying lists of matrices.
  * </p>
  * 
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public class MatrixOperations {

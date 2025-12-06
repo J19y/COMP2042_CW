@@ -6,6 +6,13 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
+/**
+ * Generates random bricks using a queue-based preview system.
+ * Maintains a queue of upcoming bricks for "next piece" display.
+ * Uses ThreadLocalRandom for thread-safe random selection from
+ * the registered brick types in BrickRegistry.
+ *
+ */
 public class RandomBrickGenerator implements BrickGenerator {
 
     private final List<Supplier<Brick>> brickSuppliers;

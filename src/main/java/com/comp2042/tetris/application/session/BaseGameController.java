@@ -42,7 +42,6 @@ import javafx.beans.property.IntegerProperty;
  * Uses the Template Method pattern to allow subclasses to hook into game events.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public class BaseGameController implements GameplayPort, GameModeLifecycle {

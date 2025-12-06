@@ -11,7 +11,6 @@ import javafx.beans.property.IntegerProperty;
  * the score property for UI binding.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class ScoreManager {

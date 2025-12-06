@@ -1,10 +1,14 @@
 package com.comp2042.tetris.engine.movement;
 
+import com.comp2042.tetris.domain.model.ViewData;
 import com.comp2042.tetris.engine.board.BoardRead;
 
-import com.comp2042.tetris.domain.model.ViewData;
-
-
+/**
+ * Handles horizontal movement and rotation of the active brick.
+ * Coordinates between the movement component and board reader to
+ * provide updated view data after each movement operation.
+ *
+ */
 public final class BrickMove {
 
     private final BrickMovement movement;

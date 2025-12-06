@@ -8,7 +8,6 @@ import com.comp2042.tetris.domain.model.ShowResult;
  * Defines the method for soft drop (moving brick down).
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface DropInput {

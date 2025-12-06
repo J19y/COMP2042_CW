@@ -22,7 +22,15 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Controls menu animations including launch sequence and transitions.
+ * <p>
+ * Handles animated transitions for the main menu including
+ * the initial launch animation and button fly-in effects.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class MenuAnimationController {
     private final StackPane rootPane;
     private final HBox titleContainer;

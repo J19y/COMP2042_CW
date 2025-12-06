@@ -7,7 +7,6 @@ package com.comp2042.tetris.domain.model;
  * and any row clearing information to the UI layer.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class ShowResult {

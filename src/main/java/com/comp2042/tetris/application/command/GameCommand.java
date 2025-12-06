@@ -10,7 +10,6 @@ import com.comp2042.tetris.ui.input.MoveEvent;
  * enabling flexible input handling and action replay capabilities.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface GameCommand {

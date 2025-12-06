@@ -2,6 +2,15 @@ package com.comp2042.tetris.engine.board;
 
 import java.util.Random;
 
+/**
+ * Manages board lifecycle operations including game reset.
+ * <p>
+ * Handles new game initialization and adding garbage lines
+ * for mystery mode gameplay.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class BoardLifecycleManager implements BoardLifecycle {
     private final BoardState boardState;
 

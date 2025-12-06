@@ -12,7 +12,6 @@ import com.comp2042.tetris.util.MatrixOperations;
  * score bonus earned, and indices of the cleared rows for animation purposes.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class RowClearResult {

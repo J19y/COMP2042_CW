@@ -4,7 +4,12 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-
+/**
+ * Manages the game state transitions using the State pattern.
+ * Controls transitions between MENU, PLAYING, PAUSED, and GAME_OVER states.
+ * Provides observable state property for UI binding and state-specific behavior.
+ *
+ */
 public final class GameStateManager {
     
     private final ObjectProperty<GameState> currentState = 

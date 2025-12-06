@@ -4,7 +4,12 @@ import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.domain.model.SpawnResult;
 import com.comp2042.tetris.domain.model.ViewData;
 
-
+/**
+ * Core interface defining the game board contract.
+ * Provides methods for brick movement, rotation, spawning,
+ * row clearing, and board state access. Central to game logic.
+ *
+ */
 public interface Board {
 
     boolean moveBrickDown();

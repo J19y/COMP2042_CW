@@ -4,7 +4,13 @@ import com.comp2042.tetris.domain.model.ViewData;
 import com.comp2042.tetris.engine.board.GameView;
 import com.comp2042.tetris.util.MatrixOperations;
 
-
+/**
+ * Decorator that adds buffering/caching to a GameView.
+ * Prevents redundant board refreshes by comparing the new matrix
+ * with the cached version before delegating to the wrapped view.
+ * Implements the Decorator pattern for performance optimization.
+ *
+ */
 public final class BufferedGameView extends GameViewDecorator {
 
     private int[][] lastMatrix;

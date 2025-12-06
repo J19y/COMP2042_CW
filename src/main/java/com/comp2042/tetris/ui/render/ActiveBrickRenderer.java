@@ -8,7 +8,13 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-
+/**
+ * Renders the active (falling) brick and its ghost preview.
+ * Manages two GridPanes: one for the actual brick with neon glow effects,
+ * and one for the ghost showing where the brick will land.
+ * Includes settle animation for visual feedback on brick placement.
+ *
+ */
 public final class ActiveBrickRenderer {
     private final int brickSize;
     private final GridPane ghostPanel;

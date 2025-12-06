@@ -14,7 +14,6 @@ import javafx.beans.property.IntegerProperty;
  * handling game events, and binding properties for reactive updates.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface GameView {

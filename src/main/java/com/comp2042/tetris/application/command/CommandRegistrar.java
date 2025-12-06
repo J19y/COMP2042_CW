@@ -26,7 +26,6 @@ import com.comp2042.tetris.ui.input.MoveEvent;
  * Implements the Command pattern registry.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public class CommandRegistrar {

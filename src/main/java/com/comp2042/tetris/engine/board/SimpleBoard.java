@@ -26,7 +26,6 @@ import com.comp2042.tetris.util.MatrixOperations;
  * Uses composition to delegate to specialized components.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, BrickSpawn, BoardLifecycle {

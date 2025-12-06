@@ -2,7 +2,12 @@ package com.comp2042.tetris.engine.movement;
 
 import java.awt.Point;
 
-
+/**
+ * Manages the position of the active brick on the game board.
+ * Provides methods to calculate movement deltas and update position.
+ * Uses Point coordinates where (0,0) is top-left of the board.
+ *
+ */
 public final class BrickPositionManager {
     
     private Point activePiece;

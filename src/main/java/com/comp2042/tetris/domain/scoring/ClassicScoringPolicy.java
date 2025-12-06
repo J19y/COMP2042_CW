@@ -13,7 +13,6 @@ import com.comp2042.tetris.ui.input.EventSource;
  *   <li>Auto-drop: 0 points</li>
  * </ul>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class ClassicScoringPolicy implements ScoringPolicy {

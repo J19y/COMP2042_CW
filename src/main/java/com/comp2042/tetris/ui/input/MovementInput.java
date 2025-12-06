@@ -8,7 +8,6 @@ import com.comp2042.tetris.domain.model.ShowResult;
  * Defines methods for left, right, and rotation movements.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface MovementInput {

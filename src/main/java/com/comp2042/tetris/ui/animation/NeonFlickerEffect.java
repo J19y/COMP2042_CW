@@ -13,7 +13,6 @@ import javafx.util.Duration;
  * that simulate a neon light effect by varying node opacity.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class NeonFlickerEffect {

@@ -15,6 +15,10 @@ import com.comp2042.tetris.engine.spawn.SpawnManager;
 import com.comp2042.tetris.domain.scoring.ScoreManager;
 import com.comp2042.tetris.domain.scoring.ScoringPolicy;
 
+/**
+ * Initializes and wires together all game components.
+ * Creates board, movement handlers, spawn manager, and scoring.
+ */
 public class GameInitializer {
     private final BrickMovement movement;
     private final BrickDropActions dropActions;

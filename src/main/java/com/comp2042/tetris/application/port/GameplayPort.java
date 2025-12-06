@@ -13,7 +13,6 @@ import javafx.beans.property.IntegerProperty;
  * drop, input action handling, and game lifecycle capabilities.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface GameplayPort extends InputActionHandler, MovementInput, DropInput, CreateNewGame {

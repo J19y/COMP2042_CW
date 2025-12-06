@@ -8,7 +8,6 @@ import com.comp2042.tetris.domain.model.ShowResult;
  * Implementations process input events and return the resulting game state.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface InputActionHandler {

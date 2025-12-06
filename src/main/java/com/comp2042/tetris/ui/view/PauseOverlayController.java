@@ -8,6 +8,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
+/**
+ * Controls the pause overlay UI with fade animations.
+ * Manages pause dim effect and help container visibility.
+ */
 public class PauseOverlayController {
 
     private final Pane pauseDim;

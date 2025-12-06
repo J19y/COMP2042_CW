@@ -6,7 +6,15 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-
+/**
+ * Example usage demonstrations for NeonFlickerEffect.
+ * <p>
+ * Contains static methods showing various ways to apply
+ * neon flicker animations to different UI elements.
+ * </p>
+ *
+ * @version 1.0
+ */
 public final class NeonFlickerEffectExamples {
 
     

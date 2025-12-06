@@ -28,7 +28,13 @@ import com.comp2042.tetris.domain.scoring.ClassicScoringPolicy;
 import com.comp2042.tetris.domain.scoring.ScoreManager;
 import com.comp2042.tetris.domain.scoring.ScoringPolicy;
 
-
+/**
+ * Core game controller implementing GameplayPort.
+ * Coordinates game components: board, movement handlers, spawn manager,
+ * and scoring. Uses Command pattern for input handling and Observer
+ * pattern for game over notifications.
+ *
+ */
 public class GameController implements GameplayPort {
     private final BrickMovement movement;
     private final BrickDropActions dropActions;

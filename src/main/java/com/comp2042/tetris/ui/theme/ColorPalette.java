@@ -13,7 +13,6 @@ import javafx.scene.paint.Paint;
  * Supports custom color registration for extensibility.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class ColorPalette {

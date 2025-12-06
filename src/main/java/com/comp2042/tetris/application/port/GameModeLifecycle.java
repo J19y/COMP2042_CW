@@ -7,7 +7,6 @@ package com.comp2042.tetris.application.port;
  * hooks for start, pause, and resume operations.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface GameModeLifecycle extends CreateNewGame {

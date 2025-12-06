@@ -7,7 +7,6 @@ package com.comp2042.tetris.util;
  * would collide with existing blocks or board boundaries.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class CollisionDetector {

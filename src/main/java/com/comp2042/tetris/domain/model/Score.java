@@ -10,7 +10,6 @@ import javafx.beans.property.SimpleIntegerProperty;
  * The score can only be increased with positive values and can be reset to zero.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class Score {

@@ -16,7 +16,6 @@ import javafx.stage.Stage;
  * and sets up the primary stage.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public class Main extends Application {

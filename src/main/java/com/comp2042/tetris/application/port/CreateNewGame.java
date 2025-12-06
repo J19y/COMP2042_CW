@@ -7,7 +7,6 @@ package com.comp2042.tetris.application.port;
  * allowing components to depend only on game creation capability.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public interface CreateNewGame {

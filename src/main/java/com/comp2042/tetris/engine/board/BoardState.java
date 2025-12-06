@@ -4,6 +4,10 @@ import com.comp2042.tetris.engine.bricks.BrickGenerator;
 import com.comp2042.tetris.engine.movement.BrickPositionManager;
 import com.comp2042.tetris.engine.rotation.BrickRotator;
 
+/**
+ * Encapsulates the mutable state of the game board.
+ * Holds the board matrix, position manager, rotator, and brick generator.
+ */
 public class BoardState {
     private final int rows;
     private final int cols;

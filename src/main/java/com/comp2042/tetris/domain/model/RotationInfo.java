@@ -9,7 +9,6 @@ import com.comp2042.tetris.util.MatrixOperations;
  * without immediately applying it, enabling wall kick validation.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class RotationInfo {

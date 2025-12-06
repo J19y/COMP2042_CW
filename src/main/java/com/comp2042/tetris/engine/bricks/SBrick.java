@@ -5,6 +5,11 @@ import java.util.List;
 
 import com.comp2042.tetris.util.MatrixOperations;
 
+/**
+ * S-shaped tetromino (zigzag shape).
+ * Has 2 rotation states. Color value is 5 (green).
+ *
+ */
 final class SBrick implements Brick {
 
     private final List<int[][]> brickMatrix = new ArrayList<>();

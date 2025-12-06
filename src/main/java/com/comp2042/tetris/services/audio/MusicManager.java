@@ -20,7 +20,6 @@ import javafx.util.Duration;
  * sound effects. Supports different tracks for each game mode.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public class MusicManager {

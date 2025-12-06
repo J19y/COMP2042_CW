@@ -16,7 +16,15 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Manages the main menu title setup and animations.
+ * <p>
+ * Creates the TETRIS title with colorful neon-styled letters
+ * and flicker animations for each character.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class TitleSetupManager {
     private final HBox titleContainer;
     private final Text yearText;

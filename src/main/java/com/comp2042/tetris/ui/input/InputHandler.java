@@ -17,7 +17,6 @@ import javafx.scene.input.KeyCode;
  * and game event types.
  * </p>
  *
- * @author Youssif Mahmoud Gomaa Sayed
  * @version 1.0
  */
 public final class InputHandler {

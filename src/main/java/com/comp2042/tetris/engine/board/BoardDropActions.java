@@ -3,6 +3,15 @@ package com.comp2042.tetris.engine.board;
 import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.util.MatrixOperations;
 
+/**
+ * Implements brick drop actions on the board.
+ * <p>
+ * Handles downward movement, brick merging into the board,
+ * and row clearing operations.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class BoardDropActions implements com.comp2042.tetris.engine.movement.BrickDropActions {
     private final BoardState boardState;
 

@@ -6,7 +6,12 @@ import com.comp2042.tetris.ui.view.RowClearMessage;
 import javafx.application.Platform;
 import javafx.scene.Group;
 
-
+/**
+ * Service for managing in-game notifications and visual feedback.
+ * Handles score bonus displays, row clear messages, and other
+ * transient UI notifications. Thread-safe for JavaFX rendering.
+ *
+ */
 public final class NotificationManager {
     
     private final Group notificationContainer;

@@ -18,6 +18,10 @@ import javafx.util.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Manages visual effects during gameplay.
+ * Handles fog, earthquake, speed boost, and other game effects.
+ */
 public class GameEffectManager {
 
     private static final Logger LOGGER = Logger.getLogger(GameEffectManager.class.getName());
