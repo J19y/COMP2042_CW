@@ -1,5 +1,8 @@
 package com.comp2042.tetris.ui.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -12,9 +15,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Manages the main menu title setup and animations.
@@ -112,8 +112,7 @@ public class TitleSetupManager {
     
     private void setupLetterAnimations() {
         for (Node node : titleContainer.getChildren()) {
-            if (node instanceof Text) {
-                Text letter = (Text) node;
+            if (node instanceof Text letter) {
                 Timeline flicker = new Timeline(
                         new KeyFrame(Duration.ZERO, new KeyValue(((DropShadow) letter.getEffect()).radiusProperty(), 10.0)),
                         new KeyFrame(Duration.millis(100), new KeyValue(((DropShadow) letter.getEffect()).radiusProperty(), 20.0)),
@@ -134,14 +133,14 @@ public class TitleSetupManager {
     }
 
     
-    private void setupYearText(Font titleFont) {
+    private void setupYearText(@SuppressWarnings("unused") Font unused) {
         Font yearFont = loadYearFont();
         yearText.setFont(yearFont);
         yearText.setFill(Color.WHITE);
 
         try {
             yearText.setStyle("-fx-font-size: 20px; -fx-font-family: '" + yearFont.getName() + "';");
-        } catch (Exception ignored) {
+        } catch (Exception ignored1) {
             yearText.setStyle("-fx-font-size: 20px;");
         }
 
@@ -156,7 +155,7 @@ public class TitleSetupManager {
 
                     yearText.setLayoutX(titleX + Math.max(0, (titleW - yearW) / 2.0));
                     yearText.setLayoutY(titleY + titleContainer.getBoundsInParent().getHeight() + 6);
-                } catch (Exception ignored) {
+                } catch (Exception ignored2) {
                     
                 }
             });

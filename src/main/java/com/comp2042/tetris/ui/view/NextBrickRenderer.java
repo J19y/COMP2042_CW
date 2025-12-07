@@ -1,11 +1,11 @@
 package com.comp2042.tetris.ui.view;
 
+import java.util.List;
+
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
-
-import java.util.List;
 
 /**
  * Renders the next brick preview panel.
@@ -51,8 +51,8 @@ public class NextBrickRenderer {
                         rectangle.setArcWidth(9);
                         javafx.scene.paint.Paint basePaint = paint;
                         javafx.scene.paint.Color baseColor = javafx.scene.paint.Color.WHITE;
-                        if (basePaint instanceof javafx.scene.paint.Color) {
-                            baseColor = (javafx.scene.paint.Color) basePaint;
+                        if (basePaint instanceof javafx.scene.paint.Color bc) {
+                            baseColor = bc;
                         }
                         com.comp2042.tetris.ui.theme.NeonGlowStyle.applyPlacedStyle(rectangle, baseColor);
                         brickGrid.add(rectangle, j, i);

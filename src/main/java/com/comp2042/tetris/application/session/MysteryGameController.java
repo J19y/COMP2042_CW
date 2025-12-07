@@ -123,23 +123,22 @@ public class MysteryGameController extends BaseGameController {
 
         lastEvent = pick;
 
-        if (pick == 0) {
-            
-            speedMultiplier++;
-            System.out.println("Mystery Event: Speed Boost! multiplier=" + speedMultiplier);
-            try { view.showEventMessage("Speed Boost!"); } catch (Exception ignored) {}
-        } else if (pick == 1) {
-            toggleControls();
-        } else if (pick == 2) {
-            triggerEarthquake();
-        } else if (pick == 3) {
-            
-            try { view.showFogEffect(3); } catch (Exception ignored) {}
-            triggerFog();
-        } else if (pick == 4) {
-                
+        switch (pick) {
+            case 0 -> {
+                speedMultiplier++;
+                System.out.println("Mystery Event: Speed Boost! multiplier=" + speedMultiplier);
+                try { view.showEventMessage("Speed Boost!"); } catch (Exception ignored) {}
+            }
+            case 1 -> toggleControls();
+            case 2 -> triggerEarthquake();
+            case 3 -> {
+                try { view.showFogEffect(3); } catch (Exception ignored) {}
+                triggerFog();
+            }
+            case 4 -> {
                 try { view.showHeavyGravityEffect(3); } catch (Exception ignored) {}
-            triggerHeavyGravity();
+                triggerHeavyGravity();
+            }
         }
     }
 

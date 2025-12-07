@@ -113,8 +113,7 @@ final class GameMediator {
                     
                     javafx.animation.Timeline effectPulse = null;
                     javafx.scene.effect.Effect eff = rect.getEffect();
-                    if (eff instanceof javafx.scene.effect.DropShadow) {
-                        javafx.scene.effect.DropShadow ds = (javafx.scene.effect.DropShadow) eff;
+                    if (eff instanceof javafx.scene.effect.DropShadow ds) {
                         double baseRadius = ds.getRadius();
                         double baseSpread = ds.getSpread();
 

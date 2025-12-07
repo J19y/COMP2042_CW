@@ -1,6 +1,16 @@
 package com.comp2042.tetris.ui.view;
 
-import javafx.animation.*;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.ParallelTransition;
+import javafx.animation.PauseTransition;
+import javafx.animation.RotateTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.SequentialTransition;
+import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -27,19 +37,17 @@ public class LineClearNotification extends StackPane {
         setPickOnBounds(false);
         setAlignment(Pos.CENTER);
 
-        Rectangle backdrop = new Rectangle(180, 56);
-        backdrop.setArcWidth(12);
-        backdrop.setArcHeight(12);
-        backdrop.setFill(new javafx.scene.paint.LinearGradient(0, 0, 1, 0, true, javafx.scene.paint.CycleMethod.NO_CYCLE,
+        this.backdrop = new Rectangle(180, 56);
+        this.backdrop.setArcWidth(12);
+        this.backdrop.setArcHeight(12);
+        this.backdrop.setFill(new javafx.scene.paint.LinearGradient(0, 0, 1, 0, true, javafx.scene.paint.CycleMethod.NO_CYCLE,
                 new javafx.scene.paint.Stop(0, Color.web("#041126", 0.94)),
                 new javafx.scene.paint.Stop(1, Color.web("#07131b", 0.94))));
-        backdrop.setStroke(accent.deriveColor(0, 1, 1, 1.0));
-        backdrop.setStrokeWidth(3);
+        this.backdrop.setStroke(accent.deriveColor(0, 1, 1, 1.0));
+        this.backdrop.setStrokeWidth(3);
         DropShadow glow = new DropShadow(18, accent.deriveColor(0, 1, 1, 0.6));
         glow.setSpread(0.18);
-        backdrop.setEffect(glow);
-
-        this.backdrop = backdrop;
+        this.backdrop.setEffect(glow);
 
         title = new Text(titleText);
         title.getStyleClass().add("line-reward-title");
@@ -56,11 +64,11 @@ public class LineClearNotification extends StackPane {
         content.getChildren().addAll(title, subtitle);
 
         
-        backdrop.widthProperty().bind(content.widthProperty().add(32));
-        backdrop.heightProperty().bind(content.heightProperty().add(18));
-        backdrop.setMouseTransparent(true);
+        this.backdrop.widthProperty().bind(content.widthProperty().add(32));
+        this.backdrop.heightProperty().bind(content.heightProperty().add(18));
+        this.backdrop.setMouseTransparent(true);
 
-        getChildren().addAll(backdrop, content);
+        getChildren().addAll(this.backdrop, content);
         StackPane.setAlignment(content, Pos.CENTER);
         setOpacity(0);
     }
@@ -77,8 +85,7 @@ public class LineClearNotification extends StackPane {
             }
         }
 
-        if (target instanceof javafx.scene.layout.StackPane) {
-            javafx.scene.layout.StackPane parentStack = (javafx.scene.layout.StackPane) target;
+        if (target instanceof javafx.scene.layout.StackPane parentStack) {
             parentStack.getChildren().add(this);
             
             javafx.scene.layout.StackPane.setAlignment(this, javafx.geometry.Pos.TOP_CENTER);
@@ -130,10 +137,10 @@ public class LineClearNotification extends StackPane {
 
         seq.setOnFinished(e -> {
             
-            if (getParent() instanceof Group) {
-                ((Group) getParent()).getChildren().remove(this);
-            } else if (getParent() instanceof javafx.scene.layout.StackPane) {
-                ((javafx.scene.layout.StackPane) getParent()).getChildren().remove(this);
+            switch (getParent()) {
+                case Group group -> group.getChildren().remove(this);
+                case javafx.scene.layout.StackPane stackPane -> stackPane.getChildren().remove(this);
+                default -> {}
             }
         });
 

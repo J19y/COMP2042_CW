@@ -44,6 +44,7 @@ import javafx.beans.property.IntegerProperty;
  *
  * @version 1.0
  */
+@SuppressWarnings("OverridableMethodCallInConstructor")
 public class BaseGameController implements GameplayPort, GameModeLifecycle {
     protected final BrickMovement movement;
     protected final BrickDropActions dropActions;
