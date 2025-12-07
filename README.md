@@ -18,9 +18,8 @@
 3. [Compilation Instructions](#3-compilation-instructions)
    - [3.1 Prerequisites](#31-prerequisites)
    - [3.2 Steps to Compile and Run](#32-steps-to-compile-and-run)
-   - [3.3 Running from an IDE](#33-running-from-an-ide)
-   - [3.4 Troubleshooting](#34-troubleshooting)
-4. [Maintenance Work (Refactoring)](#4-maintenance-work-refactoring)
+   - [3.3 Troubleshooting](#33-troubleshooting)
+4. [Refactoring](#4-refactoring)
    - [4.1 Package Restructuring](#41-package-restructuring)
    - [4.2 Basic Maintenance and Encapsulation](#42-basic-maintenance-and-encapsulation)
    - [4.3 Single Responsibility Principle (SRP) Refactoring](#43-single-responsibility-principle-srp-refactoring)
@@ -148,91 +147,55 @@ JavaFX 21.0.6 dependencies are **automatically downloaded** by Maven. No manual 
 
 ### 3.2 Steps to Compile and Run
 
-#### Step 1: Clone the Repository
+#### Step 1: Get the Project
+
+**Option A: Clone the Repository**
 
 ```shell
-git clone https://github.com/J19y/COMP2042_CW.git && cd COMP2042_CW
+git clone https://github.com/J19y/COMP2042_CW.git
+cd COMP2042_CW
 ```
+
+**Option B: Download ZIP**
+
+1. Go to [https://github.com/J19y/COMP2042_CW](https://github.com/J19y/COMP2042_CW)
+2. Click the green **"Code"** button → **"Download ZIP"**
+3. Extract the ZIP file and open the `COMP2042_CW` folder
 
 #### Step 2: Build the Project
 
-**On Windows (Command Prompt or PowerShell):**
-```powershell
-.\mvnw.cmd clean compile
-```
+Open a terminal in your **IDE** or use **Command Prompt** (Windows) / **Terminal** (macOS/Linux):
 
-**On macOS/Linux:**
 ```shell
-./mvnw clean compile
+mvn clean compile
 ```
 
 #### Step 3: Run the Application
 
-**On Windows:**
-```powershell
-.\mvnw.cmd javafx:run
-```
-
-**On macOS/Linux:**
 ```shell
-./mvnw javafx:run
+mvn javafx:run
 ```
 
 #### Step 4: Run Tests (Optional)
 
-**On Windows:**
-```powershell
-.\mvnw.cmd test
-```
-
-**On macOS/Linux:**
 ```shell
-./mvnw test
+mvn test
 ```
 
 ---
 
-### 3.3 Running from an IDE
-
-#### IntelliJ IDEA
-
-1. Open IntelliJ IDEA → File → Open → Select the `COMP2042_CW` folder
-2. Wait for Maven to import dependencies (progress bar at bottom)
-3. Navigate to `src/main/java/com/comp2042/tetris/ui/controller/Main.java`
-4. Right-click → Run 'Main.main()'
-
-If you encounter JavaFX errors:
-1. Go to Run → Edit Configurations
-2. Add VM options: `--module-path "path/to/javafx-sdk/lib" --add-modules javafx.controls,javafx.fxml,javafx.media`
-
-#### VS Code
-
-1. Open VS Code → File → Open Folder → Select `COMP2042_CW`
-2. Install "Extension Pack for Java" if prompted
-3. Open `src/main/java/com/comp2042/tetris/ui/controller/Main.java`
-4. Click "Run" above the `main` method, or press F5
-
-#### Eclipse
-
-1. File → Import → Maven → Existing Maven Projects
-2. Browse to `COMP2042_CW` folder → Finish
-3. Right-click project → Run As → Java Application → Select `Main`
-
----
-
-### 3.4 Troubleshooting
+### 3.3 Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
 | `'java' is not recognized` | Ensure JAVA_HOME is set and `%JAVA_HOME%\bin` is in PATH |
-| `javafx.controls not found` | Run via Maven (`mvnw.cmd javafx:run`) instead of direct Java execution |
-| `Could not find or load main class` | Run `.\mvnw.cmd clean compile` first |
-| Maven download fails | Check internet connection; try `.\mvnw.cmd -U clean compile` to force update |
-| Permission denied on `mvnw` | On Linux/Mac: run `chmod +x mvnw` |
+| `javafx.controls not found` | Run via Maven (`mvn javafx:run`) instead of direct Java execution |
+| `Could not find or load main class` | Run `mvn clean compile` first |
+| Maven download fails | Check internet connection; try `mvn -U clean compile` to force update |
 
 ---
 
-## 4. Maintenance Work (Refactoring)
+## 4. Refactoring
 
 This section details the refactoring efforts undertaken to transform the original codebase into a maintainable, extensible architecture. The work progressed in logical phases: package restructuring, basic maintenance and encapsulation, applying Single Responsibility Principle, and finally implementing design patterns to enable future extensions.
 
