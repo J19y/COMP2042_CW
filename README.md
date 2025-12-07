@@ -22,7 +22,7 @@
 4. [Refactoring](#4-refactoring)
    - [4.1 Package Restructuring](#41-package-restructuring)
    - [4.2 Basic Maintenance and Encapsulation](#42-basic-maintenance-and-encapsulation)
-   - [4.3 Single Responsibility Principle (SRP) Refactoring](#43-single-responsibility-principle-srp-refactoring)
+   - [4.3 SOLID Principles Applied](#43-solid-principles-applied)
    - [4.4 Design Patterns for Extensibility](#44-design-patterns-for-extensibility)
 5. [Implemented and Working Properly](#5-implemented-and-working-properly)
    - [5.1 Core Gameplay Features](#51-core-gameplay-features)
@@ -232,11 +232,19 @@ Before applying major refactoring patterns, foundational cleanup was performed:
 
 ---
 
-### 4.3 Single Responsibility Principle (SRP) Refactoring
+### 4.3 SOLID Principles Applied
 
-Large classes violating SRP were decomposed into focused, single-purpose classes:
+The codebase was refactored to follow all five SOLID principles:
 
-#### 4.3.1 Board Class Decomposition
+---
+
+#### 4.3.1 Single Responsibility Principle (SRP)
+
+> *"A class should have only one reason to change."*
+
+Large "god classes" were decomposed into focused, single-purpose classes:
+
+**Board Class Decomposition:**
 
 | Original Problem | The original `Board` class (800+ lines) handled: board state, collision detection, piece movement, row clearing, rendering, and piece generation. |
 |------------------|---|
@@ -247,9 +255,8 @@ Large classes violating SRP were decomposed into focused, single-purpose classes
 | `BrickPositionManager` | Tracks current piece X/Y coordinates |
 | `BrickRotator` | Manages rotation state and shape matrices |
 | `BoardReader` | Read-only queries for board state |
-| **Improvement** | Each class has one reason to change. Utilities are pure functions—easily unit tested. |
 
-#### 4.3.2 GUI Controller Decomposition
+**GUI Controller Decomposition:**
 
 | Original Problem | The original `GuiController` (1200+ lines) handled: board rendering, piece animation, score display, game over screen, pause overlay, notifications, and input binding. |
 |------------------|---|
@@ -261,9 +268,8 @@ Large classes violating SRP were decomposed into focused, single-purpose classes
 | `CountdownManager` | 3-2-1-GO resume countdown |
 | `NotificationPanel` | Score popup notifications |
 | `GameMediator` | Coordinates between all view components |
-| **Improvement** | Each renderer is independently testable. New visual features require new classes, not modifications. |
 
-#### 4.3.3 Menu Controller Decomposition
+**Menu Controller Decomposition:**
 
 | Original Problem | The original `MenuController` handled: button setup, animations, settings panel, level selection, and background effects. |
 |------------------|---|
@@ -274,14 +280,111 @@ Large classes violating SRP were decomposed into focused, single-purpose classes
 | `LevelSelectionManager` | Game mode card selection |
 | `BackgroundEffectsManager` | Falling tetromino animation |
 | `MenuAnimationController` | Screen transitions and blur effects |
-| **Improvement** | Menu features can be modified independently. Animation logic is isolated from UI setup. |
+
+**Benefit:** Each class has one reason to change. Modifying collision logic doesn't risk breaking rendering. Utilities are pure functions—easily unit tested.
+
+---
+
+#### 4.3.2 Open/Closed Principle (OCP)
+
+> *"Software entities should be open for extension, but closed for modification."*
+
+Key extension points were created using interfaces:
+
+| Extension Point | Interface | How It Enables OCP |
+|-----------------|-----------|-------------------|
+| **Scoring Rules** | `ScoringPolicy` | New scoring modes (combo multipliers, time bonuses) require only a new implementation—no changes to game controllers |
+| **Brick Types** | `BrickRegistry` | Custom bricks can be registered via `BrickRegistry.register(CustomBrick::new)` without modifying existing brick code |
+| **Input Actions** | `GameCommand` | New commands (e.g., hold piece, 180° rotation) can be added without changing the input handler |
+
+**Example:** Adding a "Double Score Mode" only requires:
+```java
+public class DoubleScoringPolicy implements ScoringPolicy {
+    public int scoreForLineClear(int lines) { return 100 * lines * lines; }
+}
+```
+No existing code needs modification.
+
+---
+
+#### 4.3.3 Liskov Substitution Principle (LSP)
+
+> *"Subtypes must be substitutable for their base types."*
+
+Game controllers demonstrate LSP compliance:
+
+| Base Class | Subclasses | Substitutability |
+|------------|------------|------------------|
+| `BaseGameController` | `ClassicGameController`, `TimedGameController`, `MysteryGameController` | Any subclass can be used wherever `BaseGameController` is expected |
+
+**How it works:**
+- `BaseGameController` defines the game loop, input handling, and scoring
+- Subclasses override only hooks: `onStart()`, `onPause()`, `onResume()`, `onGameOver()`
+- The game scene loader can instantiate any controller without knowing the specific type:
+
+```java
+BaseGameController controller = switch(mode) {
+    case CLASSIC -> new ClassicGameController(board, view);
+    case RUSH -> new TimedGameController(board, view);
+    case MYSTERY -> new MysteryGameController(board, view);
+};
+controller.startGame(); // Works identically for all modes
+```
+
+---
+
+#### 4.3.4 Interface Segregation Principle (ISP)
+
+> *"Clients should not be forced to depend on interfaces they do not use."*
+
+The `BoardPorts` aggregator splits board operations into small, focused interfaces:
+
+| Interface | Methods | Used By |
+|-----------|---------|---------|
+| `BoardMovement` | `moveLeft()`, `moveRight()`, `rotate()` | Input handlers |
+| `BoardDropActions` | `drop()`, `mergeAndClear()` | Drop logic |
+| `BoardRead` | `getMatrix()`, `getViewData()` | Renderers |
+| `BoardSpawner` | `spawnNewBrick()` | Spawn manager |
+| `BoardLifecycle` | `reset()`, `newGame()` | Game controllers |
+
+**Benefit:** The `BoardRenderer` only depends on `BoardRead`—it doesn't need access to movement or spawn methods. This reduces coupling and makes testing easier (mock only what you use).
+
+---
+
+#### 4.3.5 Dependency Inversion Principle (DIP)
+
+> *"High-level modules should not depend on low-level modules. Both should depend on abstractions."*
+
+Controllers depend on interfaces, not concrete implementations:
+
+| High-Level Module | Depends On (Abstraction) | Not On (Concrete) |
+|-------------------|--------------------------|-------------------|
+| `BaseGameController` | `BoardPorts` | `SimpleBoard` |
+| `BaseGameController` | `ScoringPolicy` | `ClassicScoringPolicy` |
+| `BaseGameController` | `BrickGenerator` | `RandomBrickGenerator` |
+| `GuiController` | `GameView` | Specific rendering implementation |
+
+**Benefit:** 
+- **Testability:** Tests can inject mock boards with predetermined piece sequences
+- **Flexibility:** Board implementation can be swapped (e.g., for different grid sizes) without changing controllers
+- **Decoupling:** High-level game logic is isolated from low-level implementation details
+
+**Example dependency injection:**
+```java
+// Production
+BoardPorts board = new SimpleBoardPorts(new SimpleBoard());
+ScoringPolicy scoring = new ClassicScoringPolicy();
+
+// Testing
+BoardPorts mockBoard = new MockBoardPorts(predefinedSequence);
+ScoringPolicy testScoring = new FixedScoringPolicy(100);
+```
 
 ---
 
 ### 4.4 Design Patterns for Extensibility
 
-After SRP refactoring, design patterns were applied to enable future extensions without modifying existing code:
-
+After SOLID refactoring, design patterns were applied to enable future extensions without modifying existing code:
 #### 4.4.1 Strategy Pattern — Scoring System
 
 | Aspect | Details |
