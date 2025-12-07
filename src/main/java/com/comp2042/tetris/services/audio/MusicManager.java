@@ -294,7 +294,7 @@ public class MusicManager {
      * @param absoluteVolume the absolute volume level (0.0 to 1.0)
      */
     public void playSfxAtVolume(String resourcePath, double absoluteVolume) {
-        final double vol = clamp01(absoluteVolume);
+        final double vol = clamp01(absoluteVolume * sfxVolume);
         String path = resourcePath;
         Platform.runLater(() -> {
             try {
@@ -331,7 +331,6 @@ public class MusicManager {
                 AudioClip clip = sfxCache.get(key);
                 if (clip != null) {
                     clip.stop();
-                    System.out.println("[MusicManager] stopSfx: " + path);
                 }
             } catch (Throwable t) {
                 System.err.println("Error stopping sound effect: " + t.getMessage());

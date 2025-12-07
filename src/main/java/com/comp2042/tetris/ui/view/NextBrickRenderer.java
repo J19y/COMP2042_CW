@@ -2,9 +2,14 @@ package com.comp2042.tetris.ui.view;
 
 import java.util.List;
 
+import com.comp2042.tetris.ui.theme.CellColor;
+import com.comp2042.tetris.ui.theme.NeonGlowStyle;
+
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 /**
@@ -45,16 +50,16 @@ public class NextBrickRenderer {
                 for (int j = 0; j < nextBrickData[i].length; j++) {
                     if (nextBrickData[i][j] != 0) {
                         Rectangle rectangle = new Rectangle(brickSize, brickSize);
-                        javafx.scene.paint.Paint paint = com.comp2042.tetris.ui.theme.CellColor.fromValue(nextBrickData[i][j]);
+                        Paint paint = CellColor.fromValue(nextBrickData[i][j]);
                         rectangle.setFill(paint);
                         rectangle.setArcHeight(9);
                         rectangle.setArcWidth(9);
-                        javafx.scene.paint.Paint basePaint = paint;
-                        javafx.scene.paint.Color baseColor = javafx.scene.paint.Color.WHITE;
-                        if (basePaint instanceof javafx.scene.paint.Color bc) {
+                        Paint basePaint = paint;
+                        Color baseColor = Color.WHITE;
+                        if (basePaint instanceof Color bc) {
                             baseColor = bc;
                         }
-                        com.comp2042.tetris.ui.theme.NeonGlowStyle.applyPlacedStyle(rectangle, baseColor);
+                        NeonGlowStyle.applyPlacedStyle(rectangle, baseColor);
                         brickGrid.add(rectangle, j, i);
                     }
                 }

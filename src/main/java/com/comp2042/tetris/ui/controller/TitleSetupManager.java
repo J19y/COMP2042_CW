@@ -96,16 +96,13 @@ public class TitleSetupManager {
             try {
                 Font font = Font.loadFont(getClass().getResourceAsStream(fontPaths[i]), fontSizes[i]);
                 if (font != null) {
-                    System.out.println("Loaded custom font: " + font.getName());
                     return font;
                 }
             } catch (Exception e) {
-                System.err.println("Failed to load " + fontPaths[i] + ": " + e.getMessage());
+                // Font loading failed, try next font
             }
         }
 
-        
-        System.err.println("Using fallback font: Impact");
         return Font.font("Impact", 90);
     }
 

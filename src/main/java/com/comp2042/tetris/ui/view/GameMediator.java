@@ -23,7 +23,7 @@ import javafx.util.Duration;
  * Mediator coordinating UI components during gameplay.
  * Manages board rendering, animations, and game state transitions.
  */
-final class GameMediator {
+public final class GameMediator {
 
     private final BoardRenderer boardRenderer;
     private final ViewInitializer viewInitializer;

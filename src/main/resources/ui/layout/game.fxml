@@ -166,6 +166,12 @@
                         <Text fx:id="volumeText" text="100%" styleClass="info-label"/>
                     </HBox>
 
+                    <HBox spacing="10" alignment="CENTER" styleClass="music-controls">
+                        <Text text="SFX" styleClass="info-label" style="-fx-font-size: 11px; -fx-min-width: 40;"/>
+                        <Slider fx:id="sfxVolumeSlider" min="0" max="100" value="100" prefWidth="140" />
+                        <Text fx:id="sfxVolumeText" text="100%" styleClass="info-label"/>
+                    </HBox>
+
                     <Pane prefHeight="1" prefWidth="200" styleClass="settings-separator" />
 
                     <Button text="MAIN MENU" styleClass="menu-button" onAction="#returnToMenu" prefWidth="200">

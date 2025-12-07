@@ -119,6 +119,12 @@ public class GuiController implements Initializable, GameView {
     private Button musicToggleButton;
 
     @FXML
+    private Slider sfxVolumeSlider;
+
+    @FXML
+    private Text sfxVolumeText;
+
+    @FXML
     private HBox helpContainer;
 
     private final transient BoardRenderer boardRenderer = new BoardRenderer(BRICK_SIZE);
@@ -174,6 +180,22 @@ public class GuiController implements Initializable, GameView {
         nextBrickRenderer = new NextBrickRenderer(nextBrickPanel, BRICK_SIZE);
         audioSettingsController = new AudioSettingsController(volumeSlider, volumeText, musicToggleButton);
         audioSettingsController.initialize();
+        
+        if (sfxVolumeSlider != null && sfxVolumeText != null) {
+            sfxVolumeSlider.setValue(100);
+            try {
+                MusicManager.getInstance().setSfxVolume(1.0);
+            } catch (Exception ignored) {}
+            
+            sfxVolumeSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+                double pct = newVal.doubleValue();
+                sfxVolumeText.setText((int) pct + "%");
+                try {
+                    MusicManager.getInstance().setSfxVolume(pct / 100.0);
+                } catch (Exception ignored) {}
+            });
+        }
+        
         countdownManager = new CountdownManager(countdownOverlay, countdownText, stateManager, mediator, pauseOverlayController, gameTimer);
 
         Platform.runLater(() -> {
