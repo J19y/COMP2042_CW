@@ -7,6 +7,15 @@ import javafx.scene.shape.Rectangle;
 
 import java.util.List;
 
+/**
+ * Renders the next brick preview panel.
+ * <p>
+ * Displays upcoming bricks with neon glow styling to show
+ * players what pieces are coming next.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class NextBrickRenderer {
 
     private final VBox nextBrickPanel;

@@ -18,7 +18,10 @@ import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 
-
+/**
+ * Sets up and styles menu buttons with hover effects.
+ * Configures play, quit, controls, and settings buttons.
+ */
 public class ButtonSetupManager {
     private final Button playButton;
     private final Button quitButton;

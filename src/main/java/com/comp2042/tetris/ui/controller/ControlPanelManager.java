@@ -22,7 +22,15 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
-
+/**
+ * Manages the control panel overlay displaying keyboard controls.
+ * <p>
+ * Creates and animates a neon-styled control scheme display
+ * showing arrow keys, spacebar and other game controls.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class ControlPanelManager {
     private final StackPane rootPane;
     private final javafx.scene.layout.Pane backgroundPane;

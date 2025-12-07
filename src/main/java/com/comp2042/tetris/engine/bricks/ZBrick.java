@@ -5,6 +5,11 @@ import java.util.List;
 
 import com.comp2042.tetris.util.MatrixOperations;
 
+/**
+ * Z-shaped tetromino (reverse S-shape).
+ * Has 2 rotation states. Color value is 7 (red).
+ *
+ */
 final class ZBrick implements Brick {
 
     private final List<int[][]> brickMatrix = new ArrayList<>();

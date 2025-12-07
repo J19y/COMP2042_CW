@@ -13,7 +13,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-
+/**
+ * Animated message shown when rows are cleared.
+ * Displays title text with fade and translate animations.
+ */
 public final class RowClearMessage extends StackPane {
 
     private static final Font TITLE_FONT = Font.font("AXR ArcadeMachine", 22);

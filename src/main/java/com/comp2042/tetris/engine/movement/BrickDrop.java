@@ -9,7 +9,12 @@ import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.scoring.ScoreManager;
 import com.comp2042.tetris.domain.scoring.ScoringPolicy;
 
-
+/**
+ * Handles brick drop operations including gravity and hard drop.
+ * Coordinates merging bricks to background, clearing rows, scoring,
+ * and spawning new bricks. Central to the game tick cycle.
+ *
+ */
 public final class BrickDrop {
 
     private final BrickDropActions dropActions;

@@ -8,6 +8,10 @@ import javafx.scene.text.Text;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Controls audio settings UI elements.
+ * Manages volume slider and music toggle button state.
+ */
 public class AudioSettingsController {
 
     private static final Logger LOGGER = Logger.getLogger(AudioSettingsController.class.getName());

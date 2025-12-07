@@ -3,6 +3,15 @@ package com.comp2042.tetris.engine.board;
 import com.comp2042.tetris.util.CollisionDetector;
 import com.comp2042.tetris.util.MatrixOperations;
 
+/**
+ * Implements brick movement operations on the board.
+ * <p>
+ * Handles left, right, and rotation movements with collision
+ * detection to ensure valid brick positions.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class BoardMovement implements com.comp2042.tetris.engine.movement.BrickMovement {
     private final BoardState boardState;
 

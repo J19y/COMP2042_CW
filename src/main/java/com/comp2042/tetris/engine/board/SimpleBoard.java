@@ -18,7 +18,16 @@ import com.comp2042.tetris.engine.spawn.BrickSpawn;
 import com.comp2042.tetris.util.CollisionDetector;
 import com.comp2042.tetris.util.MatrixOperations;
 
-
+/**
+ * Core game board implementation managing brick placement and movement.
+ * <p>
+ * Implements multiple interfaces to provide movement, drop actions,
+ * board reading, spawning, and lifecycle management capabilities.
+ * Uses composition to delegate to specialized components.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, BrickSpawn, BoardLifecycle {
 
     private final int rows;
@@ -29,14 +38,34 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
     
     private int[][] boardMatrix;
 
+    /**
+     * Constructs a SimpleBoard with default random brick generator.
+     *
+     * @param rows the number of rows
+     * @param cols the number of columns
+     */
     public SimpleBoard(int rows, int cols) {
         this(rows, cols, new RandomBrickGeneratorFactory());
     }
 
+    /**
+     * Constructs a SimpleBoard with a custom brick generator factory.
+     *
+     * @param rows the number of rows
+     * @param cols the number of columns
+     * @param generatorFactory the factory to create brick generators
+     */
     public SimpleBoard(int rows, int cols, BrickGeneratorFactory generatorFactory) {
         this(rows, cols, new DefaultBoardComponentsFactory(Objects.requireNonNull(generatorFactory, "generatorFactory must not be null")));
     }
 
+    /**
+     * Constructs a SimpleBoard with a custom components factory.
+     *
+     * @param rows the number of rows
+     * @param cols the number of columns
+     * @param componentsFactory the factory to create board components
+     */
     public SimpleBoard(int rows, int cols, BoardComponentsFactory componentsFactory) {
         Objects.requireNonNull(componentsFactory, "componentsFactory must not be null");
         this.rows = rows;
@@ -49,6 +78,9 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         positionManager = componentsFactory.createPositionManager();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean moveBrickDown() {
     int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
@@ -63,6 +95,9 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean moveBrickLeft() {
     int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
@@ -76,6 +111,9 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean moveBrickRight() {
     int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
@@ -89,6 +127,13 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Implements wall kick logic: if the rotation would cause collision,
+     * attempts to shift the brick left or right to allow the rotation.
+     * </p>
+     */
     @Override
     public boolean rotateLeftBrick() {
         int[][] currentMatrix = MatrixOperations.copy(boardMatrix);
@@ -120,6 +165,12 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Spawns the brick at the center-top of the board.
+     * </p>
+     */
     @Override
     
     public SpawnResult spawnBrick() {
@@ -132,11 +183,20 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         return new SpawnResult(gameOver);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int[][] getBoardMatrix() {
     return boardMatrix;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Also calculates the ghost piece position for preview.
+     * </p>
+     */
     @Override
     public ViewData getViewData() {
         java.util.List<Brick> nextBricks = brickGenerator.peekNextBricks(3);
@@ -157,16 +217,27 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         return new ViewData(currentShape, currentX, positionManager.getY(), nextBrickMatrices, ghostY);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void mergeBrickToBackground() {
         boardMatrix = MatrixOperations.merge(boardMatrix, brickRotator.getCurrentShape(), positionManager.getX(), positionManager.getY());
-    }    @Override
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public RowClearResult clearRows() {
     RowClearResult result = MatrixOperations.clearRows(boardMatrix);
     boardMatrix = result.getNewMatrix();
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void newGame() {
         boardMatrix = new int[rows][cols];
@@ -174,7 +245,13 @@ public class SimpleBoard implements BrickMovement, BrickDropActions, BoardRead, 
         spawnBrick();
     }
 
-    
+    /**
+     * Adds a garbage line at the bottom of the board.
+     * <p>
+     * Used in mystery mode events. Creates a partial row with random blocks
+     * and one guaranteed hole.
+     * </p>
+     */
     public void addGarbageLine() {
         int[][] newMatrix = new int[rows][cols];
         

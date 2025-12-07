@@ -13,7 +13,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-
+/**
+ * Manages animated background effects for the menu and game screens.
+ * Creates falling tetromino shapes and particle effects with neon colors.
+ * Uses AnimationTimer for smooth, frame-based animation updates.
+ *
+ */
 public class BackgroundEffectsManager {
     private final Pane backgroundPane;
     private final List<FallingShape> fallingShapes = new ArrayList<>();

@@ -19,7 +19,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
-
+/**
+ * Mediator coordinating UI components during gameplay.
+ * Manages board rendering, animations, and game state transitions.
+ */
 final class GameMediator {
 
     private final BoardRenderer boardRenderer;

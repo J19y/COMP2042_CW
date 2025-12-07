@@ -13,7 +13,10 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-
+/**
+ * Animated notification for line clear achievements.
+ * Shows title and subtitle with color accent and effects.
+ */
 public class LineClearNotification extends StackPane {
 
     private final Text title;

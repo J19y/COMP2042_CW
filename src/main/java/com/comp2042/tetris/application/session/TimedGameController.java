@@ -8,7 +8,13 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.util.Duration;
 
-
+/**
+ * Controller for Time Attack game mode.
+ * Extends BaseGameController with a countdown timer (default 120 seconds).
+ * Game ends when timer reaches zero or player gets game over.
+ * Supports pause/resume of the countdown.
+ *
+ */
 public class TimedGameController extends BaseGameController {
     private static final int DEFAULT_SECONDS = 120; 
     private int remainingSeconds = DEFAULT_SECONDS;

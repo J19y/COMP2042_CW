@@ -6,6 +6,15 @@ import com.comp2042.tetris.util.CollisionDetector;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Reads board state for rendering purposes.
+ * <p>
+ * Provides read-only access to the board matrix and computes
+ * view data including ghost piece position and next bricks.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class BoardReader implements BoardRead {
     private final BoardState boardState;
 

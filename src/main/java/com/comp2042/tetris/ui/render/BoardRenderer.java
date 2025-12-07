@@ -5,7 +5,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import com.comp2042.tetris.ui.theme.ColorPalette;
 
-
+/**
+ * Renders the game board (placed bricks) onto a JavaFX GridPane.
+ * Creates and manages Rectangle elements for each cell, applying
+ * neon-style coloring from the ColorPalette theme.
+ *
+ */
 public final class BoardRenderer {
 
     private final int brickSize;

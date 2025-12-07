@@ -16,7 +16,13 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-
+/**
+ * FXML controller for the main menu screen.
+ * Manages menu UI including title animations, button interactions,
+ * settings panel, level selection, and navigation to game modes.
+ * Delegates to specialized managers for different UI sections.
+ *
+ */
 public class MenuController {
 
     

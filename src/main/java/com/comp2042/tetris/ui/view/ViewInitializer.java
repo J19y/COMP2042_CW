@@ -2,7 +2,10 @@ package com.comp2042.tetris.ui.view;
 
 import javafx.scene.layout.GridPane;
 
-
+/**
+ * Initializes UI components and loads custom fonts.
+ * Sets up game panel focus and game over panel visibility.
+ */
 public final class ViewInitializer {
 
     private String digitalFontFamily;

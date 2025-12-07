@@ -1,5 +1,8 @@
 package com.comp2042.tetris.application.command;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 import com.comp2042.tetris.domain.model.RowClearResult;
 import com.comp2042.tetris.domain.model.ShowResult;
 import com.comp2042.tetris.domain.model.ViewData;
@@ -15,12 +18,31 @@ import com.comp2042.tetris.ui.input.EventSource;
 import com.comp2042.tetris.ui.input.EventType;
 import com.comp2042.tetris.ui.input.MoveEvent;
 
-import java.util.EnumMap;
-import java.util.Map;
-
+/**
+ * Manages registration and retrieval of game commands.
+ * <p>
+ * Centralizes command mapping to event types, improving extensibility
+ * and allowing custom commands to be registered at runtime.
+ * Implements the Command pattern registry.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class CommandRegistrar {
     private final Map<EventType, GameCommand> commands = new EnumMap<>(EventType.class);
 
+    /**
+     * Registers the default set of game commands.
+     *
+     * @param moveHandler handler for brick movement operations
+     * @param dropHandler handler for soft drop operations
+     * @param dropActions handler for drop and merge operations
+     * @param scoringPolicy the scoring policy to apply
+     * @param scoreService the score manager
+     * @param spawnManager the spawn manager for new bricks
+     * @param reader the board reader for state queries
+     * @param view the game view for UI updates
+     */
     public void registerDefaultCommands(BrickMove moveHandler,
                                         BrickDrop dropHandler,
                                         BrickDropActions dropActions,
@@ -37,12 +59,24 @@ public class CommandRegistrar {
             new HardDropCommand(dropActions, scoringPolicy, scoreService, spawnManager, reader, view));
     }
 
+    /**
+     * Registers a custom command for a specific event type.
+     *
+     * @param type the event type to associate with the command
+     * @param handler the command handler to register
+     */
     public void registerCommand(EventType type, GameCommand handler) {
         if (type != null && handler != null) {
             commands.put(type, handler);
         }
     }
 
+    /**
+     * Retrieves the command registered for a specific event type.
+     *
+     * @param type the event type
+     * @return the registered command, or null if none registered
+     */
     public GameCommand getCommand(EventType type) {
         return commands.get(type);
     }

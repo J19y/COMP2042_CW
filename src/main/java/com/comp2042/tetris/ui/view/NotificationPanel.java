@@ -8,7 +8,10 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
-
+/**
+ * Panel for displaying transient score notifications.
+ * Shows animated score bonuses that fade out automatically.
+ */
 public class NotificationPanel extends StackPane {
 
     public NotificationPanel() {

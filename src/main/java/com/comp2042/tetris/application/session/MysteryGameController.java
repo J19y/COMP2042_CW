@@ -11,7 +11,13 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.util.Duration;
 
-
+/**
+ * Controller for Mystery game mode with random events.
+ * Features progressive difficulty with speed increases every 30 seconds,
+ * random mystery events (control inversion, fog, gravity changes),
+ * and level progression. Extends BaseGameController.
+ *
+ */
 public class MysteryGameController extends BaseGameController {
     private Timeline speedUpTimer;
     private Timeline eventTimer;

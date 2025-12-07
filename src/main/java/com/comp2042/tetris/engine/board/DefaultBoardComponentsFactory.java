@@ -7,9 +7,15 @@ import com.comp2042.tetris.engine.bricks.BrickGeneratorFactory;
 import com.comp2042.tetris.engine.movement.BrickPositionManager;
 import com.comp2042.tetris.engine.rotation.BrickRotator;
 
-
-
-
+/**
+ * Default implementation of BoardComponentsFactory.
+ * <p>
+ * Creates standard board components using the provided
+ * brick generator factory.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class DefaultBoardComponentsFactory implements BoardComponentsFactory {
 
     private final BrickGeneratorFactory generatorFactory;

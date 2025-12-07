@@ -15,6 +15,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
+/**
+ * UI panel displayed when game ends.
+ * Shows final score, level, statistics, and provides
+ * retry/menu buttons with animated entrance effects.
+ *
+ */
 public class GameOverPanel extends BorderPane {
 
     private final Label gameOverLabel;

@@ -3,7 +3,12 @@ package com.comp2042.tetris.application.session;
 import com.comp2042.tetris.engine.board.GameView;
 import com.comp2042.tetris.services.audio.MusicManager;
 
-
+/**
+ * Controller for Classic game mode.
+ * Extends BaseGameController with classic Tetris gameplay:
+ * endless play until game over with classic background music.
+ *
+ */
 public class ClassicGameController extends BaseGameController {
     public ClassicGameController(GameView view) {
         super(view);

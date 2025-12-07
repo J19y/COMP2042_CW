@@ -31,7 +31,19 @@ import com.comp2042.tetris.ui.input.MoveEvent;
 
 import javafx.beans.property.IntegerProperty;
 
-
+/**
+ * Abstract base class implementing core game logic.
+ * <p>
+ * Provides template methods for subclass customization. Handles input routing,
+ * scoring, and spawn management. Concrete implementations extend this class
+ * to provide specific game mode behavior (Classic, Mystery, Timed).
+ * </p>
+ * <p>
+ * Uses the Template Method pattern to allow subclasses to hook into game events.
+ * </p>
+ *
+ * @version 1.0
+ */
 public class BaseGameController implements GameplayPort, GameModeLifecycle {
     protected final BrickMovement movement;
     protected final BrickDropActions dropActions;

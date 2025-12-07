@@ -14,7 +14,10 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-
+/**
+ * Manages the settings panel overlay.
+ * Handles volume slider and music toggle with animations.
+ */
 public class SettingsPanelManager {
     private final StackPane rootPane;
     private final StackPane settingsOverlay;

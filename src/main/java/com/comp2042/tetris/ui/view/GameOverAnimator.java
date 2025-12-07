@@ -16,6 +16,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
+/**
+ * Handles game over screen animations.
+ * Creates dramatic reveal with blur, darken, and panel transitions.
+ */
 public class GameOverAnimator {
 
     private final GridPane gamePanel;

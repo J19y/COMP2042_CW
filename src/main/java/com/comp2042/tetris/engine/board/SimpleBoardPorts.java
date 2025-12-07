@@ -6,7 +6,10 @@ import com.comp2042.tetris.engine.movement.BrickDropActions;
 import com.comp2042.tetris.engine.movement.BrickMovement;
 import com.comp2042.tetris.engine.spawn.BrickSpawn;
 
-
+/**
+ * Adapter providing BoardPorts interface for SimpleBoard.
+ * Exposes board capabilities through segregated interfaces.
+ */
 public final class SimpleBoardPorts implements BoardPorts {
 
     private final SimpleBoard board;
