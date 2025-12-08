@@ -1,7 +1,5 @@
 package com.comp2042.tetris.ui.controller;
 
-import java.io.IOException;
-
 import com.comp2042.tetris.application.session.BaseGameController;
 import com.comp2042.tetris.application.session.ClassicGameController;
 import com.comp2042.tetris.application.session.MysteryGameController;
@@ -104,8 +102,8 @@ public class GameSceneLoader {
                 }
             }
 
-        } catch (IOException e) {
-            System.err.println("Failed to load game scene: " + e.getMessage());
+        } catch (Exception e) {
+            // Game scene loading failed
         }
     }
 }

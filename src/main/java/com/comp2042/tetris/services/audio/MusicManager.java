@@ -111,7 +111,7 @@ public class MusicManager {
                     fadeVolume(player, 0.0, musicVolume, Math.max(0, fadeInMillis));
                 });
             } catch (Throwable t) {
-                System.err.println("Error playing track: " + t.getMessage());
+                // Track playback failed
             }
         });
     }
@@ -192,7 +192,7 @@ public class MusicManager {
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play();
             } catch (Throwable t) {
-                System.err.println("Error playing sound effect: " + t.getMessage());
+                // Sound effect playback failed
             }
         });
     }
@@ -223,7 +223,7 @@ public class MusicManager {
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play();
             } catch (Throwable t) {
-                System.err.println("Error playing sound effect: " + t.getMessage());
+                // Sound effect playback failed
             }
         });
     }
@@ -252,7 +252,7 @@ public class MusicManager {
                 
                 clip.play(vol);
             } catch (Throwable t) {
-                System.err.println("Error playing sound effect immediately: " + t.getMessage());
+                // Sound effect playback failed
             }
         });
     }
@@ -282,7 +282,7 @@ public class MusicManager {
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play(vol);
             } catch (Throwable t) {
-                System.err.println("Error playing sound effect with multiplier: " + t.getMessage());
+                // Sound effect playback failed
             }
         });
     }
@@ -311,7 +311,7 @@ public class MusicManager {
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play(vol);
             } catch (Throwable t) {
-                System.err.println("Error playing sound effect at volume: " + t.getMessage());
+                // Sound effect playback failed
             }
         });
     }
@@ -333,7 +333,7 @@ public class MusicManager {
                     clip.stop();
                 }
             } catch (Throwable t) {
-                System.err.println("Error stopping sound effect: " + t.getMessage());
+                // Sound effect stopping failed
             }
         });
     }

@@ -64,7 +64,6 @@ public class MysteryGameController extends BaseGameController {
                 levelNumber++;
                 try { levelProperty.set(levelNumber); } catch (Exception ignored) {}
                 try { view.animateLevelIncrement(); } catch (Exception ignored) {}
-                System.out.println("Mystery Mode: Difficulty increased! Speed multiplier: " + speedMultiplier);
             }
             
             if (eventCountdown > 0) {
@@ -126,7 +125,6 @@ public class MysteryGameController extends BaseGameController {
         switch (pick) {
             case 0 -> {
                 speedMultiplier++;
-                System.out.println("Mystery Event: Speed Boost! multiplier=" + speedMultiplier);
                 try { view.showEventMessage("Speed Boost!"); } catch (Exception ignored) {}
             }
             case 1 -> toggleControls();
@@ -152,20 +150,17 @@ public class MysteryGameController extends BaseGameController {
                 commands.put(EventType.LEFT, rightCmd);
                 commands.put(EventType.RIGHT, leftCmd);
             }
-            System.out.println("Mystery Event: Controls Inverted!");
             try { view.showEventMessage("Controls Inverted!"); } catch (Exception ignored) {}
             
             controlsRevertTimeline = new Timeline(new KeyFrame(Duration.seconds(8), ev -> {
                 controlsInverted = false;
                 registerDefaultCommands();
-                System.out.println("Mystery Event: Controls Normal.");
                 try { view.showEventMessage("Controls Normal"); } catch (Exception ignored) {}
             }));
             controlsRevertTimeline.setCycleCount(1);
             if (!paused) controlsRevertTimeline.play();
         } else {
             registerDefaultCommands();
-            System.out.println("Mystery Event: Controls Normal.");
             try { view.showEventMessage("Controls Normal"); } catch (Exception ignored) {}
         }
     }
@@ -188,7 +183,6 @@ public class MysteryGameController extends BaseGameController {
                     }
                 });
             }
-            System.out.println("Mystery Event: Earthquake! Garbage line added.");
             try { view.showEventMessage("Earthquake!"); } catch (Exception ignored) {}
         } catch (Exception ignored) {}
     }
@@ -197,7 +191,6 @@ public class MysteryGameController extends BaseGameController {
         
         try {
             Platform.runLater(() -> view.setBoardVisibility(false));
-            System.out.println("Mystery Event: Fog! Board hidden.");
             try { view.showEventMessage("The Fog"); } catch (Exception ignored) {}
             fogRestoreTimeline = new Timeline(new KeyFrame(Duration.seconds(3), ev -> {
                 Platform.runLater(() -> view.setBoardVisibility(true));
@@ -211,15 +204,10 @@ public class MysteryGameController extends BaseGameController {
     private void triggerHeavyGravity() {
         
         originalSpeedMultiplier = speedMultiplier;
-        
         speedMultiplier = Math.max(30, speedMultiplier * 12);
-        System.out.println("Mystery Event: HEAVY GRAVITY! multiplier=" + speedMultiplier);
         try { view.showEventMessage("Heavy Gravity!"); } catch (Exception ignored) {}
-        
-        
         gravityRestoreTimeline = new Timeline(new KeyFrame(Duration.seconds(3), ev -> {
             speedMultiplier = originalSpeedMultiplier;
-            System.out.println("Mystery Event: Gravity Normalized. multiplier=" + speedMultiplier);
             try { view.showEventMessage("Gravity Normalized"); } catch (Exception ignored) {}
             gravityRestoreTimeline = null;
         }));

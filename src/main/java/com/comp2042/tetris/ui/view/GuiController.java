@@ -27,6 +27,7 @@ import com.comp2042.tetris.ui.render.ActiveBrickRenderer;
 import com.comp2042.tetris.ui.render.BoardRenderer;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.event.ActionEvent;
@@ -259,12 +260,17 @@ public class GuiController implements Initializable, GameView {
             ft.setFromValue(1.0);
             ft.setToValue(0.0);
             ft.setOnFinished(e -> {
-                root.setOpacity(0);
-                stage.setScene(scene);
-                FadeTransition fadeIn = new FadeTransition(Duration.millis(600), root);
-                fadeIn.setFromValue(0.0);
-                fadeIn.setToValue(1.0);
-                fadeIn.play();
+                // Add 2-second pause before loading menu
+                PauseTransition pause = new PauseTransition(Duration.seconds(2));
+                pause.setOnFinished(pauseEvent -> {
+                    root.setOpacity(0);
+                    stage.setScene(scene);
+                    FadeTransition fadeIn = new FadeTransition(Duration.millis(600), root);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+                });
+                pause.play();
             });
             ft.play();
         } catch (IOException e) {
