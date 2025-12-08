@@ -87,8 +87,7 @@ public class GameOverAnimator {
     private void dissolveRow(int row, Rectangle[][] displayMatrix) {
         if (row >= displayMatrix.length) return;
         
-        for (int x = 0; x < displayMatrix[row].length; x++) {
-            Rectangle block = displayMatrix[row][x];
+        for (Rectangle block : displayMatrix[row]) {
             
             if (block != null && block.getFill() != null && 
                 !block.getFill().equals(com.comp2042.tetris.ui.theme.CellColor.fromValue(0))) {

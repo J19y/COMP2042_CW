@@ -161,27 +161,27 @@ public class MenuController {
 
     
     @FXML
-    private void onPlay() {
+    public void onPlay() {
         levelSelectionManager.showLevelSelection();
     }
 
     
     @FXML
-    private void onQuit() {
+    public void onQuit() {
         menuAnimationController.blurMenuUI();
         exitConfirmationOverlay.setVisible(true);
     }
 
     
     @FXML
-    private void onConfirmQuit() {
+    public void onConfirmQuit() {
         javafx.stage.Stage stage = (javafx.stage.Stage) quitButton.getScene().getWindow();
         stage.close();
     }
 
     
     @FXML
-    private void onCancelQuit() {
+    public void onCancelQuit() {
         menuAnimationController.clearMenuBlur();
         exitConfirmationOverlay.setVisible(false);
     }
@@ -200,19 +200,19 @@ public class MenuController {
 
     
     @FXML
-    private void toggleSettings() {
+    public void toggleSettings() {
         settingsPanelManager.toggleSettings();
     }
 
     
     @FXML
-    private void toggleMusic() {
+    public void toggleMusic() {
         settingsPanelManager.toggleMusic();
     }
 
     
     @FXML
-    private void closeSettings() {
+    public void closeSettings() {
         settingsPanelManager.closeSettings();
     }
 }

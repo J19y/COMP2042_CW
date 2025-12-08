@@ -1,26 +1,28 @@
 package com.comp2042.tetris.ui.view;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.comp2042.tetris.application.port.CreateNewGame;
 import com.comp2042.tetris.application.port.GameModeLifecycle;
 import com.comp2042.tetris.engine.state.GameStateManager;
 import com.comp2042.tetris.services.audio.MusicManager;
+
 import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
-import javafx.animation.Interpolator;
-import javafx.scene.text.Text;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Manages the 3-2-1 countdown animation before game starts.
  * Coordinates with game state and audio for synchronized start.
  */
+@SuppressWarnings("ALL")
 public class CountdownManager {
 
     private static final Logger LOGGER = Logger.getLogger(CountdownManager.class.getName());
@@ -34,6 +36,7 @@ public class CountdownManager {
 
     private CreateNewGame gameLifecycle;
 
+    @SuppressWarnings("ALL")
     public CountdownManager(StackPane countdownOverlay, Text countdownText,
                             GameStateManager stateManager, GameMediator mediator,
                             PauseOverlayController pauseOverlayController, GameTimer timer) {
@@ -103,9 +106,9 @@ public class CountdownManager {
             }
             timer.resumeTimerTracking();
             timer.setCountdownMode(false);
-            if (gameLifecycle instanceof GameModeLifecycle) {
+            if (gameLifecycle instanceof GameModeLifecycle gml) {
                 try {
-                    ((GameModeLifecycle) gameLifecycle).startMode();
+                    gml.startMode();
                 } catch (Exception ignored) {
                     LOGGER.log(Level.FINE, "Unable to start mode after countdown", ignored);
                 }

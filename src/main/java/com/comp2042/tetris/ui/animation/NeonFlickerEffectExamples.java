@@ -158,27 +158,19 @@ public final class NeonFlickerEffectExamples {
                 currentFlicker.stop();
             }
             
-            
-            switch (gameState) {
-                case "MENU":
-                    
-                    currentFlicker = NeonFlickerEffect.createSubtleFlicker(warningIndicator);
-                    break;
-                case "PLAYING":
-                    
-                    currentFlicker = NeonFlickerEffect.createStandardFlicker(warningIndicator);
-                    break;
-                case "CRITICAL":
-                    
-                    currentFlicker = NeonFlickerEffect.createIntenseFlicker(warningIndicator);
-                    break;
-                default:
-                    
+            currentFlicker = switch (gameState) {
+                case "MENU" -> NeonFlickerEffect.createSubtleFlicker(warningIndicator);
+                case "PLAYING" -> NeonFlickerEffect.createStandardFlicker(warningIndicator);
+                case "CRITICAL" -> NeonFlickerEffect.createIntenseFlicker(warningIndicator);
+                default -> {
                     warningIndicator.setOpacity(1.0);
-                    return;
-            }
+                    yield null;
+                }
+            };
             
-            currentFlicker.play();
+            if (currentFlicker != null) {
+                currentFlicker.play();
+            }
         }
     }
 

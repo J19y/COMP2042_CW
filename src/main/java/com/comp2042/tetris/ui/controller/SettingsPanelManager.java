@@ -1,6 +1,7 @@
 package com.comp2042.tetris.ui.controller;
 
 import com.comp2042.tetris.services.audio.MusicManager;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -153,10 +154,7 @@ public class SettingsPanelManager {
             String currentText = musicToggleButton.getText();
             if ("ON".equals(currentText)) {
                 musicToggleButton.setText("OFF");
-
-                Text mutedIcon = new Text("ًں”‡");
-                mutedIcon.setFill(javafx.scene.paint.Color.WHITE);
-                musicToggleButton.setGraphic(mutedIcon);
+                musicToggleButton.setGraphic(null);
 
                 try {
                     MusicManager.getInstance().setMusicEnabled(false);
@@ -168,10 +166,7 @@ public class SettingsPanelManager {
                 }
             } else {
                 musicToggleButton.setText("ON");
-
-                Text unmutedIcon = new Text("ًں”ٹ");
-                unmutedIcon.setFill(javafx.scene.paint.Color.WHITE);
-                musicToggleButton.setGraphic(unmutedIcon);
+                musicToggleButton.setGraphic(null);
 
                 try {
                     MusicManager.getInstance().setMusicEnabled(true);

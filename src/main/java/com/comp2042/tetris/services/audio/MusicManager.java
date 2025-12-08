@@ -111,7 +111,7 @@ public class MusicManager {
                     fadeVolume(player, 0.0, musicVolume, Math.max(0, fadeInMillis));
                 });
             } catch (Throwable t) {
-                t.printStackTrace();
+                // Track playback failed
             }
         });
     }
@@ -180,7 +180,6 @@ public class MusicManager {
             try {
                 URL res = getClass().getResource(path);
                 if (res == null) {
-                    System.out.println("[MusicManager] SFX resource not found: " + path);
                     return;
                 }
                 String key = res.toExternalForm();
@@ -190,12 +189,10 @@ public class MusicManager {
                     sfxCache.put(key, clip);
                 }
                 clip.setVolume(sfxVolume);
-                System.out.println("[MusicManager] playSfx: " + path + " volume=" + sfxVolume);
-                
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play();
             } catch (Throwable t) {
-                t.printStackTrace();
+                // Sound effect playback failed
             }
         });
     }
@@ -213,7 +210,6 @@ public class MusicManager {
             try {
                 URL res = getClass().getResource(path);
                 if (res == null) {
-                    System.out.println("[MusicManager] SFX resource not found: " + path);
                     return;
                 }
                 String key = res.toExternalForm();
@@ -224,12 +220,10 @@ public class MusicManager {
                 }
                 double vol = clamp01(sfxVolume * mult);
                 clip.setVolume(vol);
-                System.out.println("[MusicManager] playSfx: " + path + " multiplier=" + mult + " finalVol=" + vol);
-                
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play();
             } catch (Throwable t) {
-                t.printStackTrace();
+                // Sound effect playback failed
             }
         });
     }
@@ -245,7 +239,6 @@ public class MusicManager {
             try {
                 URL res = getClass().getResource(path);
                 if (res == null) {
-                    System.out.println("[MusicManager] SFX resource not found: " + path);
                     return;
                 }
                 String key = res.toExternalForm();
@@ -255,12 +248,11 @@ public class MusicManager {
                     sfxCache.put(key, clip);
                 }
                 double vol = sfxVolume;
-                System.out.println("[MusicManager] playSfxImmediate: " + path + " vol=" + vol);
                 try { clip.stop(); } catch (Exception ignored) {}
                 
                 clip.play(vol);
             } catch (Throwable t) {
-                t.printStackTrace();
+                // Sound effect playback failed
             }
         });
     }
@@ -278,7 +270,6 @@ public class MusicManager {
             try {
                 URL res = getClass().getResource(path);
                 if (res == null) {
-                    System.out.println("[MusicManager] SFX resource not found: " + path);
                     return;
                 }
                 String key = res.toExternalForm();
@@ -288,11 +279,10 @@ public class MusicManager {
                     sfxCache.put(key, clip);
                 }
                 double vol = clamp01(sfxVolume * mult);
-                System.out.println("[MusicManager] playSfxImmediate: " + path + " mult=" + mult + " vol=" + vol);
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play(vol);
             } catch (Throwable t) {
-                t.printStackTrace();
+                // Sound effect playback failed
             }
         });
     }
@@ -304,13 +294,12 @@ public class MusicManager {
      * @param absoluteVolume the absolute volume level (0.0 to 1.0)
      */
     public void playSfxAtVolume(String resourcePath, double absoluteVolume) {
-        final double vol = clamp01(absoluteVolume);
+        final double vol = clamp01(absoluteVolume * sfxVolume);
         String path = resourcePath;
         Platform.runLater(() -> {
             try {
                 URL res = getClass().getResource(path);
                 if (res == null) {
-                    System.out.println("[MusicManager] SFX resource not found: " + path);
                     return;
                 }
                 String key = res.toExternalForm();
@@ -319,11 +308,10 @@ public class MusicManager {
                     clip = new AudioClip(key);
                     sfxCache.put(key, clip);
                 }
-                System.out.println("[MusicManager] playSfxAtVolume: " + path + " vol=" + vol);
                 try { clip.stop(); } catch (Exception ignored) {}
                 clip.play(vol);
             } catch (Throwable t) {
-                t.printStackTrace();
+                // Sound effect playback failed
             }
         });
     }
@@ -343,10 +331,9 @@ public class MusicManager {
                 AudioClip clip = sfxCache.get(key);
                 if (clip != null) {
                     clip.stop();
-                    System.out.println("[MusicManager] stopSfx: " + path);
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                // Sound effect stopping failed
             }
         });
     }

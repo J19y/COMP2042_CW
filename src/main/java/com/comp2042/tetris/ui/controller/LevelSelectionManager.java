@@ -18,11 +18,6 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
-/**
- * Manages the game mode selection UI.
- * Displays Classic, Rush, and Mystery mode options with animations.
- */
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -178,6 +173,30 @@ public class LevelSelectionManager {
                 "-fx-border-radius: 20; " +
                 "-fx-effect: dropshadow(gaussian, rgba(120,120,120,0.2), 10, 0.28, 0, 0);"
         );
+        
+        DropShadow backHoverGlow = new DropShadow();
+        backHoverGlow.setColor(Color.web("rgba(180,180,180,0.4)"));
+        backHoverGlow.setRadius(8);
+        backHoverGlow.setSpread(0.28);
+
+        ScaleTransition backScaleUp = new ScaleTransition(Duration.millis(160), backButton);
+        backScaleUp.setToX(1.05);
+        backScaleUp.setToY(1.05);
+
+        ScaleTransition backScaleDown = new ScaleTransition(Duration.millis(120), backButton);
+        backScaleDown.setToX(1.0);
+        backScaleDown.setToY(1.0);
+
+        backButton.setOnMouseEntered(e -> {
+            backButton.setEffect(backHoverGlow);
+            backScaleUp.playFromStart();
+        });
+
+        backButton.setOnMouseExited(e -> {
+            backButton.setEffect(null);
+            backScaleDown.playFromStart();
+        });
+
         backButton.setOnAction(e -> hideLevelSelection());
 
         container.getChildren().addAll(levelTitle, classicButton, rushButton, mysteryButton);
@@ -262,6 +281,9 @@ public class LevelSelectionManager {
         Tooltip tooltip = new Tooltip(tipText);
         tooltip.setWrapText(true);
         tooltip.setMaxWidth(260);
+        tooltip.setShowDelay(javafx.util.Duration.millis(100));
+        tooltip.setHideDelay(javafx.util.Duration.millis(0));
+        tooltip.setShowDuration(javafx.util.Duration.millis(10000));
         tooltip.setStyle(
                 "-fx-background-color: rgba(6,6,8,0.86); " +
                 "-fx-text-fill: #e6ffff; " +

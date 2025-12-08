@@ -1,13 +1,14 @@
 package com.comp2042.tetris.ui.controller;
 
-import com.comp2042.tetris.engine.board.GameView;
 import com.comp2042.tetris.application.session.BaseGameController;
 import com.comp2042.tetris.application.session.ClassicGameController;
 import com.comp2042.tetris.application.session.MysteryGameController;
 import com.comp2042.tetris.application.session.TimedGameController;
+import com.comp2042.tetris.engine.board.GameView;
 import com.comp2042.tetris.services.audio.MusicManager;
 import com.comp2042.tetris.ui.view.BufferedGameView;
 import com.comp2042.tetris.ui.view.GuiController;
+
 import javafx.animation.FadeTransition;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,8 +16,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
-import java.io.IOException;
 
 /**
  * Loads and transitions to game scenes for different modes.
@@ -48,12 +47,10 @@ public class GameSceneLoader {
     public void loadGameSceneWithMode(String mode) {
         
         try {
-            if ("RUSH".equals(mode)) {
-                MusicManager.getInstance().playTrack(MusicManager.Track.RUSH, 900);
-            } else if ("MYSTERY".equals(mode)) {
-                MusicManager.getInstance().playTrack(MusicManager.Track.MYSTERY, 900);
-            } else {
-                MusicManager.getInstance().playTrack(MusicManager.Track.CLASSIC, 900);
+            switch (mode) {
+                case "RUSH" -> MusicManager.getInstance().playTrack(MusicManager.Track.RUSH, 900);
+                case "MYSTERY" -> MusicManager.getInstance().playTrack(MusicManager.Track.MYSTERY, 900);
+                default -> MusicManager.getInstance().playTrack(MusicManager.Track.CLASSIC, 900);
             }
         } catch (Exception ignored) {
         }
@@ -85,32 +82,28 @@ public class GameSceneLoader {
             GameView decoratedView = new BufferedGameView(controller);
 
             
-            BaseGameController gameController;
-            if ("RUSH".equals(selectedGameMode)) {
-                gameController = new TimedGameController(decoratedView);
-            } else if ("MYSTERY".equals(selectedGameMode)) {
-                gameController = new MysteryGameController(decoratedView);
-            } else {
-                gameController = new ClassicGameController(decoratedView);
-            }
+            BaseGameController gameController = switch (selectedGameMode) {
+                case "RUSH" -> new TimedGameController(decoratedView);
+                case "MYSTERY" -> new MysteryGameController(decoratedView);
+                default -> new ClassicGameController(decoratedView);
+            };
 
             
             activeControllerRef = gameController;
             activeViewRef = decoratedView;
 
             
-            if (activeControllerRef instanceof MysteryGameController) {
+            if (activeControllerRef instanceof MysteryGameController mgc) {
                 try {
                     ((GameView) decoratedView).bindLevel(
-                            ((MysteryGameController) activeControllerRef).getLevelProperty()
+                            mgc.getLevelProperty()
                     );
                 } catch (Exception ignored) {
                 }
             }
 
-        } catch (IOException e) {
-            System.err.println("Failed to load game scene: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception e) {
+            // Game scene loading failed
         }
     }
 }

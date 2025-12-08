@@ -23,7 +23,7 @@ import javafx.util.Duration;
  * Mediator coordinating UI components during gameplay.
  * Manages board rendering, animations, and game state transitions.
  */
-final class GameMediator {
+public final class GameMediator {
 
     private final BoardRenderer boardRenderer;
     private final ViewInitializer viewInitializer;
@@ -113,8 +113,7 @@ final class GameMediator {
                     
                     javafx.animation.Timeline effectPulse = null;
                     javafx.scene.effect.Effect eff = rect.getEffect();
-                    if (eff instanceof javafx.scene.effect.DropShadow) {
-                        javafx.scene.effect.DropShadow ds = (javafx.scene.effect.DropShadow) eff;
+                    if (eff instanceof javafx.scene.effect.DropShadow ds) {
                         double baseRadius = ds.getRadius();
                         double baseSpread = ds.getSpread();
 

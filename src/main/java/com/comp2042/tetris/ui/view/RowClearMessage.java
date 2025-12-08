@@ -58,7 +58,6 @@ public final class RowClearMessage extends StackPane {
     
     public static void showCustom(Group container, String message) {
         if (container == null || message == null || message.isEmpty()) return;
-        System.out.println("RowClearMessage: showCustom -> " + message);
         RowClearMessage msg = new RowClearMessage(message);
         msg.play(container);
     }

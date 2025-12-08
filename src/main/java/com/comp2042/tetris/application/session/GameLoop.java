@@ -15,7 +15,7 @@ import javafx.util.Duration;
  * @version 1.0
  */
 public final class GameLoop {
-    private Timeline timeline;
+    private final Timeline timeline;
     private final Runnable onTick;
     private javafx.util.Duration interval;
 

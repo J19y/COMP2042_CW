@@ -85,7 +85,6 @@ public final class NotificationManager {
     public void showEventMessage(String message) {
         if (notificationContainer == null) return;
         if (message == null || message.isEmpty()) return;
-        System.out.println("NotificationManager: showEventMessage -> " + message);
         Platform.runLater(() -> RowClearMessage.showCustom(notificationContainer, message));
     }
 

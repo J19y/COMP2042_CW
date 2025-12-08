@@ -59,11 +59,6 @@ public class GameOverPanel extends BorderPane {
             javafx.scene.text.Font pressStartFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/PressStart2P-vaV7.ttf"), 36);
 
             
-            System.out.println("GameOverPanel: pressStartFont=" + (pressStartFont == null ? "null" : pressStartFont.getFamily())
-                    + ", arcadeFontSmall=" + (arcadeFontSmall == null ? "null" : arcadeFontSmall.getFamily())
-                    + ", arcadeFontLarge=" + (arcadeFontLarge == null ? "null" : arcadeFontLarge.getFamily()));
-
-            
             try {
                 if (pressStartFont != null) {
                     scoreLabel.setFont(pressStartFont);
@@ -83,7 +78,7 @@ public class GameOverPanel extends BorderPane {
                 } catch (Exception ignored) {
                 }
             } catch (Exception e) {
-                System.err.println("GameOverPanel: failed to set score label font/style - " + e.getMessage());
+                // Font styling failed, using defaults
             }
 
             if (arcadeFontLarge != null) {
